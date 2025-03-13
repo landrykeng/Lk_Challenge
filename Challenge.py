@@ -26,8 +26,7 @@ import time
 import datetime as dt
 import warnings
 warnings.filterwarnings('ignore')
-from fpdf import FPDF
-import base64
+
 
 #================Cnfiguration des styles de la page ===========================
 st.set_page_config(page_title="Blood Donation Dashboard",layout="wide")
