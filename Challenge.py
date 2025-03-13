@@ -176,7 +176,7 @@ def load_data(excel_path, geodata_path):
 
 
 data , geo_data = load_data("Challenge dataset_Alpha.xlsx","GeoData.shp")
-geo_data = gpd.GeoDataFrame(geo_data, geometry='geometry')
+#geo_data = gpd.GeoDataFrame(geo_data, geometry='geometry')
 geo_data.columns=['Arrondissement', 'ADM3_PCODE', 'Date_remplissage', 'Date_naissance', 'Niveau_etude',
        'Age', 'Genre', 'Taille', 'Poids', 'Situation_Matrimoniale', 'Profession', 'Ville',
        'Quartier', 'Lat', 'Long', 'Nationalité', 'Religion', 'ancien_don_sang',
