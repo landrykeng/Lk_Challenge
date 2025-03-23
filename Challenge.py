@@ -107,7 +107,7 @@ translations = {
         "analysis": "📊 Analyse des données du e-commerce au Pakistan",
         "raw_data": "📂 Données Brutes",
         "raw_data_desc": "📌 Base brute sans traitement incluant les valeurs atypiques",
-        "data_issues": "🔍 Description des imperfections des données",
+        "data_issues": "Nouveau Tableau de Bord",
         "stats_desc": "📈 Statistiques descriptives de la base",
         "processed_data": "⚙️ Données Traitées",
         "visualization": "📊 Visualisation des Indicateurs",
@@ -123,7 +123,7 @@ translations = {
         "analysis": "📊 Analysis of E-commerce Data in Pakistan",
         "raw_data": "📂 Raw Data",
         "raw_data_desc": "📌 Raw dataset without processing, including outliers",
-        "data_issues": "🔍 Description of imperfections in the raw data",
+        "data_issues": "New Dashboard",
         "stats_desc": "📈 Descriptive statistics of the dataset",
         "processed_data": "⚙️ Processed Data",
         "visualization": "📊 Indicator Visualization",
@@ -452,11 +452,11 @@ def telecharger_pdf(file_path):
 # Onglets d'affichage des données
 tabs = st.tabs([
     translations[lang]["raw_data"], 
-    translations[lang]["data_issues"], 
-    translations[lang]["processed_data"],
     translations[lang]["visualization"],
     translations[lang]["rapport"],
-    translations[lang]["form"]
+    translations[lang]["form"],
+    translations[lang]["data_issues"], 
+    translations[lang]["processed_data"],
 ])
 
 # ONGLET 1: BASES DE DONNEES
@@ -468,16 +468,9 @@ with tabs[0]:
     st.write("Données sur les donneurs")
     st.dataframe(data_don)
     
-# ONGLET 2:
+
+# ONGLET 2: TABLEAU DE BORD PROPREMENT DIT
 with tabs[1]:
-    pass
-
-# ONGLET 3:
-with tabs[2]:
-    pass
-
-# ONGLET 4: TABLEAU DE BORD PROPREMENT DIT
-with tabs[3]:
     a1, a2, a3 = st.columns(3) #définition du nombre de colonne
     
     #Visualisation des métriques
@@ -684,8 +677,8 @@ with tabs[3]:
         st.write("Evolution temporelle")
         st.write("Analyse des donateurs")
 
-#ONGLET 5: TEST STATISTIQUES
-with tabs[4]:
+#ONGLET 3: TEST STATISTIQUES
+with tabs[2]:
     st.write("Faite vos test statistiques")
     cc1,cc2=st.columns([3,7])
     with cc1:
@@ -718,7 +711,8 @@ with tabs[4]:
     st.write("Afficher votre rapport ")
     telecharger_pdf("Challenge_Proposal_2.pdf")
 
-with tabs[5]:
+# ONGLET 4: FORMULAIRE
+with tabs[3]:
     #Création des dictionnaire de localisation et de métier:
     df_new = pd.read_excel("Infos.xlsx",sheet_name="New_Base") #chargement de la base des nouveaux candidats
     df_ctrl = pd.read_excel("Infos.xlsx",sheet_name="Info") #chargement des informations de controle
@@ -972,15 +966,40 @@ with tabs[5]:
                         st.error(f"Erreur lors de l'enregistrement: {e}")
 
         save(df_new)    
+ 
+# ONGLET 5: TABLEAU DE BORD DE LA NOUVELLE CAMPAGNE
+with tabs[4]:
+    #==================================================================================================================
+    mise_a_ajour=st.button("Mettre à Jour le Tableau de bord")
+    if mise_a_ajour:
+        forme_dla=geo_data.groupby("Arrondissement").agg({"geometry":"first"}) #Récupération des formes des arrondissemnt de Douala
+        New_geo_data=pd.merge(forme_dla,df_new,on="Arrondissement", how="inner") #Jointure pour obtenir des données spatialisée des nouveau candidats
+        New_geo_data=New_geo_data.set_index("ID")
+        New_geo_data=gpd.GeoDataFrame(New_geo_data, geometry='geometry') # converssion du nouveau fichier en geodataframe, pour des analyse spatiale
         
-#==================================================================================================================
-mise_a_ajour=st.button("Mettre à Jour le Tableau de bord")
-if mise_a_ajour:
-    forme_dla=geo_data.groupby("Arrondissement").agg({"geometry":"first"}) #Récupération des formes des arrondissemnt de Douala
-    New_geo_data=pd.merge(forme_dla,df_new,on="Arrondissement", how="inner") #Jointure pour obtenir des données spatialisée des nouveau candidats
-    New_geo_data=New_geo_data.set_index("ID")
-    New_geo_data=gpd.GeoDataFrame(New_geo_data, geometry='geometry') # converssion du nouveau fichier en geodataframe, pour des analyse spatiale
-    #st.dataframe(df_new)
-    st.dataframe(New_geo_data)
-    make_cross_hist_b(df_new,var2="Arrondissement",var1="sexe")
-    make_map_folium(New_geo_data, style_carte="OpenStreetMap", palet_color="reds", opacity=0.8, width=900, height=600)
+        ab1,ab2,ab3=st.columns(3)
+        
+        with ab1:
+            plot_metric("Total Individu",df_new.shape[0],prefix="",suffix="",show_graph=True,color_graph="rgba(0, 104, 201, 0.1)",)
+        with ab2:
+            plot_metric_2("Age moyen des donneurs",df_new,"age",prefix="",suffix=" ans",show_graph=True,color_graph="rgba(175, 32, 201, 0.2)",val_bin=45)
+        
+        with st.expander("Information Globales sur les Nouvea candidat", expanded=True):
+            c1, c2=st.columns([4,2])
+            with c1:
+                make_map_folium(New_geo_data, style_carte="OpenStreetMap", palet_color="reds", opacity=0.8, width=900, height=600)
+            with c2:
+                make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre="Répartition des candidats par arrondissement",bordure=9,width=600)
+            ca1,ca2,ca3,ca4=st.columns(4)
+            with ca1:
+                make_donutchart(df_new,var="sexe",titre="Répartiton des candidats par sexe")
+            with ca2:
+                make_cross_hist_b(df_new,var2="statut_matrimonial",var1="Statut",titre="Statut matrimonial des candidats",typ_bar=0,bordure=7)
+            with ca3:
+                make_cross_hist_b(df_new,var2="religion",var1="Statut",bordure=12)
+            with ca4:
+                make_donutchart(df_new,var="Statut")
+# ONGLET 3:
+with tabs[5]:
+    pass
+        
