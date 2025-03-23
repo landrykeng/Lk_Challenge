@@ -13,4 +13,10 @@ statsmodels==0.14.4
 streamlit==1.43.0
 streamlit-plotly-events==0.0.6
 openpyxl
-
+streamlit_plotly_events
+datetime
+random
+wordcloud
+folium
+streamlit_folium
+branca
