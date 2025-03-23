@@ -26,9 +26,13 @@ import time
 import datetime as dt
 import warnings
 warnings.filterwarnings('ignore')
+from my_fonction import *
+#from Good_KNN import *
+from Fonction_Classement import *
+from PIL import Image
 
 
-#================Cnfiguration des styles de la page ===========================
+#================Configuration des styles de la page ===========================
 st.set_page_config(page_title="Blood Donation Dashboard",layout="wide")
 st.markdown(
     """
@@ -40,6 +44,7 @@ st.markdown(
     </style>
     """,
     unsafe_allow_html=True)
+
 st.markdown(
     """
     <style>
@@ -85,12 +90,13 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 #=======================================================================
 # Sélecteur de langue
 def set_language():
     return st.sidebar.selectbox("🌍 Choisissez la langue / Choose the language", ["Français", "English"])
 
-lang = set_language()
+
 
 #Dictionnaire de traduction
 translations = {
@@ -108,6 +114,7 @@ translations = {
         "modeling": "🤖 Modélisation en Bonus",
         "group_members": "👥 Membres du Groupe",
         "rapport":"Produire un rapport",
+        "form":"Formulaire"
     },
     "English": {
         "title": "Blood Donation Campaign Dashboard",
@@ -123,13 +130,33 @@ translations = {
         "modeling": "🤖 Bonus Modeling",
         "group_members": "👥 Group Members",
         "rapport":"Produce repport",
+        "form":"Forms"
     }
 }
 
+#Contenu de la barre latérale
+st.sidebar.image("Logo.png", use_container_width=True)
+lang = set_language()
+#them=set_custom_theme()
+st.sidebar.title("Tables des Matières")
+st.sidebar.title("1. Description Générale")
+st.sidebar.title("2. Analyse géographique dans Douala")
+st.sidebar.title("3. Analyse par arrondissement")
+st.sidebar.title("4. Conditions de Santé & Éligibilité ")
+st.sidebar.title("5")
+
+
+st.sidebar.title(translations[lang]["group_members"])
+members = ["KENGNE Bienvenu Landry",]
+for member in members:
+    st.sidebar.markdown(f"✅ {member}")
+
+#==========================================================
+#====================== EN TETE ===========================
 #==========================================================
 #============ Ajout d'un style CSS personnalisé ===========
 #==========================================================
- 
+
 st.markdown("""
     <style>
         .main {
@@ -146,8 +173,16 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 #==========================================================
-
-st.image("Image.png", use_container_width=True)  
+img1, img2 =st.columns(2)
+with img1:
+    image = Image.open("Image.png")
+    resized_image = image.resize((626, 200))  # Ajuster à 400x300 pixels
+    st.image(resized_image)
+with img2:
+    image2 = Image.open("Image2.png")
+    resized_image = image2.resize((626, 200))  # Ajuster à 400x300 pixels
+    st.image(resized_image)
+#st.image("Image.png", use_container_width=True)  
 
 # Affichage du titre et sous-titres avec un meilleur style
 st.markdown(
@@ -161,94 +196,75 @@ st.markdown(
 )
 
 
-@st.cache_data(persist="disk") #pour garder le cache entre les sessions
-def load_data(excel_path, geodata_path):
+#Chargement des bases de données
+#@st.cache_data(persist="disk") #pour garder le cache entre les sessions
+def load_data(geodata_path,excel_path,data_don_path):
     try:
-        data = pd.read_excel(excel_path)
+        data = pd.read_excel(excel_path,sheet_name="2019")
+        data2 = pd.read_excel(data_don_path,sheet_name="2020")
         geo_data = gpd.read_file(geodata_path)
-        return data, geo_data
+        return geo_data, data, data2
     except FileNotFoundError as e:
         st.error(f"Erreur : Fichier introuvable - {e}")
-        return None, None
+        return None
     except Exception as e:
         st.exception(f"Une erreur s'est produite : {e}")
-        return None, None
+        return None
 
 
-data , geo_data = load_data("Challenge dataset_Alpha.xlsx","GeoData.shp")
-#geo_data = gpd.GeoDataFrame(geo_data, geometry='geometry')
-geo_data.columns=['Arrondissement', 'ADM3_PCODE', 'Date_remplissage', 'Date_naissance', 'Niveau_etude',
-       'Age', 'Genre', 'Taille', 'Poids', 'Situation_Matrimoniale', 'Profession', 'Ville',
+geo_data , data , data_don= load_data("GeoChallengeData.shp","Good_Data.xlsm","Good_Data.xlsm")
+df_info_loc=pd.read_excel("Infos.xlsx",sheet_name="Local") #Information pour le dictionnaire de localisation
+df_info_pof=pd.read_excel("Infos.xlsx",sheet_name="Prof") # Information pour le dictionnaire des métiers
+
+all_Quartier=list(data["Quartier_de_Résidence"].unique())
+metier=list(data["Profession"].unique())
+All_religion=list(data["Good_Religion"].unique())
+# Formatage des colones des différentes bases
+geo_data.columns=['Arrondissement', 'ADM3_PCODE', 'ID',"Date_remplissage",
+       'Age', 'Classe_age', 'Niveau_etude', 'Genre', 'Taille', 'Poids', 'Situation_Matrimoniale', 'Profession',"Categorie_profession", 'Region',
        'Quartier', 'Lat', 'Long', 'Nationalité', 'Religion', 'ancien_don_sang',
-       'date_dernier_don', 'Ecart_dernier_don', 'Taux_hémoglobine_(g/dl)', 'Eligibilite', 'Nb_Raison',
+       'date_dernier_don', 'Ecart_dernier_don',"Duration", 'Taux_hémoglobine_(g/dl)', 'Eligibilite', 'Nb_Raison',
        'Raisons', 'Autre_Raisons', 'geometry']
+data=data[['ID', 'Age', 'Classe_age','Date_remplissage',
+       'Niveau_etude', 'Genre', 'Taille', 'Poids', 'Situation_Mat',
+       'Profession', 'Good_profession', 'Region',
+        'Good_Qrt', 'Good_Arrondissement', 'Lat',
+       'Long', 'Nationalité', 'Good_Religion', 'Don_pass',
+       'Date_last_don', 'Duration', 'Duration period', 'Tx_hémoglobine',
+       'Eligibilité', 'Nb_Raison', 'Raisons', 'Autre_Raison']]
 
-#geo_data=geo_data.rename(columns={'ÉLIGIBILITÉ AU DON.': 'Eligibilite'})
-#==========================================================
-#====================== EN TETE ===========================
-#==========================================================
-#geo_data["valeur"]=[15,36,75,10,25,52]
-#geo_data.set_index('ADM3_FR')
-#Contenu de la barre latérale
-st.sidebar.image("Logo.png", use_container_width=True)
-st.sidebar.title(translations[lang]["group_members"])
-members = [
-    "ASSADICK IBNI Oumar Ali", "ATANGANA TSIMI Arsène Joël", "HUSKEN TIAWE Alphonse",
-    "KENGNE Bienvenu Landry", "MAGUETSWET Rivalien", "MIKOUIZA BOUNGOUDI Jeanstel Hurvinel",
-    "NOFOZO YIMFOU Sylvain", "YAKAWOU Komlanvi Eyram", "YALIGAZA Edson Belkrys De-Valor"
-]
-for member in members:
-    st.sidebar.markdown(f"✅ {member}")
+data.columns=['ID', 'Age', 'Classe_age', 'Date_remplissage', 'Niveau_etude', 'Genre',
+       'Taille', 'Poids', 'Situation_Mat', 'Profession', 'Good_profession',
+       'Region','Quartier', 'Arrondissement', 'Lat', 'Long', 'Nationalité',
+       'Religion', 'Don_pass', 'Date_last_don', 'Duration', 'Duration_period', 'Tx_hémoglobine',
+       'Eligibilité', 'Nb_Raison', 'Raisons', 'Autre_Raison']
+
+var_qual=['Classe_age','Niveau_etude', 'Genre','Situation_Mat','Good_profession','Region','Quartier', 'Don_pass','Eligibilité']
+var_quant=['Age','Tx_hémoglobine','Taille', 'Poids',]
+#=======================Variables==================================
+sequence_couleur=['reds', 'agsunset', 'algae', 'amp', 'armyrose', 'balance',
+             'blackbody', 'bluered', 'blues', 'blugrn', 'bluyl', 'brbg',
+             'brwnyl', 'bugn', 'bupu', 'burg', 'burgyl', 'cividis', 'curl',
+             'darkmint', 'deep', 'delta', 'dense', 'earth', 'edge', 'electric',
+             'emrld', 'fall', 'geyser', 'gnbu', 'gray', 'greens', 'greys',
+             'haline', 'hot', 'hsv', 'ice', 'icefire', 'inferno', 'jet',
+             'magenta', 'magma', 'matter', 'mint', 'mrybm', 'mygbm', 'oranges',
+             'orrd', 'oryel', 'oxy', 'peach', 'phase', 'picnic', 'pinkyl',
+             'piyg', 'plasma', 'plotly3', 'portland', 'prgn', 'pubu', 'pubugn',
+             'puor', 'purd', 'purp', 'purples', 'purpor', 'rainbow', 'rdbu',
+             'rdgy', 'rdpu', 'rdylbu', 'rdylgn', 'redor', 'aggrnyl', 'solar',
+             'spectral', 'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn',
+             'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid',
+             'turbo', 'twilight', 'viridis', 'ylgn', 'ylgnbu', 'ylorbr',
+             'ylorrd']
+
 
 #==========================================================
 #==== FONCTION USUELLES ===================================
 #==========================================================
-#1. Fonction d'affichage des métriques
-def display_single_metric_advanced(label, value, delta, unit="", caption="", color_scheme="blue"):
-    """Affiche une seule métrique avec un style avancé et personnalisable."""
 
-    color = {
-        "blue": {"bg": "#e6f2ff", "text": "#336699", "delta_pos": "#007bff", "delta_neg": "#dc3545"},
-        "green": {"bg": "#e6ffe6", "text": "#28a745", "delta_pos": "#28a745", "delta_neg": "#dc3545"},
-        "red": {"bg": "#ffe6e6", "text": "#dc3545", "delta_pos": "#28a745", "delta_neg": "#dc3545"},
-    }.get(color_scheme, {"bg": "#f0f0f0", "text": "#333", "delta_pos": "#28a745", "delta_neg": "#dc3545"})
-
-    delta_color = "green" if delta >= 0 else "red"
-
-    st.markdown(
-        f"""
-        <div style="background-color: {color['bg']}; padding: 2px; border-radius: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); text-align: center;">
-            <h4 style="color: {color['text']}; margin-bottom: 1.5px;">{label}</h4>
-            <div style="font-size: 1.5em; font-weight: bold; color: {color['text']};">{value} {unit}</div>
-            <div style="font-size: 1em; color: {delta_color};">{'▲' if delta >= 0 else '▼'} {abs(delta)}  {"-----"}  {'▲' if delta >= 0 else '▼'} {abs(delta)}</div>
-            <p style="font-size: 1em; color: {color['text']};">{caption}{"-----"}{caption}</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-#2. Fonction de test d'indépendance de Khi 2
-def test_independance_khi2(df, var1, var2):
-    # Création de la table de contingence
-    contingency_table = pd.crosstab(df[var1], df[var2])
-    index_labels = list(df[var1].unique())
-    table_cross = pd.DataFrame(contingency_table, index=index_labels)
-    # Application du test Khi-2
-    chi2, p, dof, expected = chi2_contingency(contingency_table)
-    
-    # Conclusion
-    if p < 0.05:
-        conclusion = "Il y a une association significative entre les variables."
-    else:
-        conclusion = "Les variables sont indépendantes."
-    
-    
-    
-    # Retour des résultats
-    return  conclusion, table_cross,chi2, p,dof
-  
-#3. Fonction de production de carte
-def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opacity=0.8):
+#1. Fonction de production de carte
+def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opacity=0.8,width=500, height=300):
     geo_data_El=df[df["Eligibilite"]=="Eligible"]
     geo_data_TNE=df[df["Eligibilite"]=="Temporairement Non-eligible"]
     geo_data_NE=df[df["Eligibilite"]=="Définitivement non-eligible"]
@@ -276,7 +292,9 @@ def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opac
 
     df_chlph=df.groupby("Arrondissement").agg({
         'Arrondissement': 'size',
-        'geometry': 'first'
+        'geometry': 'first',
+        'Long':'first',
+        'Lat':'first'
     }).rename(columns={'Arrondissement': 'nb_donateur'})
     df_chlph["Arr"]=df_chlph.index
     df_chlph = gpd.GeoDataFrame(df_chlph, geometry='geometry')
@@ -296,9 +314,18 @@ def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opac
         colorscale=palet_color,  # Échelle de couleurs
         marker_opacity=opacity,  # Opacité des polygones
         marker_line_width=0.5,  # Épaisseur des bordures
-        colorbar_title="Nombre de donateurs",  # Titre de la barre de couleur
+        colorbar_title="Nombre de Candidat",  # Titre de la barre de couleur
         hovertext=df_chlph['Arr'],
-        hovertemplate=" %{hovertext}  <br>Nombre de donateurs : %{z}<extra></extra>",
+        hovertemplate=" %{hovertext}  <br>Nombre de candidat : %{z}<extra></extra>",
+    ))
+    
+    fig.add_trace(go.Scattermapbox(
+        lat=df_chlph["Lat"],
+        lon=df_chlph["Long"],
+        mode='text',
+        text=df_chlph["Arr"],  # Nom des arrondissements
+        textfont=dict(size=12, color="black"),
+        hoverinfo='none'
     ))
 
     # Ajout des points pour représenter le nombre de donateurs
@@ -306,7 +333,7 @@ def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opac
         lat=df_pts["Lat"],  # Colonne des latitudes des points
         lon=df_pts["Long"],  # Colonne des longitudes des points
         mode='markers',  # Mode de dispersion (points)
-        name="Total donateurs",
+        name="Total candidat",
         marker=dict(
             size=df_pts["nb_donateur"],  # Taille des points basée sur 'nb_donateur'
             sizemode='area',  # La taille est proportionnelle à la surface
@@ -316,7 +343,7 @@ def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opac
         ),
         hovertemplate=(
             "<b>Quartier :</b> %{text}<br>"
-            "<b>Total donateurs :</b> %{marker.size}<extra></extra>"
+            "<b>Total candidat :</b> %{marker.size}<extra></extra>"
         ),  # Format de l'infobulle
         text=df_pts["Qrt"]
     ))
@@ -335,7 +362,7 @@ def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opac
         ),
         hovertemplate=(
             "<b>Quartier :</b> %{text}<br>"
-            "<b> Donateurs Eligibles :</b> %{marker.size}<extra></extra>"
+            "<b> candidat Eligibles :</b> %{marker.size}<extra></extra>"
         ),
         text=df_pts_El["Qrt"]
     ))
@@ -354,7 +381,7 @@ def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opac
         ),
         hovertemplate=(
             "<b>Quartier :</b> %{text}<br>"
-            "<b>donateurs Temporairement Non-eligibles :</b> %{marker.size}<extra></extra>"
+            "<b>candidat Temporairement Non-eligibles :</b> %{marker.size}<extra></extra>"
         ), 
         text=df_pts_NE["Qrt"]
     ))
@@ -373,7 +400,7 @@ def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opac
         ),
         hovertemplate=(
             "<b>Quartier :</b> %{text}<br>"
-            "<b> Donateur sNon-eligibles :</b> %{marker.size}<extra></extra>"
+            "<b> candidat Non-eligibles :</b> %{marker.size}<extra></extra>"
         ), 
         text=df_pts_NE["Qrt"]
     ))
@@ -382,8 +409,8 @@ def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opac
     fig.update_layout(
         showlegend=True,
         legend=dict(
-            x=0.2,  # Centré horizontalement
-            y=-0.1,  # Sous la carte
+            x=0.0,  # Centré horizontalement
+            y=0.1,  # Sous la carte
             orientation='h',  # Légende horizontale
         ),
         mapbox=dict(
@@ -393,30 +420,13 @@ def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opac
             center=dict(lat=df_pts["Lat"].mean(), lon=df_pts["Long"].mean()),  # Centrer la carte
             zoom=10  # Niveau de zoom
         ),
-        margin=dict(l=0, r=0, t=0, b=0)  # Marges de la carte
+        margin=dict(l=0, r=0, t=0, b=0),
+        width=width, height=height,
     )
 
     st.plotly_chart(fig)
 
-#3. Fonction de test de comparaison de la moyenne
-def test_comparaison_moyenne(df, var1, var2):
-    # Séparation des groupes
-    groupe1 = df[df[var1] == 1]  
-    groupe2 = df[df[var1] == 0]
-    # Test de Student pour comparer les moyennes
-    t_stat, p_value = ttest_ind(groupe1[var2], groupe2[var2])
-    # Affichage des résultats
-    #print(f"Statistique t : {t_stat}")
-    #print(f"Valeur p : {p_value}")
-    
-    # Conclusion
-    if p_value < 0.05:
-        result="Les moyennes des deux groupes sont significativement différentes."
-    else:
-        result="Les moyennes des deux groupes ne sont pas significativement différentes."
-    return result
-
-#3. Fonction de calibrage de la carte
+#2. Fonction de calibrage de la carte
 def calculate_zoom(lon_diff, lat_diff, map_width=800, map_height=600):
             max_zoom = 18
             zoom_level = 0
@@ -425,7 +435,6 @@ def calculate_zoom(lon_diff, lat_diff, map_width=800, map_height=600):
                 if zoom_level >= max_zoom:
                     break
             return min(zoom_level, max_zoom)
-
 
 def telecharger_pdf(file_path):
     with open(file_path, "rb") as f:
@@ -446,112 +455,532 @@ tabs = st.tabs([
     translations[lang]["data_issues"], 
     translations[lang]["processed_data"],
     translations[lang]["visualization"],
-    translations[lang]["rapport"]
+    translations[lang]["rapport"],
+    translations[lang]["form"]
 ])
 
+# ONGLET 1: BASES DE DONNEES
 with tabs[0]:
     st.markdown(f"**{translations[lang]['raw_data_desc']}**")
     st.dataframe(data)
     st.write("Données géospatialisée")
     st.dataframe(geo_data)
+    st.write("Données sur les donneurs")
+    st.dataframe(data_don)
+    
+# ONGLET 2:
 with tabs[1]:
     pass
 
+# ONGLET 3:
 with tabs[2]:
     pass
 
+# ONGLET 4: TABLEAU DE BORD PROPREMENT DIT
 with tabs[3]:
-    a1, a2, a3 = st.columns(3)
+    a1, a2, a3 = st.columns(3) #définition du nombre de colonne
     
+    #Visualisation des métriques
     with a1:
-        display_single_metric_advanced("Taux de chômage Moyen", 15, 3, unit="%", caption="Maximun", color_scheme="red")
+        plot_metric("Total Individu",data.shape[0],prefix="",suffix="",show_graph=True,color_graph="rgba(0, 104, 201, 0.1)",)
     with a2:
-        display_single_metric_advanced("Taux de chômage Moyen", 45.6, -1.5, unit="%", caption="Maximun", color_scheme="blue")
+        plot_metric_2("Age moyen des donneurs",data,"Age",prefix="",suffix=" ans",show_graph=True,color_graph="rgba(175, 32, 201, 0.2)",val_bin=45)
     with a3:
-        display_single_metric_advanced("Taux de chômage Moyen", 125, 15, unit="t", caption="Maximun", color_scheme="green")
-    col1, col2 = st.columns([5, 2])
-    
-    
-    with col2:
-        #with st.expander("Tableau", expanded=True):
-        #with st.expander("Carte de la ville de Douala", expanded=True):
-        data_ex = {'Category': ['A', 'B', 'C', 'D','E','F','G','H','I','J','K','L'], 'Value': [25, 15, 30, 30,25.6,48,69,45,78,10,13,35]}
-        df_ex = pd.DataFrame(data_ex)
-        opacity=st.slider("Ajuster la transparence de votre carte chlorophete",min_value=0.0,max_value=1.0,value=0.8,step=0.01)
-        style=st.selectbox("Type de carte",options=["open-street-map","carto-positron","carto-darkmatter"])
-        st.dataframe(df_ex, hide_index=True)
-    
-    with col1:       
-        # Charger les données géographiques
-        make_chlorophet_map(geo_data,style_carte=style,palet_color="Greens",opacity=opacity)
-        
-        
- 
-    cb1, cb2, cb3=st.columns(3)
-    with cb1:
-        with   st.expander("Graph", expanded=True):
-            st.write("Graphique type histogramme")
-    with cb2:
-        with st.expander("Graph", expanded=True):
-            st.write("Graphique type Time Series")
-    with cb3:
-        with st.expander("Graph", expanded=True):
-            st.write("Graphique type Area")       
-            
-    with st.expander("Indicateur pertinent", expanded=True):
-        st.write("ecrire ici quelques résultats pertinents")
-        
-    c1, c2, c3=st.columns(3)
-    with c1:
-        with   st.expander("Graph", expanded=True):
-            st.write("graphique")
-    with c2:
-        with st.expander("Graph", expanded=True):
-            st.write("graphique")
-    with c3:
-        with st.expander("Graph", expanded=True):
-            st.write("graphique")
-    
-    ca1, ca2=st.columns([2,1])
-    with ca1:
-        with st.expander("Analyse Par arrondissement", expanded=True):
-            st.write("Carte")
-    with ca2:
-        with st.expander("Tableau relatif à la carte", expanded=True):
-            st.write("graphique")
+        plot_metric_2("Taux Moyen d'hémoglobine", data, "Tx_hémoglobine", suffix=" g/dl",show_graph=True,color_graph="rgba(1, 230, 15, 0.7)",val_bin=300)
 
+    
+    st.write(" ")
+    # SECTION 1: DESCRIPTION GENERALE
+    with st.expander("1. Description Générale des candidats", expanded=False,icon="🩸"):
+        d1,d2= st.columns([7,3])
+        with d1:
+            da1,da2=st.columns(2)
+            with da1:
+                make_bar(data,var="Religion",titre="Répartition par réligion",ordre=1,width=500,height=350,sens='h')
+            with da2:
+                make_heat_map_2(data,vars=['Region', 'Arrondissement','Quartier'],order_var="ID",label_var='Quartier',titre="Répartition des candidats")
+            
+            dd1, dd2,dd3 =st.columns([2,4.5,3.5])
+            with dd1:
+                make_donutchart(data,var="Genre",titre="Genre des candidats")
+            with dd2:
+                make_cross_hist_b(data,var2="Niveau_etude",var1="Eligibilité",titre="Niveau d'étude",sens='v',typ_bar=1)
+            with dd3:
+                make_cross_hist_b(data,var2="Situation_Mat",var1="Eligibilité",titre="Statut Matrimonial",sens='v',typ_bar=0,width=650)
+        with d2:
+            make_cross_hist_b(data[data["Region"]!="Litoral"],"Eligibilité","Region",titre="Autre Région",width=600,height=400,typ_bar=1)
+            make_donutchart(data,var="Eligibilité",titre="Statut des candidats",part=True)
+            
+ #SECTION 2: ANALYSE GEOGRAPHIQUE DANS DOUALA   
+    with st.expander("Analyse géographique dans Douala", expanded=False,icon="🩸"):  
+        cc1,cc2,cc3,cc4,cc5=st.columns([2, 1,1.5,2,3.5])
+        with cc1:
+            opacity=st.slider("Transparence Carte",min_value=0.0,max_value=1.0,value=0.8,step=0.01)
+        with cc2:
+            couleur=st.selectbox("Couleur carte",sequence_couleur)
+        with cc3:
+            style=st.selectbox("Type de carte",options=["open-street-map","carto-positron","carto-darkmatter"])
+        with cc4:
+            genre=st.multiselect("Filtre: Genre",options=data["Genre"].unique(),default=data["Genre"].unique())
+        with cc5:
+            Statut_Mat=st.multiselect("Filtre: Statut Marital",options=data["Situation_Mat"].unique(),default=data["Situation_Mat"].unique())
+               
+        col1, col2 = st.columns([5, 3.4])
+        geo_data_dla=geo_data[geo_data["Genre"].isin(genre)] if len(genre)!=0 else geo_data 
+        geo_data_dla=geo_data[geo_data["Situation_Matrimoniale"].isin(Statut_Mat)] if len(Statut_Mat)!=0 else geo_data_dla 
+        with col1:       
+            make_chlorophet_map_folium_2(geo_data_dla,style_carte=style,palet_color=couleur,opacity=opacity,width=1000,height=650)
+        with col2:
+            geo_data_dla["Categorie_profession"]=geo_data_dla["Categorie_profession"].replace("Personnel des services directs aux particuliers, commercants vendeurs","commercants vendeurs")
+            make_bar(geo_data_dla,"Categorie_profession",titre="Categorie Professionnelle",ordre=1,sens='h',height=400,width=600) 
+            make_area_chart(data,var="Date_remplissage",titre="Evolution du nombre de candidat",color=1)
+
+        
+        cb1, cb2, cb3=st.columns(3)
+        with cb1:
+            make_cross_hist_b(geo_data_dla,"Eligibilite","Arrondissement",titre="",width=400,height=450,typ_bar=0)
+        with cb2:
+            make_donutchart(geo_data_dla,var="ancien_don_sang",titre="ancien donateur")
+        with cb3:
+            #make_cross_hist_3(geo_data_dla,"Niveau_etude","Age",titre="",agregation="avg",width=400,height=300)
+            make_bar(geo_data_dla,var="Classe_age",titre="Répartition ages",width=700,height=450,)
+            
+#SECTION 3 : ANALYSE PAR ARRONDISSEMENT
+    with st.expander("Analyse par arrondissement",expanded=False,icon="🩸"):    
+        b11, b12, b13, b14,b15, b16 =st.columns([1,1.3,1.5,4.2,1.7,2.1])
+        with b11:
+            couleur_2=st.selectbox("Couleur",sequence_couleur)
+        with b12:
+            opacity_2=st.slider("Transparence",min_value=0.0,max_value=1.0,value=0.8,step=0.01)
+        with b13:
+            style_2=st.selectbox("Thme carte",options=["open-street-map","carto-positron","carto-darkmatter"])
+        with b14:
+            arrondissement=st.multiselect("Arrondissement",options=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"],default=["Douala 1er"])
+        with b15:
+            last_don=st.multiselect("Filtre: Ancien donateur",options=data["Don_pass"].unique(),default=data["Don_pass"].unique())
+        with b16:    
+            genre2=st.multiselect(" Filtre: Genre",options=data["Genre"].unique(),default=data["Genre"].unique())
+            
+        geo_data_arr=geo_data[geo_data["Arrondissement"].isin(arrondissement)] if len(arrondissement)!=0 else geo_data
+        geo_data_arr=geo_data_arr[geo_data_arr["ancien_don_sang"].isin(last_don)] if len(last_don)!=0 else geo_data_arr
+        geo_data_arr=geo_data_arr[geo_data_arr["Genre"].isin(genre2)] if len(genre2)!=0 else geo_data_arr
+        
+        b1, b2 =st.columns([6.5,2.5])
+        with b1:
+            make_chlorophet_map_folium_2(geo_data_arr,style_carte=style_2,palet_color=couleur_2,opacity=opacity_2,width=1000,height=500)
+        with b2:     
+            geo_data_arr_for_table=geo_data_arr.groupby("Quartier").agg({
+                "ID":"size"
+            })
+            geo_data_arr_for_table=geo_data_arr_for_table.sort_values("ID",ascending=False)
+            geo_data_arr_for_table=geo_data_arr_for_table.rename(columns={ "ID": "Nb_Candidats"})
+            geo_data_arr_for_table["Quartier"]=geo_data_arr_for_table.index
+            make_dataframe(geo_data_arr_for_table,col_alpha="Quartier",col_num="Nb_Candidats",hide_index=True)
+    
+#SECTION 4 :  CONDITION DE SANTE ET ELIGIBILITE
+    with st.expander("4. Conditions de Santé & Éligibilité", expanded=False,icon="❤️"):
+        c41, c42 ,c43=st.columns(3)
+        with c41:
+            data_el=data.groupby("Eligibilité").agg({
+                "ID":"size"
+            })
+            data_el=data_el.rename(columns={"ID":"Nb_Candidats"})
+            data_el["Proportion"]=data_el["Nb_Candidats"]/float(data_el["Nb_Candidats"].sum())
+            #st.dataframe(data_el[["Nb_Candidats"]])
+            make_progress_char(data_el["Proportion"][1],couleur="rgba(" + str(255*(1-data_el["Proportion"][1])) + "," + str(255*data_el["Proportion"][1]) +",0,1)",titre="Taux d'éligibilité")
+        with c42:
+            statut_el=st.multiselect("Statut des candidats",options=data["Eligibilité"].unique(),default=data["Eligibilité"].unique())
+            data_nl=data_el[data_el.index!="Eligible"]
+            make_multi_progress_bar(labels=data_nl.index,values=data_nl["Proportion"],colors=["red","orange"],titre="Candidats Non éligible",width=500,height=300)
+            #st.dataframe(data_nl)
+        with c43:
+            data_raison=data[data["Raisons"].notna()]
+            data_raison = data_raison[data_raison["Eligibilité"].isin(statut_el)] if len(statut_el) != 0 else data_raison
+            #st.dataframe(data_raison)
+            raison=",".join(data_raison["Raisons"])
+            raison=raison.split(",")
+            r_ID=["ID"+str(i) for i in range(len(raison))]
+            raison=pd.DataFrame({"ID":r_ID,"Raisons":raison})
+            group_raison=raison.groupby("Raisons").agg({"ID":"size"})
+            group_raison=group_raison.rename(columns={"ID":"Effectif"})
+            group_raison=group_raison.sort_values("Effectif",ascending=False)
+            make_dataframe(group_raison,col_alpha="Raisons",col_num="Effectif")
+            #make_bar(raison,var="Raisons",color=px.colors.colorbrewer.BrBG_r,titre="Raison évoquées")
+        c4b1, c4b2 ,c4b3=st.columns(3)
+        with c4b1:
+            make_hist_box(data_raison,var1="Tx_hémoglobine",var2="Eligibilité",height=400)
+        with c4b2:
+            data_mot=data[data["Autre_Raison"].notna()]
+            mot=" ".join(data_mot["Autre_Raison"])
+            #make_wordcloud(mot,titre="Autre raison",width=600,height=400)
+            st.dataframe(data_el[["Nb_Candidats"]]) 
+            make_distribution_2(data_raison,var_alpha="Genre",var_num="Tx_hémoglobine",add_vline=12,add_vline2=13,titre="Distribution du taux d'hémoglobine")
+            #resized_image = image.resize((626, 200))  # Ajuster à 400x300 pixels
+            #make_distribution(data_raison,var_alpha="Genre",var_num="Tx_hémoglobine",add_vline=12,add_vline2=13,titre="Distribution du taux d'hémoglobine")
+            #make_relative_bar(data,"Genre","Eligibilité",titre="Repartition selon le genre et le statut d'éligibilité",width=600,height=400)
+        with c4b3:
+            make_cross_hist_b(data,"Eligibilité","Classe_age",titre="Statut par classe d'age",typ_bar=1)
+        
+#SECTION 5:   PROFILAGE DES DONNEURS IDEAUX
+    with st.expander("5. Profilage des Donneurs Idéaux", expanded=False,icon="❤️"):
+            c5a1,c5a2,c5a3=st.columns(3)
+            with c5a1:
+                make_relative_bar(data,var1="Eligibilité",var2="Don_pass",width=500,height=400,titre="Proportion des anciens donneurs",)
+                data_SM=data.groupby("Situation_Mat").agg({"ID":"size"})
+                data_SM["Proportion"]=data_SM["ID"]/float(data_SM["ID"].sum())
+                make_multi_progress_bar(labels=data_SM.index, values=data_SM["Proportion"],colors=px.colors.qualitative.Vivid_r,width=500,height=400,titre="Taux d'éligibilité par statut Marital")
+            with c5a2:
+                tx_el_F=data[(data["Genre"]=="Femme") & (data["Eligibilité"]=="Eligible")].shape[0]/data[data["Genre"]=="Femme"].shape[0]
+                tx_el_M=data[(data["Genre"]=="Homme") & (data["Eligibilité"]=="Eligible")].shape[0]/data[data["Genre"]=="Homme"].shape[0]
+                make_dbl_progress_char(vars=[tx_el_M,tx_el_F],labels=["Homme","Femme"],titre="Taux d'éligibilité",colors=["green","orange"])
+                data_Met=pd.crosstab(data["Good_profession"],data["Eligibilité"])
+                data_Met["Total"]=data_Met.sum(axis=1)
+                data_Met["Taux Eligibilité (%)"]=round((data_Met["Eligible"]/data_Met["Total"])*100,2) 
+                data_Met=data_Met[["Taux Eligibilité (%)","Eligible","Temporairement Non-eligible","Définitivement non-eligible","Total"]]
+                st.write("Eligibilité selon le groupe de métier")
+                st.dataframe(data_Met)
+            with c5a3:
+                data_prof=data.groupby("Niveau_etude").agg({"ID":"size"})
+                data_prof["Proportion"]=data_prof["ID"]/float(data_prof["ID"].sum())
+                make_multi_progress_bar(labels=data_prof.index, values=data_prof["Proportion"],colors=px.colors.qualitative.Vivid,width=500,height=400,titre="Taux d'éligibilité par niveaux d'éducation")
+                make_cross_hist_b(data,var2="Religion",var1="Eligibilité",width=500,height=550,titre="Réligion",typ_bar=1)
+    
+#SECTION 6:   ANALYSE DE L'EFFICACITE DE LA CAMPAGNE
+    with st.expander("6. Analyse de l’Efficacité des Campagnes", expanded=True,icon="❤️"):
+        c61,c62,c63=st.columns(3)
+        data_don["ID"]="Don_" + (data_don.index+1).astype(str)
+        data_don=data_don.rename(columns={"Groupe Sanguin ABO / Rhesus ":"Gpr_sang"})
+        with c61:
+            make_progress_char(data_don.shape[0]/data.shape[0],"green",titre="Efficacité de la compagne")
+        with c62:
+            
+            data_don=data_don.set_index("ID",drop=True)
+            data_don["ID"]=data_don.index
+            data_don["Date"]=data_don["Horodateur"].dt.date
+            data_don["Heure"]=data_don["Horodateur"].dt.hour
+            trend_don=pd.crosstab(data_don["Date"],data_don["Sexe"])
+            make_bar(data_don,var="Date",color=0,titre="Répartition des dons dans le temps",height=400)
+            
+            #st.dataframe(data_don)
+        with c63:
+            make_area_chart(data_don,var="Heure",titre="Heure d'affluence",height=400)
+            #make_cross_hist_2(data_don,var1="Date",var2="Sexe",titre="Répartition des doneurs")
+        c6a,c6b,c6c=st.columns(3)
+        
+        with c6a:
+            #make_cross_hist_2(data_don,var1="Sexe",var2="Type de donation",titre="Profil des donateurs",typ_bar=1)
+           make_relative_bar(data_don,var1="Gpr_sang",var2="Type de donation",titre="Répartition des donneurs par groupe sanguin ")
+        with c6b:
+            make_cross_hist_b(data_don,var1="Type de donation",var2="Classe_age",typ_bar=0,titre="répartition des type de don par classe d'age",bordure=7 )
+        
+        with c6c:
+            make_donutchart(data_don,var="Phenotype ", titre="Différent type de phénotype des donneurs")
+            #fig_pie=px.pie(data_don,"Type de donation", hole=0.5)  
+            #st.plotly_chart(fig_pie)
+
+        st.write("Taux de participation par classe d'age")
+        st.write("Type de Donation")
+        st.write("Liaison entre type de donnation et groupe sanguing puis phénotype")
+        st.write("Evolution temporelle")
+        st.write("Analyse des donateurs")
+
+#ONGLET 5: TEST STATISTIQUES
 with tabs[4]:
     st.write("Faite vos test statistiques")
     cc1,cc2=st.columns([3,7])
     with cc1:
         Test=st.selectbox("Choisissez le test à effectuer",["Test d'indépendance","Test de comparaison de la moyenne", "Test de comparaison de la dispersion"])
-        var1=st.selectbox("Variable1 de test",options=["Niveau d'etude", 'Genre', 'Taille', 'Poids',
-        'Situation Matrimoniale (SM)', 'Profession',
-        'Arrondissement de résidence', 'Ville', 'Quartier de Résidence',
-        'Nationalité', 'Religion', 'A-t-il (elle) déjà donné le sang',
-        'Si oui preciser la date du dernier don.', "Taux d’hémoglobine",
-        'ÉLIGIBILITÉ AU DON.',])
-        
-        var2=st.selectbox("Variable2 de test",options=["Niveau d'etude", 'Genre', 'Taille', 'Poids',
-        'Situation Matrimoniale (SM)', 'Profession',
-        'Arrondissement de résidence', 'Ville', 'Quartier de Résidence',
-        'Nationalité', 'Religion', 'A-t-il (elle) déjà donné le sang',
-        'Si oui preciser la date du dernier don.', "Taux d’hémoglobine",
-        'ÉLIGIBILITÉ AU DON.',])
+        var1=st.selectbox("Variable1 de test",options=var_qual )
+        var2=st.selectbox("Variable2 de test",options=var_qual if Test=="Test d'indépendance" else var_quant)
     with cc2:
         if st.button("Lancer le test"): 
             if var1=="" or var2=="":
                 st.write("Veuillez sélectionner des variables de test")
             else:
-                conclusion, table_cross,chi2, p,dof=test_independance_khi2(data,var1,var2)
-                st.write(conclusion)
-                st.dataframe(table_cross)
-                
-            table_cross = table_cross.reset_index().melt(id_vars='index', var_name=var2, value_name='Effectif')
-            table_cross.rename(columns={'index': var1}, inplace=True)
-            fig = px.bar(table_cross, x=var2, y='Effectif', color=var1, barmode='group', 
-                        title='Graphique à barres du tableau de contingence')
-            st.plotly_chart(fig)
+                if Test=="Test d'indépendance":
+                    conclusion, table_cross,chi2, p,dof=test_independance_khi2(data,var1,var2)
+                    st.write(conclusion)
+                    st.dataframe(table_cross)
+                    table_cross = table_cross.reset_index().melt(id_vars='index', var_name=var2, value_name='Effectif')
+                    table_cross.rename(columns={'index': var1}, inplace=True)
+                    #fig = px.bar(table_cross, x=var2, y='Effectif', color=var1, barmode='group', 
+                                #title='Graphique à barres du tableau de contingence')
+                    make_cross_hist_b(data,var2,var1,typ_bar=0)
+                    make_relative_bar(data,var2,var1,height=600)
+                    #st.plotly_chart(fig)
+                elif Test=="Test de comparaison de la moyenne":
+                    conclusion, graph= test_comparaison_moyenne(data, var1, var2)
+                    st.write(conclusion)
+                    st.plotly_chart(graph)
+                else:
+                    pass
     
     st.write("Afficher votre rapport ")
     telecharger_pdf("Challenge_Proposal_2.pdf")
+
+with tabs[5]:
+    #Création des dictionnaire de localisation et de métier:
+    df_new = pd.read_excel("Infos.xlsx",sheet_name="New_Base") #chargement de la base des nouveaux candidats
+    df_ctrl = pd.read_excel("Infos.xlsx",sheet_name="Info") #chargement des informations de controle
+    
+    quartier_dict = {}
+    for index, row in df_info_loc.iterrows():
+        quartier = row['Quartier_de_Résidence']
+        good_qrt=row["Good_Quartier"]
+        arrondissement = row['Good_Arrondissement']
+        lat = row['Lat']
+        long = row['Long']
+        values = [arrondissement, lat, long,good_qrt]
+        quartier_dict[quartier] = values
+        
+    profession_dict = {}
+    profession_dict = dict(zip(df_info_pof['Profession'], df_info_pof['Good_profession']))
+    #Formulaire   
+    with st.form(key="formulaire_eligibilite"):
+        # Informations de base (obligatoires)
+        st.subheader("Informations générales")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            sexe = st.radio("Sexe", options=["M", "F"], index=0, 
+                            format_func=lambda x: "Masculin" if x == "M" else "Féminin")
+            age = st.number_input("Âge (années)", min_value=16, max_value=80, value=30, step=1)
+        
+        with col2:
+            poids = st.number_input("Poids (kg)", min_value=40.0, max_value=150.0, value=70.0, step=0.5)
+            derniere_donation_options = ["Jamais donné", "Plus de 3 mois", "Plus de 2 mois", "Dans les 2 derniers mois"]
+            derniere_donation_choix = st.selectbox("Dernière donation", options=derniere_donation_options)
+            
+            # Conversion du choix en jours
+            if derniere_donation_choix == "Jamais donné":
+                derniere_donation = 1000  # Valeur arbitraire élevée
+            elif derniere_donation_choix == "Plus de 3 mois":
+                derniere_donation = 91
+            elif derniere_donation_choix == "Plus de 2 mois":
+                derniere_donation = 61
+            else:
+                derniere_donation = 30
+        
+        # Informations socio-démographiques (nouvelles)
+        st.subheader("Informations socio-démographiques")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Niveau d'étude (bouton radio)
+            niveau_etude = st.radio(
+                "Niveau d'étude", 
+                options=["Aucun","Primaire", "Secondaire", "Universitaire 1er cycle", "Universitaire 2e cycle", "Universitaire 3e cycle"],
+                index=2
+            )
+            
+            # Statut matrimonial (liste de choix)
+            statut_matrimonial = st.selectbox("Statut matrimonial",
+                options=["Célibataire", "Marié(e)", "Divorcé(e)", "Veuf/Veuve", "Union libre"])
+            
+            # Religion
+            religion = st.selectbox("Religion",options=All_religion)
+        
+        with col2:
+            # Profession
+            profession = st.selectbox("Profession",options=metier,)
+            # Quartier de résidence (liste déroulante)
+            quartier = st.selectbox("Quartier de résidence",options=all_Quartier)
+            
+            # Nationalité (pays africain)
+            nationalite_options = [
+                "Cameroun", "Nigeria", "Sénégal", "Côte d'Ivoire", "Ghana", "Bénin", 
+                "Tchad", "République Centrafricaine", "Gabon", "Congo", "RDC", 
+                "Autre pays africain", "Autre pays hors Afrique"
+            ]
+            nationalite = st.selectbox(
+                "Nationalité",
+                options=nationalite_options,
+                index=0
+            )
+        
+        # Critères spécifiques aux femmes
+        if sexe == "F":
+            st.subheader("Informations spécifiques (femmes)")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                grossesse_recente = st.checkbox("Grossesse récente")
+                if grossesse_recente:
+                    temps_depuis_grossesse = st.number_input("Temps depuis l'accouchement (mois)", 
+                                                             min_value=0, max_value=24, value=3)
+                else:
+                    temps_depuis_grossesse = None
+                
+                allaitement = st.checkbox("Allaitement en cours")
+                
+            with col2:
+                en_periode_menstruelle = st.checkbox("Actuellement en période menstruelle")
+                cycle_menstruel_irregulier = st.checkbox("Cycle menstruel irrégulier")
+                saignements_anormaux = st.checkbox("Saignements anormaux")
+        else:
+            # Valeurs par défaut pour les hommes
+            grossesse_recente = None
+            temps_depuis_grossesse = None
+            allaitement = None
+            en_periode_menstruelle = None
+            cycle_menstruel_irregulier = None
+            saignements_anormaux = None
+        
+        # Critères médicaux
+        st.subheader("Informations médicales")
+        
+        # Maladies chroniques
+        maladies_selections = st.multiselect(
+            "Sélectionnez vos conditions médicales",
+            options=list(df_ctrl["Maladie"].dropna())
+        )
+        
+        # Si "Aucune maladie" est sélectionné et d'autres options aussi, on enlève "Aucune maladie"
+        if "Aucune maladie chronique" in maladies_selections and len(maladies_selections) > 1:
+            maladies_selections.remove("Aucune maladie chronique")
+        
+        # Conversion pour la fonction
+        if "Aucune maladie chronique" in maladies_selections or not maladies_selections:
+            maladies_chroniques = None
+        else:
+            maladies_chroniques = maladies_selections
+        
+        # Médicaments
+        medicaments_selections = st.multiselect(
+            "Sélectionnez les médicaments que vous prenez actuellement",
+            options=list(df_ctrl["Traitement"].dropna())
+        )
+        
+        # Si "Aucun médicament" est sélectionné et d'autres options aussi, on enlève "Aucun médicament"
+        if "Aucun médicament" in medicaments_selections and len(medicaments_selections) > 1:
+            medicaments_selections.remove("Aucun médicament")
+        
+        # Conversion pour la fonction
+        if "Aucun médicament" in medicaments_selections or not medicaments_selections:
+            medicaments = None
+        else:
+            medicaments = medicaments_selections
+        
+        # Autres critères
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            interventions_recentes = st.checkbox("Intervention chirurgicale récente")
+            if interventions_recentes:
+                temps_depuis_intervention = st.number_input("Temps depuis l'intervention (jours)", 
+                                                           min_value=0, max_value=365, value=30)
+            else:
+                temps_depuis_intervention = None
+        
+        with col2:
+            tatouages_recents = st.checkbox("Tatouage ou piercing récent (moins de 4 mois)")
+        
+        # Bouton de soumission
+        submit_button = st.form_submit_button(label="Évaluer mon éligibilité")
+    
+    # Traitement des données après soumission
+    if submit_button:
+        # Appel de la fonction d'évaluation
+        resultat = verifier_eligibilite_don_sang(
+            sexe=sexe,
+            age=age,
+            poids=poids,
+            derniere_donation=derniere_donation,
+            grossesse_recente=grossesse_recente,
+            temps_depuis_grossesse=temps_depuis_grossesse,
+            allaitement=allaitement,
+            en_periode_menstruelle=en_periode_menstruelle,
+            cycle_menstruel_irregulier=cycle_menstruel_irregulier,
+            saignements_anormaux=saignements_anormaux,
+            maladies_chroniques=maladies_chroniques,
+            medicaments=medicaments,
+            interventions_recentes=interventions_recentes,
+            temps_depuis_intervention=temps_depuis_intervention,
+            tatouages_recents=tatouages_recents,
+            # Ajout des nouvelles informations socio-démographiques
+            #niveau_etude=niveau_etude,
+            #statut_matrimonial=statut_matrimonial,
+            #profession=profession,
+            #quartier=quartier,
+            #religion=religion,
+            #nationalite=nationalite
+        )
+       
+        # Affichage des résultats
+        st.subheader("Résultat de l'évaluation")
+        
+        if resultat["eligible"]:
+            st.success("✅ Vous êtes éligible pour passer aux examens approfondis pour le don de sang. Veuillez prendre un rendez-vous")
+            statut="Temporairement éligible"
+        elif (medicaments!=None) | (maladies_chroniques!=None) | tatouages_recents :
+            st.error("❌ Vous n'êtes pas éligible pour le don de sang. Merci pour l'élant de coeur dont vous avez fait preuve")
+            statut="Non-éligible"
+        else:
+            st.error("❌ Vous n'êtes pas éligible pour le don de sang actuellement.")
+            statut="Temporairement non-éligible"
+        
+        # Affichage des raisons
+        st.subheader("Détails:")
+        for raison in resultat["raisons"]:
+            st.write(f"- {raison}")
+        
+        # Affichage des recommandations si présentes
+        if resultat["recommandations"]:
+            st.subheader("Recommandations:")
+            for recommandation in resultat["recommandations"]:
+                st.write(f"- {recommandation}")
+        
+        # Avertissement 
+        st.info("⚠️ Cette évaluation est indicative et ne remplace pas l'avis d'un professionnel de santé. Veuillez consulter le personnel médical du centre de don pour une évaluation définitive.")
+        
+        #Fonction d'enregistrement d'un nouveau formulaire.
+        def save(df):
+                nouveau_id="CDT_" + str(df.shape[0]+1)
+                stdcd=",".join(resultat["raisons"])
+                nouvelle_ligne = {
+                        "ID": nouveau_id,
+                        "Date_remplissage": datetime.datetime.now(),
+                        "sexe": sexe,
+                        "age": age,
+                        "poids": poids,
+                        "statut_matrimonial": statut_matrimonial,
+                        "niveau_etude": niveau_etude,
+                        "profession": profession,
+                        "Catégorie_Professionnelle":profession_dict[profession],
+                        "quartier": quartier_dict[quartier][3],
+                        "Arrondissement":quartier_dict[quartier][0] ,
+                        "Lat":quartier_dict[quartier][1] ,
+                        "Long":quartier_dict[quartier][2] ,
+                        "religion": religion,
+                        "nationalite": nationalite,
+                        "derniere_donation": derniere_donation,
+                        "Statut":statut ,
+                        "Raison":stdcd if statut=="Temporairement non-éligible" or statut=="Non-éligible"  else None,
+                    }
+                    
+                        # Ajouter les données au DataFrame
+                df = pd.concat([df, pd.DataFrame([nouvelle_ligne])], ignore_index=True)         
+                try:
+                    # Sauvegarder dans Excel
+                    with pd.ExcelWriter("Infos.xlsx", engine='openpyxl', mode='a', 
+                                                if_sheet_exists='replace') as writer:
+                            df.to_excel(writer, sheet_name="New_Base", index=False)
+                    st.success("Les informations ont été enregistrées avec succès!")
+                except Exception as e:
+                        st.error(f"Erreur lors de l'enregistrement: {e}")
+
+        save(df_new)    
+        
+#==================================================================================================================
+mise_a_ajour=st.button("Mettre à Jour le Tableau de bord")
+if mise_a_ajour:
+    forme_dla=geo_data.groupby("Arrondissement").agg({"geometry":"first"}) #Récupération des formes des arrondissemnt de Douala
+    New_geo_data=pd.merge(forme_dla,df_new,on="Arrondissement", how="inner") #Jointure pour obtenir des données spatialisée des nouveau candidats
+    New_geo_data=New_geo_data.set_index("ID")
+    New_geo_data=gpd.GeoDataFrame(New_geo_data, geometry='geometry') # converssion du nouveau fichier en geodataframe, pour des analyse spatiale
+    #st.dataframe(df_new)
+    st.dataframe(New_geo_data)
+    make_cross_hist_b(df_new,var2="Arrondissement",var1="sexe")
+    make_map_folium(New_geo_data, style_carte="OpenStreetMap", palet_color="reds", opacity=0.8, width=900, height=600)
