@@ -164,6 +164,9 @@ translations = {
 }
 
 #Contenu de la barre latérale
+def set_language():
+    return st.sidebar.selectbox("🌍 Choisissez la langue / Choose the language", ["Français", "English"])
+
 st.sidebar.image("Logo.png", use_container_width=True)
 lang = set_language()
 #them=set_custom_theme()
