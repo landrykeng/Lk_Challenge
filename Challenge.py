@@ -32,6 +32,7 @@ from Fonction_Classement import *
 from PIL import Image
 
 
+
 #================Configuration des styles de la page ===========================
 st.set_page_config(page_title="Blood Donation Dashboard",layout="wide")
 st.markdown(
@@ -93,8 +94,6 @@ st.markdown(
 
 #=======================================================================
 # Sélecteur de langue
-def set_language():
-    return st.sidebar.selectbox("🌍 Choisissez la langue / Choose the language", ["Français", "English"])
 
 
 
@@ -112,9 +111,29 @@ translations = {
         "processed_data": "⚙️ Données Traitées",
         "visualization": "📊 Visualisation des Indicateurs",
         "modeling": "🤖 Modélisation en Bonus",
-        "group_members": "👥 Membres du Groupe",
+        #"group_members": "👥 Membres du Groupe",
         "rapport":"Produire un rapport",
-        "form":"Formulaire"
+        "form":"Formulaire",
+        "section1":"Description Générale des candidats",
+        "section2":"Analyse géographique dans Douala",
+        "section3":"Analyse par arrondissement",
+        "section4":"Conditions de Santé & Éligibilité",
+        "section5":"Profilage des Donneurs Idéaux",
+        "section6":"Analyse de l’Efficacité des Campagnes",
+        "metric_text1":"Total candidat",
+        "metric_text2":"Age moyen des candidats",
+        "metric_text3":"taux moyen d'hémoglobine",
+        "metric_text4":"Poids moyen des individus",
+        "tilte_A_1_1":"Répartition par réligion",
+        "tilte_A_1_2":"Répartition des candidats",
+        "tilte_A_1_3":"",
+        "tilte_A_1_4":"",
+        "tilte_A_1_5":"",
+        "tilte_A_1_6":"",
+        "tilte_A_1_7":"",
+        "tilte_A_1_8":"",
+        "tilte_A_1_9":"",
+        "tilte_A_1_10":"",
     },
     "English": {
         "title": "Blood Donation Campaign Dashboard",
@@ -130,7 +149,17 @@ translations = {
         "modeling": "🤖 Bonus Modeling",
         "group_members": "👥 Group Members",
         "rapport":"Produce repport",
-        "form":"Forms"
+        "form":"Forms",
+        "section1":"General Description of Candidates",
+        "section2":"Geographical Analysis in Douala",
+        "section3":"Analysis by District",
+        "section4":"Health Conditions & Eligibility",
+        "section5":"Profiling of Ideal Donors",
+        "section6":"Analysis of Campaign Effectiveness",
+        "metric_text1":"Total Candidates",
+        "metric_text2":"Average Age of Candidates",
+        "metric_text3":"Average Hemoglobin Rate",
+        "metric_text4":"Average Weight of Individuals",
     }
 }
 
@@ -146,7 +175,7 @@ st.sidebar.title("4. Conditions de Santé & Éligibilité ")
 st.sidebar.title("5")
 
 
-st.sidebar.title(translations[lang]["group_members"])
+st.sidebar.title(traduire_texte("Membres du Groupe",lang))
 members = ["KENGNE Bienvenu Landry",]
 for member in members:
     st.sidebar.markdown(f"✅ {member}")
@@ -188,8 +217,8 @@ with img2:
 st.markdown(
     f"""
     <div style="text-align:center; padding:10px;">
-        <h1 style="color:#ff4b4b;">🩸 {translations[lang]["title"]} 🩸</h1>
-        <h3 style="color: #4b8bff;">{translations[lang]["sub_title"]}</h3>
+        <h1 style="color:#ff4b4b;">🩸 {traduire_texte("Tableau de bord de la campagne de don de sang",lang)} 🩸</h1>
+        <h3 style="color: #4b8bff;">{traduire_texte("Exploiter les données pour une meilleure gestion et planification des dons de sang",lang)}</h3>
     </div>
     """,
     unsafe_allow_html=True
@@ -451,72 +480,72 @@ def telecharger_pdf(file_path):
 
 # Onglets d'affichage des données
 tabs = st.tabs([
-    translations[lang]["raw_data"], 
-    translations[lang]["visualization"],
-    translations[lang]["rapport"],
-    translations[lang]["form"],
-    translations[lang]["data_issues"], 
-    translations[lang]["processed_data"],
+    traduire_texte("📂 Données Brutes",lang), 
+    traduire_texte("📊 Visualisation des Indicateurs",lang),
+    traduire_texte('Produire un rapport',lang),
+    traduire_texte("Formulaire",lang),
+    traduire_texte("Nouveau Tableau de Bord",lang), 
+    traduire_texte("⚙️ Données Traitées",lang),
 ])
 
 # ONGLET 1: BASES DE DONNEES
 with tabs[0]:
-    st.markdown(f"**{translations[lang]['raw_data_desc']}**")
-    st.dataframe(data)
-    st.write("Données géospatialisée")
+    st.write(traduire_texte("Bonjour monsieur Donovan comment allez vous?"))
+    st.write(traduire_texte("données avec traitement incluant",lang))
+    print_dataframe(data)
+    st.write(traduire_texte("Données géospatialisée",lang))
     st.dataframe(geo_data)
-    st.write("Données sur les donneurs")
-    st.dataframe(data_don)
+    st.write(traduire_texte("Données sur les donneurs",lang))
+    print_dataframe(data_don)
     
-
 # ONGLET 2: TABLEAU DE BORD PROPREMENT DIT
 with tabs[1]:
     a1, a2, a3 = st.columns(3) #définition du nombre de colonne
     
     #Visualisation des métriques
     with a1:
-        plot_metric("Total Individu",data.shape[0],prefix="",suffix="",show_graph=True,color_graph="rgba(0, 104, 201, 0.1)",)
+        plot_metric(traduire_texte("Total candidat",lang),data.shape[0],prefix="",suffix="",show_graph=True,color_graph="rgba(0, 104, 201, 0.1)",)
     with a2:
-        plot_metric_2("Age moyen des donneurs",data,"Age",prefix="",suffix=" ans",show_graph=True,color_graph="rgba(175, 32, 201, 0.2)",val_bin=45)
+        plot_metric_2(traduire_texte("Age moyen des candidats",lang),data,"Age",prefix="",suffix=" ans",show_graph=True,color_graph="rgba(175, 32, 201, 0.2)",val_bin=45)
     with a3:
-        plot_metric_2("Taux Moyen d'hémoglobine", data, "Tx_hémoglobine", suffix=" g/dl",show_graph=True,color_graph="rgba(1, 230, 15, 0.7)",val_bin=300)
+        plot_metric_2(traduire_texte("taux moyen d'hémoglobine",lang), data, "Tx_hémoglobine", suffix=" g/dl",show_graph=True,color_graph="rgba(1, 230, 15, 0.7)",val_bin=300)
 
     
     st.write(" ")
     # SECTION 1: DESCRIPTION GENERALE
-    with st.expander("1. Description Générale des candidats", expanded=False,icon="🩸"):
+    with st.expander(traduire_texte("Description Générale des candidats",lang), expanded=False,icon="🩸"):
         d1,d2= st.columns([7,3])
         with d1:
             da1,da2=st.columns(2)
             with da1:
-                make_bar(data,var="Religion",titre="Répartition par réligion",ordre=1,width=500,height=350,sens='h')
+                make_bar(data,var="Religion",titre=traduire_texte("Répartition par réligion",lang),ordre=1,width=500,height=350,sens='h')
             with da2:
-                make_heat_map_2(data,vars=['Region', 'Arrondissement','Quartier'],order_var="ID",label_var='Quartier',titre="Répartition des candidats")
+                make_heat_map_2(data,vars=['Region', 'Arrondissement','Quartier'],order_var="ID",label_var='Quartier',titre=traduire_texte("Répartition des candidats",lang))
             
             dd1, dd2,dd3 =st.columns([2,4.5,3.5])
             with dd1:
-                make_donutchart(data,var="Genre",titre="Genre des candidats")
+                make_donutchart(data,var="Genre",titre=traduire_texte("Genre des candidats",lang))
             with dd2:
-                make_cross_hist_b(data,var2="Niveau_etude",var1="Eligibilité",titre="Niveau d'étude",sens='v',typ_bar=1)
+                make_cross_hist_b(data,var2="Niveau_etude",var1="Eligibilité",titre=traduire_texte("Niveau d'étude",lang),sens='v',typ_bar=1)
             with dd3:
-                make_cross_hist_b(data,var2="Situation_Mat",var1="Eligibilité",titre="Statut Matrimonial",sens='v',typ_bar=0,width=650)
+                make_cross_hist_b(data,var2="Situation_Mat",var1="Eligibilité",titre=traduire_texte("Statut Matrimonial",lang),sens='v',typ_bar=0,width=650)
         with d2:
-            make_cross_hist_b(data[data["Region"]!="Litoral"],"Eligibilité","Region",titre="Autre Région",width=600,height=400,typ_bar=1)
-            make_donutchart(data,var="Eligibilité",titre="Statut des candidats",part=True)
+            make_cross_hist_b(data[data["Region"]!="Litoral"],"Eligibilité","Region",titre=traduire_texte("Autre Région",lang),width=600,height=400,typ_bar=1)
+            make_donutchart(data,var="Eligibilité",titre=traduire_texte("Statut des candidats",lang),part=True)
             
  #SECTION 2: ANALYSE GEOGRAPHIQUE DANS DOUALA   
-    with st.expander("Analyse géographique dans Douala", expanded=False,icon="🩸"):  
+    with st.expander(traduire_texte("Analyse géographique dans Douala",lang), expanded=False,icon="🩸"):  
         cc1,cc2,cc3,cc4,cc5=st.columns([2, 1,1.5,2,3.5])
         with cc1:
-            opacity=st.slider("Transparence Carte",min_value=0.0,max_value=1.0,value=0.8,step=0.01)
+            opacity=st.slider(traduire_texte("Transparence Carte",lang),min_value=0.0,max_value=1.0,value=0.8,step=0.01)
         with cc2:
-            couleur=st.selectbox("Couleur carte",sequence_couleur)
+            couleur=st.selectbox(traduire_texte("Couleur carte",lang),sequence_couleur)
         with cc3:
-            style=st.selectbox("Type de carte",options=["open-street-map","carto-positron","carto-darkmatter"])
+            style=st.selectbox(traduire_texte("Type de carte",lang),options=["open-street-map","carto-positron","carto-darkmatter"])
         with cc4:
-            genre=st.multiselect("Filtre: Genre",options=data["Genre"].unique(),default=data["Genre"].unique())
+            genre=st.multiselect(traduire_texte("Filtre: Genre",lang),options=data["Genre"].unique(),default=data["Genre"].unique())
         with cc5:
-            Statut_Mat=st.multiselect("Filtre: Statut Marital",options=data["Situation_Mat"].unique(),default=data["Situation_Mat"].unique())
+            Statut_Mat=st.multiselect(traduire_texte("Filtre: Statut Marital",lang),options=data["Situation_Mat"].unique(),default=data["Situation_Mat"].unique())
                
         col1, col2 = st.columns([5, 3.4])
         geo_data_dla=geo_data[geo_data["Genre"].isin(genre)] if len(genre)!=0 else geo_data 
@@ -525,21 +554,21 @@ with tabs[1]:
             make_chlorophet_map_folium_2(geo_data_dla,style_carte=style,palet_color=couleur,opacity=opacity,width=1000,height=650)
         with col2:
             geo_data_dla["Categorie_profession"]=geo_data_dla["Categorie_profession"].replace("Personnel des services directs aux particuliers, commercants vendeurs","commercants vendeurs")
-            make_bar(geo_data_dla,"Categorie_profession",titre="Categorie Professionnelle",ordre=1,sens='h',height=400,width=600) 
-            make_area_chart(data,var="Date_remplissage",titre="Evolution du nombre de candidat",color=1)
+            make_bar(geo_data_dla,"Categorie_profession",titre=traduire_texte("Categorie Professionnelle",lang),ordre=1,sens='h',height=400,width=600) 
+            make_area_chart(data,var="Date_remplissage",titre=traduire_texte("Evolution du nombre de candidat",lang),color=1)
 
         
         cb1, cb2, cb3=st.columns(3)
         with cb1:
-            make_cross_hist_b(geo_data_dla,"Eligibilite","Arrondissement",titre="",width=400,height=450,typ_bar=0)
+            make_cross_hist_b(geo_data_dla,"Eligibilite","Arrondissement",titre=traduire_texte("Répartition par arrondissement",lang),width=400,height=450,typ_bar=0)
         with cb2:
-            make_donutchart(geo_data_dla,var="ancien_don_sang",titre="ancien donateur")
+            make_donutchart(geo_data_dla,var="ancien_don_sang",titre=traduire_texte("ancien donateur",lang))
         with cb3:
             #make_cross_hist_3(geo_data_dla,"Niveau_etude","Age",titre="",agregation="avg",width=400,height=300)
-            make_bar(geo_data_dla,var="Classe_age",titre="Répartition ages",width=700,height=450,)
+            make_bar(geo_data_dla,var="Classe_age",titre=traduire_texte("Répartition des ages",lang),width=700,height=450,)
             
 #SECTION 3 : ANALYSE PAR ARRONDISSEMENT
-    with st.expander("Analyse par arrondissement",expanded=False,icon="🩸"):    
+    with st.expander(translations[lang]["section3"],expanded=False,icon="🩸"):    
         b11, b12, b13, b14,b15, b16 =st.columns([1,1.3,1.5,4.2,1.7,2.1])
         with b11:
             couleur_2=st.selectbox("Couleur",sequence_couleur)
@@ -571,7 +600,7 @@ with tabs[1]:
             make_dataframe(geo_data_arr_for_table,col_alpha="Quartier",col_num="Nb_Candidats",hide_index=True)
     
 #SECTION 4 :  CONDITION DE SANTE ET ELIGIBILITE
-    with st.expander("4. Conditions de Santé & Éligibilité", expanded=False,icon="❤️"):
+    with st.expander(translations[lang]["section4"], expanded=False,icon="❤️"):
         c41, c42 ,c43=st.columns(3)
         with c41:
             data_el=data.groupby("Eligibilité").agg({
@@ -608,14 +637,11 @@ with tabs[1]:
             #make_wordcloud(mot,titre="Autre raison",width=600,height=400)
             st.dataframe(data_el[["Nb_Candidats"]]) 
             make_distribution_2(data_raison,var_alpha="Genre",var_num="Tx_hémoglobine",add_vline=12,add_vline2=13,titre="Distribution du taux d'hémoglobine")
-            #resized_image = image.resize((626, 200))  # Ajuster à 400x300 pixels
-            #make_distribution(data_raison,var_alpha="Genre",var_num="Tx_hémoglobine",add_vline=12,add_vline2=13,titre="Distribution du taux d'hémoglobine")
-            #make_relative_bar(data,"Genre","Eligibilité",titre="Repartition selon le genre et le statut d'éligibilité",width=600,height=400)
         with c4b3:
             make_cross_hist_b(data,"Eligibilité","Classe_age",titre="Statut par classe d'age",typ_bar=1)
         
 #SECTION 5:   PROFILAGE DES DONNEURS IDEAUX
-    with st.expander("5. Profilage des Donneurs Idéaux", expanded=False,icon="❤️"):
+    with st.expander(translations[lang]["section5"], expanded=False,icon="❤️"):
             c5a1,c5a2,c5a3=st.columns(3)
             with c5a1:
                 make_relative_bar(data,var1="Eligibilité",var2="Don_pass",width=500,height=400,titre="Proportion des anciens donneurs",)
@@ -639,7 +665,7 @@ with tabs[1]:
                 make_cross_hist_b(data,var2="Religion",var1="Eligibilité",width=500,height=550,titre="Réligion",typ_bar=1)
     
 #SECTION 6:   ANALYSE DE L'EFFICACITE DE LA CAMPAGNE
-    with st.expander("6. Analyse de l’Efficacité des Campagnes", expanded=True,icon="❤️"):
+    with st.expander(translations[lang]["section6"], expanded=True,icon="❤️"):
         c61,c62,c63=st.columns(3)
         data_don["ID"]="Don_" + (data_don.index+1).astype(str)
         data_don=data_don.rename(columns={"Groupe Sanguin ABO / Rhesus ":"Gpr_sang"})
@@ -650,14 +676,13 @@ with tabs[1]:
             data_don=data_don.set_index("ID",drop=True)
             data_don["ID"]=data_don.index
             data_don["Date"]=data_don["Horodateur"].dt.date
-            data_don["Heure"]=data_don["Horodateur"].dt.hour
+            data_don["Heure"]=data_don['Horodateur'].dt.strftime('%d-%m-%Y %H')
             trend_don=pd.crosstab(data_don["Date"],data_don["Sexe"])
             make_bar(data_don,var="Date",color=0,titre="Répartition des dons dans le temps",height=400)
             
             #st.dataframe(data_don)
         with c63:
             make_area_chart(data_don,var="Heure",titre="Heure d'affluence",height=400)
-            #make_cross_hist_2(data_don,var1="Date",var2="Sexe",titre="Répartition des doneurs")
         c6a,c6b,c6c=st.columns(3)
         
         with c6a:
@@ -972,33 +997,83 @@ with tabs[4]:
     #==================================================================================================================
     mise_a_ajour=st.button("Mettre à Jour le Tableau de bord")
     if mise_a_ajour:
-        forme_dla=geo_data.groupby("Arrondissement").agg({"geometry":"first"}) #Récupération des formes des arrondissemnt de Douala
-        New_geo_data=pd.merge(forme_dla,df_new,on="Arrondissement", how="inner") #Jointure pour obtenir des données spatialisée des nouveau candidats
-        New_geo_data=New_geo_data.set_index("ID")
-        New_geo_data=gpd.GeoDataFrame(New_geo_data, geometry='geometry') # converssion du nouveau fichier en geodataframe, pour des analyse spatiale
+        pass
+        #st.rerun()
+    forme_dla=geo_data.groupby("Arrondissement").agg({"geometry":"first"}) #Récupération des formes des arrondissemnt de Douala
+    New_geo_data=pd.merge(forme_dla,df_new,on="Arrondissement", how="inner") #Jointure pour obtenir des données spatialisée des nouveau candidats
+    New_geo_data=New_geo_data.set_index("ID")
+    New_geo_data=gpd.GeoDataFrame(New_geo_data, geometry='geometry') # converssion du nouveau fichier en geodataframe, pour des analyse spatiale
+    df_new["Date"]=df_new["Date_remplissage"].dt.date #calcul de la colonne Date
+    df_new['date_heure'] = df_new['Date_remplissage'].dt.strftime('%d-%m-%Y %H') # extraction de la date heure
+    df_new["Classe_age"] = df_new["age"].apply(class_age) #calcul de la colonne classe d'age
+        #st.dataframe(df_new)
+    ab1,ab2,ab3=st.columns(3)
         
-        ab1,ab2,ab3=st.columns(3)
+    with ab1:
+        plot_metric(translations[lang]["metric_text1"],df_new.shape[0],prefix="",suffix="",show_graph=True,color_graph="rgba(0, 104, 201, 0.1)",)
+    with ab2:
+        plot_metric_2(translations[lang]["metric_text2"],df_new,"age",prefix="",suffix=" ans",show_graph=True,color_graph="rgba(175, 32, 201, 0.2)",val_bin=45)
+    with ab3:
+        plot_metric_2(translations[lang]["metric_text4"],df_new,"poids",prefix="",suffix=" kg",show_graph=True,color_graph="rgba(10, 242, 20, 0.2)",val_bin=45)
         
-        with ab1:
-            plot_metric("Total Individu",df_new.shape[0],prefix="",suffix="",show_graph=True,color_graph="rgba(0, 104, 201, 0.1)",)
-        with ab2:
-            plot_metric_2("Age moyen des donneurs",df_new,"age",prefix="",suffix=" ans",show_graph=True,color_graph="rgba(175, 32, 201, 0.2)",val_bin=45)
-        
-        with st.expander("Information Globales sur les Nouvea candidat", expanded=True):
-            c1, c2=st.columns([4,2])
-            with c1:
-                make_map_folium(New_geo_data, style_carte="OpenStreetMap", palet_color="reds", opacity=0.8, width=900, height=600)
-            with c2:
-                make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre="Répartition des candidats par arrondissement",bordure=9,width=600)
-            ca1,ca2,ca3,ca4=st.columns(4)
-            with ca1:
-                make_donutchart(df_new,var="sexe",titre="Répartiton des candidats par sexe")
-            with ca2:
-                make_cross_hist_b(df_new,var2="statut_matrimonial",var1="Statut",titre="Statut matrimonial des candidats",typ_bar=0,bordure=7)
-            with ca3:
-                make_cross_hist_b(df_new,var2="religion",var1="Statut",bordure=12)
-            with ca4:
-                make_donutchart(df_new,var="Statut")
+    with st.expander("Information Globales sur les Nouvea candidat", expanded=True,icon="❤️"):
+        f11, f12, f13, f14,f15 =st.columns([1,1.3,1.5,4.2,1.7])
+        with f11:
+            couleur_3=st.selectbox("Couleur de fond",sequence_couleur)
+        with f12:
+            opacity_3=st.slider("Transparence sur les arrondissement",min_value=0.0,max_value=1.0,value=0.8,step=0.01)
+        with f13:
+            style_3=st.selectbox("Theme du fond de carte",options=["open-street-map","carto-positron","carto-darkmatter"])
+        with f14:
+            arrondissement_2=st.multiselect("Selectionner des Arrondissement",options=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"],default=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"])
+        with f15:
+            genre3=st.multiselect(" Filtre: Sexe",options=df_new["sexe"].dropna().unique(),default=df_new["sexe"].dropna().unique())
+            
+        df_new_arr_geo=New_geo_data[New_geo_data["Arrondissement"].isin(arrondissement_2)] if len(arrondissement_2)!=0 else New_geo_data
+        df_new_arr_geo=df_new_arr_geo[df_new_arr_geo["sexe"].isin(genre3)] if len(genre3)!=0 else df_new_arr_geo
+            
+        df_new_arr=df_new[df_new["Arrondissement"].isin(arrondissement_2)] if len(arrondissement_2)!=0 else df_new
+        df_new_arr=df_new_arr[df_new_arr["sexe"].isin(genre3)] if len(genre3)!=0 else df_new_arr
+            
+        c1, c2=st.columns([3.8,2.2])
+        with c1:
+            make_map_folium(df_new_arr_geo, style_carte=style_3, palet_color=couleur_3, opacity=opacity_3, width=900, height=600)
+        with c2:
+            eff_qrt=df_new_arr.groupby("quartier").agg({"ID":"size"})
+            eff_qrt=eff_qrt.rename(columns={"ID":"Effectif"})
+            eff_qrt=eff_qrt.sort_values("Effectif",ascending=False)
+            eff_qrt["Quartier"]=eff_qrt.index
+            make_dataframe(eff_qrt,col_alpha="Quartier",col_num="Effectif",hide_index=True)
+            #make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre="Répartition des candidats par arrondissement",bordure=9,width=600)
+        ca1,ca2,ca3,ca4=st.columns(4)
+        with ca1:
+            make_donutchart(df_new_arr,var="sexe",titre="Répartiton des candidats par sexe")
+        with ca2:
+            make_cross_hist_b(df_new_arr,var2="statut_matrimonial",var1="Statut",titre="Statut matrimonial des candidats",typ_bar=0,bordure=7)
+        with ca3:
+            make_cross_hist_b(df_new_arr,var2="religion",var1="Statut",bordure=12)
+        with ca4:
+            make_donutchart(df_new_arr,var="Statut")
+    with st.expander("2",expanded=True):
+        caa1,caa2,caa3=st.columns(3)
+        with caa1:
+            make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre="Répartition des candidats par arrondissement",bordure=9,width=600)
+        with caa2:
+            make_area_chart(df_new,var="date_heure",titre="Evolution des inscriptions",width=500,height=400)
+        with caa3:
+            make_bar(df_new,var="Classe_age",color=2,width=500,height=400, titre="Classe d'age des candidats")
+        cd1,cd2,cd3=st.columns(3)
+        with cd1:
+            df_new["Catégorie_Professionnelle"]=df_new["Catégorie_Professionnelle"].replace("Personnel des services directs aux particuliers, commercants vendeurs","commercants")
+            make_bar(df_new,var="Catégorie_Professionnelle",titre="Categorie professionnelle", sens='h',height=400)
+        with cd2:
+            tx_el_F_2=df_new[(df_new["sexe"]=="F") & (df_new["Statut"]=="Temporairement éligible")].shape[0]/df_new[df_new["sexe"]=="F"].shape[0]
+            tx_el_M_2=df_new[(df_new["sexe"]=="M") & (df_new["Statut"]=="Temporairement éligible")].shape[0]/df_new[df_new["sexe"]=="M"].shape[0]
+            make_dbl_progress_char(vars=[tx_el_M_2,tx_el_F_2],labels=["Homme","Femme"],titre="Taux d'éligibilité",colors=["green","orange"])
+        with cd3:
+            data_mot=df_new[df_new["Raison"].notna()]
+            mot=" ".join(data_mot["Raison"])
+            make_wordcloud(mot,titre="Raison de Non éléigibilité",width=600,height=400)
 # ONGLET 3:
 with tabs[5]:
     pass

@@ -20,14 +20,73 @@ from folium.plugins import MarkerCluster
 from branca.colormap import linear
 from streamlit_folium import folium_static
 import datetime
+from st_aggrid import AgGrid
+from st_aggrid.grid_options_builder import GridOptionsBuilder
+from googletrans import Translator
+from requests.exceptions import ConnectionError, Timeout
 
+#============Variables Globales====================================================================
 police=dict(size=25,family="Berlin Sans FB",)
 police_label=dict(size=15,family="Berlin Sans FB",)
 police_annot=dict(size=15,family="Berlin Sans FB",)
 palette = ['#FDC7D3', '#F61A49', '#640419', '#49030D','#4575B4', '#74ADD1', '#ABD9E9', '#E0F3F8']
 val_couleur=[['#FDC7D3'], ['#F61A49'], ['#640419'],['#49030D'],['#4575B4'],["#74ADD1"]]
+#==================================================================================================
+#Fonction pour faire les regroupement de classe d'âge
+def class_age(age):
+    if age < 20:
+        return "- 20 ans"
+    elif age < 30:
+        return "20-30 ans"
+    elif age < 40:
+        return "30-40 ans"
+    elif age < 50:
+        return "40-50 ans"
+    elif age < 60:
+        return "50-60 ans"
+    else:
+        return "+60 ans"
+
+def print_dataframe(df):
+    gb = GridOptionsBuilder.from_dataframe(df)
+    gb.configure_default_column(filterable=True, sortable=True, editable=False)  # Activation du filtrage et tri
+    grid_options = gb.build()
+    # Affichage du DataFrame interactif
+    AgGrid(df, gridOptions=grid_options, enable_enterprise_modules=True)
+
+def set_language():
+    return st.sidebar.selectbox("🌍 Choisissez la langue / Choose the language", ["Français", "English"])
+
+from googletrans import Translator
+import time
+from requests.exceptions import ConnectionError, Timeout
 
 
+def traduire_texte(texte, langue='English'):
+    """
+    Traduit le texte donné vers la langue cible en utilisant Google Translate.
+
+    :param texte: Le texte en français à traduire.
+    :param langue_cible: La langue cible pour la traduction (par défaut 'en' pour anglais).
+    :return: Le texte traduit.
+    """
+    if langue=="Français":
+        langue='fr'
+    else:
+        langue='en'
+        
+    traducteur = Translator(service_urls=['translate.google.com'])
+    #traducteur = Translator()
+    try:
+            # Utiliser un timeout pour éviter les attentes trop longues
+        traduction = traducteur.translate(texte, dest=langue)
+        return traduction.text
+    except (ConnectionError, Timeout):
+        return texte
+    except Exception:
+    # Pour toute autre erreur, retourner le texte original
+        return texte
+    
 #1. Fonction d'affichage des métriques
 def display_single_metric_advanced(label, value, delta, unit="", caption="", color_scheme="blue"):
     """Affiche une seule métrique avec un style avancé et personnalisable."""
@@ -51,35 +110,6 @@ def display_single_metric_advanced(label, value, delta, unit="", caption="", col
         unsafe_allow_html=True,
     )
 
-def make_donotchar(df,var,titre=""):
-    data_elig=df.groupby(var).agg({
-    var: 'size'
-    }).rename(columns={var: 'Effectif'})
-    
-    fig=go.Figure()
-    fig.add_trace(go.Pie(labels=data_elig.index, values=data_elig["Effectif"], opacity=0.85, hole=0.4,
-                        hovertemplate='%{label}<br>Proportion: %{value:.2}%<extra></extra>',
-                        ))
-    fig.update_yaxes(tickmode = 'array', range=[0, 40], dtick=3)
-    fig.update_traces(textfont_size=20,textfont_color='black',marker=dict(line=dict(color='#28221D', width=1)))
-    fig.update_layout(title_text=titre, font_color='#28221D',
-                    #paper_bgcolor='#F4F2F0', plot_bgcolor='#F4F2F0',
-                    margin=dict(l=40, r=50, t=50, b=20) )     
-    fig.update_layout(width=500, height=400) 
-    fig.update_layout(title=dict(
-        text=titre,
-        x=0.0,  # Centre horizontalement
-        y=0.95,  # Légèrement en dessous du bord supérieur
-        xanchor='left', 
-        yanchor='top'
-    ),
-    legend=dict(
-        x=1, y=1.2,  # Position
-        xanchor='center', 
-        yanchor='top',  # Alignement
-        bgcolor='rgba(255,255,255,0.1)', 
-    ))
-    st.plotly_chart(fig) 
     
 def make_cross_hist(df,var1,var2,titre="",typ_bar=1,width=500, height=400,sens="v"):
     bar_mode= "relative" if typ_bar==1 else "group"
@@ -502,7 +532,7 @@ def make_distribution(df,var_alpha,var_num,add_vline,add_vline2,titre="",width=5
     
 def make_wordcloud(texte,titre="",width=800, height=400):
     mot=texte.split(" ")
-    mots_exclus = ["de", "à", "et"," et", "et "," de","de "," et "," de ","NON"," ","pas"]
+    mots_exclus = ["de", "à", "et"," et", "et "," de","de "," et "," de ","NON"," ","pas", "les"]
     mot = [m for m in mot if m not in mots_exclus]
     # Génération du nuage de mots
     wordcloud = WordCloud(width=width, height=height, background_color="white", colormap="viridis").generate(texte)
