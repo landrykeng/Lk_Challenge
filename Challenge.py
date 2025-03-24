@@ -545,7 +545,7 @@ with tabs[1]:
     st.write(" ")
     # SECTION 1: DESCRIPTION GENERALE
     st.markdown('<div id="section1"></div>', unsafe_allow_html=True)
-    with st.expander(traduire_texte("Description Générale des candidats",lang), expanded=False,icon="🩸"):
+    with st.expander(traduire_texte("Description Générale des candidats",lang), expanded=True,icon="🩸"):
         d1,d2= st.columns([7,3])
         with d1:
             da1,da2=st.columns(2)
@@ -567,7 +567,7 @@ with tabs[1]:
             
  #SECTION 2: ANALYSE GEOGRAPHIQUE DANS DOUALA 
     st.markdown('<div id="section2"></div>', unsafe_allow_html=True)  
-    with st.expander(traduire_texte("Analyse géographique dans Douala",lang), expanded=False,icon="🩸"):  
+    with st.expander(traduire_texte("Analyse géographique dans Douala",lang), expanded=True,icon="🩸"):  
         cc1,cc2,cc3,cc4,cc5=st.columns([2, 1,1.5,2,3.5])
         with cc1:
             opacity=st.slider(traduire_texte("Transparence Carte",lang),min_value=0.0,max_value=1.0,value=0.8,step=0.01)
@@ -602,7 +602,7 @@ with tabs[1]:
             
 #SECTION 3 : ANALYSE PAR ARRONDISSEMENT
     st.markdown('<div id="section3"></div>', unsafe_allow_html=True)
-    with st.expander(translations[lang]["section3"],expanded=False,icon="🩸"):    
+    with st.expander(translations[lang]["section3"],expanded=True,icon="🩸"):    
         b11, b12, b13, b14,b15, b16 =st.columns([1,1.3,1.5,4.2,1.7,2.1])
         with b11:
             couleur_2=st.selectbox("Couleur",sequence_couleur)
@@ -635,7 +635,7 @@ with tabs[1]:
     
 #SECTION 4 :  CONDITION DE SANTE ET ELIGIBILITE
     st.markdown('<div id="section4"></div>', unsafe_allow_html=True)
-    with st.expander(translations[lang]["section4"], expanded=False,icon="❤️"):
+    with st.expander(translations[lang]["section4"], expanded=True,icon="❤️"):
         c41, c42 ,c43=st.columns(3)
         with c41:
             data_el=data.groupby("Eligibilité").agg({
@@ -677,7 +677,7 @@ with tabs[1]:
         
 #SECTION 5:   PROFILAGE DES DONNEURS IDEAUX
     st.markdown('<div id="section5"></div>', unsafe_allow_html=True)
-    with st.expander(translations[lang]["section5"], expanded=False,icon="❤️"):
+    with st.expander(translations[lang]["section5"], expanded=True,icon="❤️"):
             c5a1,c5a2,c5a3=st.columns(3)
             with c5a1:
                 make_relative_bar(data,var1="Eligibilité",var2="Don_pass",width=500,height=400,titre="Proportion des anciens donneurs",)
