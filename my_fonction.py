@@ -20,7 +20,7 @@ from folium.plugins import MarkerCluster
 from branca.colormap import linear
 from streamlit_folium import folium_static
 import datetime
-from st_aggrid.grid_options_builder import GridOptionsBuilder, AgGrid
+from st_aggrid.grid_options_builder import GridOptionsBuilder
 from googletrans import Translator
 from requests.exceptions import ConnectionError, Timeout
 #from st_aggrid import AgGrid
@@ -47,12 +47,12 @@ def class_age(age):
     else:
         return "+60 ans"
 
-def print_dataframe(df):
-    gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_default_column(filterable=True, sortable=True, editable=False)  # Activation du filtrage et tri
-    grid_options = gb.build()
+#def print_dataframe(df):
+    #gb = GridOptionsBuilder.from_dataframe(df)
+    #gb.configure_default_column(filterable=True, sortable=True, editable=False)  # Activation du filtrage et tri
+    #grid_options = gb.build()
     # Affichage du DataFrame interactif
-    AgGrid(df, gridOptions=grid_options, enable_enterprise_modules=True)
+    #st.dataframe(df, gridOptions=grid_options, enable_enterprise_modules=True)
 
 from googletrans import Translator
 import time
