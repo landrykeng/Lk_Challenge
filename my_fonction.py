@@ -20,11 +20,10 @@ from folium.plugins import MarkerCluster
 from branca.colormap import linear
 from streamlit_folium import folium_static
 import datetime
-from st_aggrid.grid_options_builder import GridOptionsBuilder
+from st_aggrid.grid_options_builder import GridOptionsBuilder, AgGrid
 from googletrans import Translator
 from requests.exceptions import ConnectionError, Timeout
-#import streamlit-aggrid
-from st_aggrid.AgGrid import AgGrid
+#from st_aggrid import AgGrid
 
 #============Variables Globales====================================================================
 police=dict(size=25,family="Berlin Sans FB",)
