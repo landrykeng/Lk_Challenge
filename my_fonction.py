@@ -23,7 +23,7 @@ import datetime
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 from googletrans import Translator
 from requests.exceptions import ConnectionError, Timeout
-from st_aggrid import AgGrid
+import streamlit-aggrid
 
 #============Variables Globales====================================================================
 police=dict(size=25,family="Berlin Sans FB",)
