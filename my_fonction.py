@@ -20,10 +20,10 @@ from folium.plugins import MarkerCluster
 from branca.colormap import linear
 from streamlit_folium import folium_static
 import datetime
-from st_aggrid import AgGrid
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 from googletrans import Translator
 from requests.exceptions import ConnectionError, Timeout
+from st_aggrid import AgGrid
 
 #============Variables Globales====================================================================
 police=dict(size=25,family="Berlin Sans FB",)
@@ -53,9 +53,6 @@ def print_dataframe(df):
     grid_options = gb.build()
     # Affichage du DataFrame interactif
     AgGrid(df, gridOptions=grid_options, enable_enterprise_modules=True)
-
-def set_language():
-    return st.sidebar.selectbox("🌍 Choisissez la langue / Choose the language", ["Français", "English"])
 
 from googletrans import Translator
 import time
