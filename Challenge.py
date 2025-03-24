@@ -495,11 +495,11 @@ tabs = st.tabs([
 with tabs[0]:
     st.write(traduire_texte("Bonjour monsieur Donovan comment allez vous?"))
     st.write(traduire_texte("données avec traitement incluant",lang))
-    print_dataframe(data)
+    st.dataframe(data)
     st.write(traduire_texte("Données géospatialisée",lang))
     st.dataframe(geo_data)
     st.write(traduire_texte("Données sur les donneurs",lang))
-    print_dataframe(data_don)
+    st.dataframe(data_don)
     
 # ONGLET 2: TABLEAU DE BORD PROPREMENT DIT
 with tabs[1]:
