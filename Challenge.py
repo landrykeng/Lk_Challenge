@@ -522,7 +522,6 @@ tabs = st.tabs([
 
 # ONGLET 1: BASES DE DONNEES
 with tabs[0]:
-    st.write(traduire_texte("Bonjour monsieur Donovan comment allez vous?"))
     st.write(traduire_texte("données avec traitement incluant",lang))
     st.dataframe(data)
     st.write(traduire_texte("Données géospatialisée",lang))
