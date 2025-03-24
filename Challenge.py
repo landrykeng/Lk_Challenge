@@ -171,15 +171,44 @@ st.sidebar.image("Logo.png", use_container_width=True)
 lang = set_language()
 #them=set_custom_theme()
 st.sidebar.title("Tables des Matières")
-st.sidebar.title("1. Description Générale")
-st.sidebar.title("2. Analyse géographique dans Douala")
-st.sidebar.title("3. Analyse par arrondissement")
-st.sidebar.title("4. Conditions de Santé & Éligibilité ")
-st.sidebar.title("5")
+st.sidebar.markdown("""
+    <div style="margin-bottom: 20px;">
+        <a href="#section1" style="margin-right: 15px; text-decoration: none;">🩸 Description Générale🩸</a>
+    </div>
+""", unsafe_allow_html=True)
 
+st.sidebar.markdown("""
+    <div style="margin-bottom: 20px;">
+        <a href="#section2" style="margin-right: 15px; text-decoration: none;">🩸 Analyse géographique dans Douala🩸</a>
+    </div>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown("""
+    <div style="margin-bottom: 20px;">
+        <a href="#section3" style="margin-right: 15px; text-decoration: none;">🩸 Analyse par arrondissement🩸</a>
+    </div>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown("""
+    <div style="margin-bottom: 20px;">
+        <a href="#section4" style="margin-right: 15px; text-decoration: none;">❤️ Conditions de Santé & Éligibilité ❤️</a>
+    </div>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown("""
+    <div style="margin-bottom: 20px;">
+        <a href="#section5" style="margin-right: 15px; text-decoration: none;">❤️ Profilage des Donneurs Idéaux ❤️</a>
+    </div>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown("""
+    <div style="margin-bottom: 20px;">
+        <a href="#section6" style="margin-right: 15px; text-decoration: none;">❤️ Analyse de l’Efficacité des Campagnes ❤️</a>
+    </div>
+""", unsafe_allow_html=True)
 
 st.sidebar.title(traduire_texte("Membres du Groupe",lang))
-members = ["KENGNE Bienvenu Landry",]
+members = ["ANABA Rodrigue","KENGNE Bienvenu Landry","NOULAYE Merveille","TCHINDA Rinel"]
 for member in members:
     st.sidebar.markdown(f"✅ {member}")
 
@@ -516,6 +545,7 @@ with tabs[1]:
     
     st.write(" ")
     # SECTION 1: DESCRIPTION GENERALE
+    st.markdown('<div id="section1"></div>', unsafe_allow_html=True)
     with st.expander(traduire_texte("Description Générale des candidats",lang), expanded=False,icon="🩸"):
         d1,d2= st.columns([7,3])
         with d1:
@@ -536,7 +566,8 @@ with tabs[1]:
             make_cross_hist_b(data[data["Region"]!="Litoral"],"Eligibilité","Region",titre=traduire_texte("Autre Région",lang),width=600,height=400,typ_bar=1)
             make_donutchart(data,var="Eligibilité",titre=traduire_texte("Statut des candidats",lang),part=True)
             
- #SECTION 2: ANALYSE GEOGRAPHIQUE DANS DOUALA   
+ #SECTION 2: ANALYSE GEOGRAPHIQUE DANS DOUALA 
+    st.markdown('<div id="section2"></div>', unsafe_allow_html=True)  
     with st.expander(traduire_texte("Analyse géographique dans Douala",lang), expanded=False,icon="🩸"):  
         cc1,cc2,cc3,cc4,cc5=st.columns([2, 1,1.5,2,3.5])
         with cc1:
@@ -571,6 +602,7 @@ with tabs[1]:
             make_bar(geo_data_dla,var="Classe_age",titre=traduire_texte("Répartition des ages",lang),width=700,height=450,)
             
 #SECTION 3 : ANALYSE PAR ARRONDISSEMENT
+    st.markdown('<div id="section3"></div>', unsafe_allow_html=True)
     with st.expander(translations[lang]["section3"],expanded=False,icon="🩸"):    
         b11, b12, b13, b14,b15, b16 =st.columns([1,1.3,1.5,4.2,1.7,2.1])
         with b11:
@@ -603,6 +635,7 @@ with tabs[1]:
             make_dataframe(geo_data_arr_for_table,col_alpha="Quartier",col_num="Nb_Candidats",hide_index=True)
     
 #SECTION 4 :  CONDITION DE SANTE ET ELIGIBILITE
+    st.markdown('<div id="section4"></div>', unsafe_allow_html=True)
     with st.expander(translations[lang]["section4"], expanded=False,icon="❤️"):
         c41, c42 ,c43=st.columns(3)
         with c41:
@@ -644,6 +677,7 @@ with tabs[1]:
             make_cross_hist_b(data,"Eligibilité","Classe_age",titre="Statut par classe d'age",typ_bar=1)
         
 #SECTION 5:   PROFILAGE DES DONNEURS IDEAUX
+    st.markdown('<div id="section5"></div>', unsafe_allow_html=True)
     with st.expander(translations[lang]["section5"], expanded=False,icon="❤️"):
             c5a1,c5a2,c5a3=st.columns(3)
             with c5a1:
@@ -668,6 +702,7 @@ with tabs[1]:
                 make_cross_hist_b(data,var2="Religion",var1="Eligibilité",width=500,height=550,titre="Réligion",typ_bar=1)
     
 #SECTION 6:   ANALYSE DE L'EFFICACITE DE LA CAMPAGNE
+    st.markdown('<div id="section6"></div>', unsafe_allow_html=True)
     with st.expander(translations[lang]["section6"], expanded=True,icon="❤️"):
         c61,c62,c63=st.columns(3)
         data_don["ID"]="Don_" + (data_don.index+1).astype(str)
