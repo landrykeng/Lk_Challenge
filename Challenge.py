@@ -505,7 +505,7 @@ translations = {
         "processed_data": "⚙️ Données Traitées",
         "visualization": "📊 Visualisation des Indicateurs",
         "modeling": "🤖 Modélisation en Bonus",
-        "group_members": "👥 Membres du Groupe",
+        "group_members": "👥 Profil de l'Equipe",
         "rapport":"Produire un rapport",
         "form":"Formulaire",
         "toc":"Tables des matières",
@@ -542,7 +542,7 @@ translations = {
         "processed_data": "⚙️ Processed Data",
         "visualization": "📊 Indicator Visualization",
         "modeling": "🤖 Bonus Modeling",
-        "group_members": "👥 Group Members",
+        "group_members": "👥 Team Profil",
         "rapport":"Produce repport",
         "form":"Forms",
         "toc":"Tables of content",
@@ -710,7 +710,7 @@ tabs = st.tabs([
     f"📄 {traduire_texte('Produire un rapport', lang)}",
     f"📝 {traduire_texte('Formulaire', lang)}",
     f"🖥️ {traduire_texte('Nouveau Tableau de Bord', lang)}", 
-    f"⚙️ {traduire_texte('Données Traitées', lang)}",
+    f"👥 {traduire_texte('Profil du groupe', lang)}",
 ])
 
 #----ONGLET 1: BASES DE DONNEES
@@ -1307,18 +1307,18 @@ with tabs[5]:
     with m2:
         create_member_profile(
             name="NOULAYE Merveille",
-            title="Executive Manager",
+            title="Elève ingénieure statisticienne économiste - data scientiste",
             image_path="Merveille_pro.jpg",
-            about_text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sed libero in magna ultrices gravida sit amet. Suspendisse placerat gravida magna vel fermentum.",)
+            about_text="Jeune statisticienne en devenir dynamique et passionnée des métiers de la data.Je privilégie le travail en équipe dans la recherche des solutions efficaces et rapide face aux problèmes que je rencontre.",)
     with m3:
         create_member_profile(
             name="TCHINDA Rinel",
             title="Executive Manager",
             image_path="Rinel.jpg",
-            about_text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sed libero in magna ultrices gravida sit amet. Suspendisse placerat gravida magna vel fermentum.",)
+            about_text="Je suis un data scientist titulaire d'une licence en mathématiques, un master en économie quantitative et ingénierie statistique, alliant expertise analytique et foi évangélique fervente.",)
     with m4:
         create_member_profile(
             name="ANABA Rodrigue",
-            title="Executive Manager",
+            title="Economiste - Data Scientist",
             image_path="ANABA.jpg",
-            about_text="Passionné par la data science et l’analyse quantitative, je combine rigueur analytique et créativité pour transformer des données complexes en information. J’ai une solide maîtrise des méthodes statistiques avancées et des outils de modélisation économétrique. Doté d’un esprit d’initiative et d’une grande capacité d’adaptation, je sais piloter les tâches qui me sont confiées avec efficacité tout en respectant les contraintes temporelles",)
+            about_text="Diplômé d'une Licence en Sciences Économiques, je suis actuellement en dernière année du cycle d'Ingénieur Statisticien Économiste à l'ISSEA. . J’ai une solide maîtrise des méthodes statistiques avancées et des outils de modélisation économétrique.",)
