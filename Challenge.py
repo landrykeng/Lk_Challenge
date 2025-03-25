@@ -225,6 +225,55 @@ sidebar_css = """
 </style>
 """
 
+table_css = """
+<style>
+/* Style général des tableaux */
+.stDataFrame {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* En-tête du tableau */
+.stDataFrame thead {
+    background-color: #4b8bff;
+    color: white;
+    font-weight: bold;
+}
+
+/* Lignes du tableau */
+.stDataFrame tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.stDataFrame tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+/* Effet de survol */
+.stDataFrame tbody tr:hover {
+    background-color: #e9ecef;
+    transition: background-color 0.3s ease;
+}
+
+/* Cellules */
+.stDataFrame th, .stDataFrame td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Style des colonnes */
+.stDataFrame th {
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 1px;
+}
+</style>
+"""
 
 title_css = """
 <style>
@@ -308,6 +357,7 @@ header_css = """
     font-weight: 300;
     max-width: 800px;
     margin: 0 auto;
+    text-align: center;
     line-height: 1.6;
     position: relative;
     z-index: 2;
@@ -396,14 +446,51 @@ p, div, span { font-size: 19px !important; } /* Texte de paragraphe */
 </style>
 """
 
+profile_css = """
+<style>
+.profile-container {
+    background-color: #1e2736;
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    margin-right: 20px;
+    border-radius: 10px; /* Légèrement arrondi si souhaité */
+}
+
+.profile-content {
+    flex-grow: 1;
+}
+
+.profile-name {
+    font-size: 1.8em;
+    color: #4b8bff;
+    margin-bottom: 5px;
+}
+
+.profile-title {
+    font-size: 1em;
+    color: #a0a0a0;
+    margin-bottom: 10px;
+}
+</style>
+"""
+
 st.markdown(global_font_css, unsafe_allow_html=True)
 #=======================================================================
 #================== Sélecteur de langue ================================
 def set_language():
-    return st.sidebar.selectbox("🌍 Choisissez la langue / Choose the language", ["Français", "English"])
-
-
-
+    return st.sidebar.selectbox("🌍 Choisissez la langue / Choose the language", ["", "Français", "English"])
 #=========== Dictionnaire de traduction =========================
 translations = {
     "Français": {
@@ -475,43 +562,44 @@ translations = {
 #================= Contenu de la barre latérale =========================
 st.sidebar.image("Logo.png", use_container_width=True)
 lang = set_language()
+lang1="Français" if lang=="" else lang
 #them=set_custom_theme()
 #__________Table des matières ________________________
 st.sidebar.markdown(sidebar_css, unsafe_allow_html=True)
-st.sidebar.title(translations[lang]["toc"])
+st.sidebar.title(translations[lang1]["toc"])
 st.sidebar.markdown(f"""
     <a href="#section1" class="sidebar-link">
-        <span class="sidebar-link-icon">🩸</span> {translations[lang]["section1"]}
+        <span class="sidebar-link-icon">🩸</span> {translations[lang1]["section1"]}
     </a>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown(f"""
     <a href="#section2" class="sidebar-link">
-        <span class="sidebar-link-icon">🩸</span> {translations[lang]["section2"]}
+        <span class="sidebar-link-icon">🩸🩸</span> {translations[lang1]["section2"]}
     </a>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown(f"""
     <a href="#section3" class="sidebar-link">
-        <span class="sidebar-link-icon">🩸</span> {translations[lang]["section3"]}
+        <span class="sidebar-link-icon">🩸🩸</span> {translations[lang1]["section3"]}
     </a>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown(f"""
     <a href="#section4" class="sidebar-link">
-        <span class="sidebar-link-icon">❤️</span> {translations[lang]["section4"]}
+        <span class="sidebar-link-icon">❤️</span> {translations[lang1]["section4"]}
     </a>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown(f"""
     <a href="#section5" class="sidebar-link">
-        <span class="sidebar-link-icon">❤️</span> {translations[lang]["section5"]}
+        <span class="sidebar-link-icon">❤️❤️</span> {translations[lang1]["section5"]}
     </a>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown(f"""
     <a href="#section6" class="sidebar-link">
-        <span class="sidebar-link-icon">❤️</span> {translations[lang]["section6"]}
+        <span class="sidebar-link-icon">❤️❤️❤️</span> {translations[lang1]["section6"]}
     </a>
 """, unsafe_allow_html=True)
 
@@ -526,6 +614,7 @@ for member in members:
 #====================== EN TETE ===========================
 #----------Ajout des images d'en tête ----------------------
 st.markdown(header_css, unsafe_allow_html=True)
+st.markdown(table_css, unsafe_allow_html=True)
 
 # Image columns with improved styling
 st.markdown('<div class="image-container">', unsafe_allow_html=True)
@@ -554,9 +643,6 @@ st.markdown(
         <h1 class="header-title">
             🩸 {traduire_texte("Tableau de bord de la campagne de don de sang", lang)} 🩸
         </h1>
-        <h3 class="header-subtitle">
-            {traduire_texte("Exploiter les données pour une meilleure gestion et planification des dons de sang", lang)}
-        </h3>
     </div>
     """,
     unsafe_allow_html=True
@@ -629,6 +715,7 @@ tabs = st.tabs([
 
 #----ONGLET 1: BASES DE DONNEES
 with tabs[0]:
+    
     st.write(traduire_texte("données avec traitement incluant",lang))
     st.dataframe(data)
     st.write(traduire_texte("Données géospatialisée",lang))
@@ -709,7 +796,7 @@ with tabs[1]:
             
     #SECTION 3 : ANALYSE PAR ARRONDISSEMENT
     st.markdown('<div id="section3"></div>', unsafe_allow_html=True)
-    with st.expander(translations[lang]["section3"],expanded=True,icon="🩸"):    
+    with st.expander(translations[lang1]["section3"],expanded=True,icon="🩸"):    
         b11, b12, b13, b14,b15, b16 =st.columns([1,1.3,1.5,4.2,1.7,2.1])
         with b11:
             couleur_2=st.selectbox("Couleur",sequence_couleur)
@@ -742,7 +829,7 @@ with tabs[1]:
     
     #SECTION 4 :  CONDITION DE SANTE ET ELIGIBILITE
     st.markdown('<div id="section4"></div>', unsafe_allow_html=True)
-    with st.expander(translations[lang]["section4"], expanded=True,icon="❤️"):
+    with st.expander(translations[lang1]["section4"], expanded=True,icon="❤️"):
         c41, c42 ,c43=st.columns(3)
         with c41:
             data_el=data.groupby("Eligibilité").agg({
@@ -780,7 +867,7 @@ with tabs[1]:
         
     #SECTION 5:   PROFILAGE DES DONNEURS IDEAUX
     st.markdown('<div id="section5"></div>', unsafe_allow_html=True)
-    with st.expander(translations[lang]["section5"], expanded=True,icon="❤️"):
+    with st.expander(translations[lang1]["section5"], expanded=True,icon="❤️"):
             c5a1,c5a2,c5a3=st.columns(3)
             with c5a1:
                 make_relative_bar(data,var1="Eligibilité",var2="Don_pass",width=500,height=400,titre="Proportion des anciens donneurs",)
@@ -805,7 +892,7 @@ with tabs[1]:
     
     #SECTION 6:   ANALYSE DE L'EFFICACITE DE LA CAMPAGNE
     st.markdown('<div id="section6"></div>', unsafe_allow_html=True)
-    with st.expander(translations[lang]["section6"], expanded=True,icon="❤️"):
+    with st.expander(translations[lang1]["section6"], expanded=True,icon="❤️"):
         c61,c62,c63=st.columns(3)
         data_don["ID"]="Don_" + (data_don.index+1).astype(str)
         data_don=data_don.rename(columns={"Groupe Sanguin ABO / Rhesus ":"Gpr_sang"})
@@ -1126,11 +1213,11 @@ with tabs[4]:
     ab1,ab2,ab3=st.columns(3)
         
     with ab1:
-        plot_metric(translations[lang]["metric_text1"],df_new.shape[0],prefix="",suffix="",show_graph=True,color_graph="rgba(0, 104, 201, 0.1)",)
+        plot_metric(translations[lang1]["metric_text1"],df_new.shape[0],prefix="",suffix="",show_graph=True,color_graph="rgba(0, 104, 201, 0.1)",)
     with ab2:
-        plot_metric_2(translations[lang]["metric_text2"],df_new,"age",prefix="",suffix=" ans",show_graph=True,color_graph="rgba(175, 32, 201, 0.2)",val_bin=45)
+        plot_metric_2(translations[lang1]["metric_text2"],df_new,"age",prefix="",suffix=" ans",show_graph=True,color_graph="rgba(175, 32, 201, 0.2)",val_bin=45)
     with ab3:
-        plot_metric_2(translations[lang]["metric_text4"],df_new,"poids",prefix="",suffix=" kg",show_graph=True,color_graph="rgba(10, 242, 20, 0.2)",val_bin=45)
+        plot_metric_2(translations[lang1]["metric_text4"],df_new,"poids",prefix="",suffix=" kg",show_graph=True,color_graph="rgba(10, 242, 20, 0.2)",val_bin=45)
         
     with st.expander("Information Globales sur les Nouvea candidat", expanded=True,icon="❤️"):
         f11, f12, f13, f14,f15 =st.columns([1,1.3,1.5,4.2,1.7])
@@ -1192,95 +1279,46 @@ with tabs[4]:
             make_wordcloud(mot,titre="Raison de Non éléigibilité",width=600,height=400)
 #----ONGLET 6:
 with tabs[5]:
-    theme = st.radio("Choisissez un thème", ["Clair", "Sombre"])
-    
-    # Simulation du changement de thème
-    if theme == "Sombre":
-        st.markdown("""
-        <script>
-        document.body.classList.add('dark');
-        </script>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <script>
-        document.body.classList.remove('dark');
-        </script>
-        """, unsafe_allow_html=True)
-    def apply_custom_container_style():
-        """
-        Ajoute un style CSS personnalisé avec support des modes clair et sombre
-        """
-        st.markdown("""
-        <style>
-        /* Styles de base pour tous les thèmes */
-        .stContainer {
-            border-radius: 10px;  /* Coins arrondis */
-            border: 2px solid transparent;  /* Bordure transparente par défaut */
-            padding: 20px;  /* Espacement intérieur */
-            margin-bottom: 20px;  /* Espace entre les conteneurs */
-            transition: all 0.3s ease;  /* Animation douce */
-        }
+    st.markdown(profile_css, unsafe_allow_html=True)
 
-        /* Mode Clair (par défaut) */
-        body:not(.dark) .stContainer {
-            background-color: rgba(255, 255, 255, 0.9);  /* Fond blanc légèrement transparent */
-            border-color: rgba(224, 224, 224, 0.7);  /* Bordure grise légère */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);  /* Ombre douce */
-        }
-
-        /* Mode Sombre */
-        body.dark .stContainer {
-            background-color: rgba(30, 30, 40, 0.9);  /* Fond sombre légèrement transparent */
-            border-color: rgba(60, 60, 70, 0.7);  /* Bordure sombre légère */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);  /* Ombre plus marquée */
-        }
-
-        /* Effet de survol - Mode Clair */
-        body:not(.dark) .stContainer:hover {
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);  /* Ombre plus prononcée */
-            transform: translateY(-5px);  /* Léger soulèvement */
-            border-color: rgba(200, 200, 200, 0.9);  /* Bordure plus visible */
-        }
-
-        /* Effet de survol - Mode Sombre */
-        body.dark .stContainer:hover {
-            box-shadow: 0 8px 12px rgba(255, 255, 255, 0.3);  /* Ombre claire */
-            transform: translateY(-5px);  /* Léger soulèvement */
-            border-color: rgba(100, 100, 110, 0.9);  /* Bordure plus visible */
-        }
-
-        /* Style spécifique pour les graphiques - Mode Clair */
-        body:not(.dark) .stPlotlyChart {
-            background-color: rgba(250, 250, 250, 0.95);  /* Fond très légèrement gris */
-            border-radius: 8px;  /* Coins légèrement arrondis */
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);  /* Ombre très légère */
-        }
-
-        /* Style spécifique pour les graphiques - Mode Sombre */
-        body.dark .stPlotlyChart {
-            background-color: rgba(40, 40, 50, 0.95);  /* Fond sombre légèrement transparent */
-            border-radius: 8px;  /* Coins légèrement arrondis */
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);  /* Ombre très légère */
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
-# Appliquer le style personnalisé
-    apply_custom_container_style()
-    with st.container():
-        col1, col2 = st.columns(2)
+    # Fonction pour créer un profil de membre
+    def create_member_profile(name, title, image_path, about_text):
+        # Colonne pour diviser l'espace
+        col1, col2 = st.columns([1, 3])
+        # Affichage de l'image dans la première colonne
         with col1:
-            st.subheader("📈 Analyse Détaillée")
-            st.markdown("""
-            Notre analyse montre une répartition stratégique du budget.
-            - Ventes: Focus principal
-            - R&D: Innovation continue
-            - Marketing: Croissance du marché
-            """)
-        with col2:
-            test_fig=px.histogram(data,"Age")
-            st.plotly_chart(test_fig)
+            image = Image.open(image_path)
+            st.image(image, width=200)
         
+        # Informations textuelles dans la deuxième colonne
+        with col2:
+            st.markdown(f"""
+            ### {name}
+            #### {title}   
+            {about_text}
+            """)
+    m1, m2, m3, m4 = st.columns(4)
+    with m1:
+        create_member_profile(
+            name="KENGNE Landry",
+            title="Mathématicien, Statisticien Economiste, ISSEA ",
+            image_path="Landry_Pro.jpg",
+            about_text="Titulaire d'une licence en mathématique à l'Université de Yaoundé I. Actuellement en Master I en Statistiques et Economie appliquée à l'ISSEA",)
+    with m2:
+        create_member_profile(
+            name="NOULAYE Merveille",
+            title="Executive Manager",
+            image_path="Merveille_pro.jpg",
+            about_text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sed libero in magna ultrices gravida sit amet. Suspendisse placerat gravida magna vel fermentum.",)
+    with m3:
+        create_member_profile(
+            name="TCHINDA Rinel",
+            title="Executive Manager",
+            image_path="Rinel.jpg",
+            about_text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sed libero in magna ultrices gravida sit amet. Suspendisse placerat gravida magna vel fermentum.",)
+    with m4:
+        create_member_profile(
+            name="ANABA Rodrigue",
+            title="Executive Manager",
+            image_path="ANABA.jpg",
+            about_text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sed libero in magna ultrices gravida sit amet. Suspendisse placerat gravida magna vel fermentum.",)

@@ -24,7 +24,7 @@ import datetime
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 from googletrans import Translator
 from requests.exceptions import ConnectionError, Timeout
-#from st_aggrid import AgGrid
+from st_aggrid import AgGrid
 #==================================================================================================
 
 #============Variables Globales====================================================================
@@ -77,22 +77,25 @@ def traduire_texte(texte, langue='English'):
     :param langue_cible: La langue cible pour la traduction (par défaut 'en' pour anglais).
     :return: Le texte traduit.
     """
-    if langue=="Français":
-        langue='fr'
+    if langue=="":
+        return texte
     else:
-        langue='en'
-        
-    traducteur = Translator(service_urls=['translate.google.com'])
-    #traducteur = Translator()
-    try:
-            # Utiliser un timeout pour éviter les attentes trop longues
-        traduction = traducteur.translate(texte, dest=langue)
-        return traduction.text
-    except (ConnectionError, Timeout):
-        return texte
-    except Exception:
-    # Pour toute autre erreur, retourner le texte original
-        return texte
+        if langue=="Français":
+            langue='fr'
+        else:
+            langue='en'
+            
+        traducteur = Translator(service_urls=['translate.google.com'])
+        #traducteur = Translator()
+        try:
+                # Utiliser un timeout pour éviter les attentes trop longues
+            traduction = traducteur.translate(texte, dest=langue)
+            return traduction.text
+        except (ConnectionError, Timeout):
+            return texte
+        except Exception:
+        # Pour toute autre erreur, retourner le texte original
+            return texte
     
 #3. Fonction d'affichage des métriques version 1
 def display_single_metric_advanced(label, value, delta, unit="", caption="", color_scheme="blue"):
@@ -368,6 +371,7 @@ def plot_metric_2(label,df,var, prefix="", suffix="", show_graph=False, color_gr
     fig.update_xaxes(visible=False, fixedrange=True)
     fig.update_yaxes(visible=False, fixedrange=True)
     fig.update_layout(
+        paper_bgcolor='rgba(248,248,250,0)',
         # paper_bgcolor="lightgrey",
         margin=dict(t=0, b=0),
         showlegend=False,
