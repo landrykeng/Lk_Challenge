@@ -1321,4 +1321,4 @@ with tabs[5]:
             name="ANABA Rodrigue",
             title="Executive Manager",
             image_path="ANABA.jpg",
-            about_text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sed libero in magna ultrices gravida sit amet. Suspendisse placerat gravida magna vel fermentum.",)
+            about_text="Passionné par la data science et l’analyse quantitative, je combine rigueur analytique et créativité pour transformer des données complexes en information. J’ai une solide maîtrise des méthodes statistiques avancées et des outils de modélisation économétrique. Doté d’un esprit d’initiative et d’une grande capacité d’adaptation, je sais piloter les tâches qui me sont confiées avec efficacité tout en respectant les contraintes temporelles",)
