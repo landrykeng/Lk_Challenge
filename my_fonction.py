@@ -1,3 +1,4 @@
+#==========IMPORTATION DES BIBLIOTHEQUES NECESSAIRES===================================
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -24,6 +25,7 @@ from st_aggrid.grid_options_builder import GridOptionsBuilder
 from googletrans import Translator
 from requests.exceptions import ConnectionError, Timeout
 #from st_aggrid import AgGrid
+#==================================================================================================
 
 #============Variables Globales====================================================================
 police=dict(size=25,family="Berlin Sans FB",)
@@ -31,8 +33,27 @@ police_label=dict(size=15,family="Berlin Sans FB",)
 police_annot=dict(size=15,family="Berlin Sans FB",)
 palette = ['#FDC7D3', '#F61A49', '#640419', '#49030D','#4575B4', '#74ADD1', '#ABD9E9', '#E0F3F8']
 val_couleur=[['#FDC7D3'], ['#F61A49'], ['#640419'],['#49030D'],['#4575B4'],["#74ADD1"]]
+sequence_couleur=['reds', 'agsunset', 'algae', 'amp', 'armyrose', 'balance',
+             'blackbody', 'bluered', 'blues', 'blugrn', 'bluyl', 'brbg',
+             'brwnyl', 'bugn', 'bupu', 'burg', 'burgyl', 'cividis', 'curl',
+             'darkmint', 'deep', 'delta', 'dense', 'earth', 'edge', 'electric',
+             'emrld', 'fall', 'geyser', 'gnbu', 'gray', 'greens', 'greys',
+             'haline', 'hot', 'hsv', 'ice', 'icefire', 'inferno', 'jet',
+             'magenta', 'magma', 'matter', 'mint', 'mrybm', 'mygbm', 'oranges',
+             'orrd', 'oryel', 'oxy', 'peach', 'phase', 'picnic', 'pinkyl',
+             'piyg', 'plasma', 'plotly3', 'portland', 'prgn', 'pubu', 'pubugn',
+             'puor', 'purd', 'purp', 'purples', 'purpor', 'rainbow', 'rdbu',
+             'rdgy', 'rdpu', 'rdylbu', 'rdylgn', 'redor', 'aggrnyl', 'solar',
+             'spectral', 'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn',
+             'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid',
+             'turbo', 'twilight', 'viridis', 'ylgn', 'ylgnbu', 'ylorbr',
+             'ylorrd']
 #==================================================================================================
-#Fonction pour faire les regroupement de classe d'âge
+
+#==================================================================================================
+# FONCTIONS
+#==================================================================================================
+#1. Fonction pour faire les regroupement de classe d'âge
 def class_age(age):
     if age < 20:
         return "- 20 ans"
@@ -47,18 +68,7 @@ def class_age(age):
     else:
         return "+60 ans"
 
-#def print_dataframe(df):
-    #gb = GridOptionsBuilder.from_dataframe(df)
-    #gb.configure_default_column(filterable=True, sortable=True, editable=False)  # Activation du filtrage et tri
-    #grid_options = gb.build()
-    # Affichage du DataFrame interactif
-    #st.dataframe(df, gridOptions=grid_options, enable_enterprise_modules=True)
-
-from googletrans import Translator
-import time
-from requests.exceptions import ConnectionError, Timeout
-
-
+#2. Fonction de tranduction 
 def traduire_texte(texte, langue='English'):
     """
     Traduit le texte donné vers la langue cible en utilisant Google Translate.
@@ -84,7 +94,7 @@ def traduire_texte(texte, langue='English'):
     # Pour toute autre erreur, retourner le texte original
         return texte
     
-#1. Fonction d'affichage des métriques
+#3. Fonction d'affichage des métriques version 1
 def display_single_metric_advanced(label, value, delta, unit="", caption="", color_scheme="blue"):
     """Affiche une seule métrique avec un style avancé et personnalisable."""
 
@@ -107,7 +117,7 @@ def display_single_metric_advanced(label, value, delta, unit="", caption="", col
         unsafe_allow_html=True,
     )
 
-    
+#4. Fonction pour tracer l'histogramme croisé de deux variables  version 1
 def make_cross_hist(df,var1,var2,titre="",typ_bar=1,width=500, height=400,sens="v"):
     bar_mode= "relative" if typ_bar==1 else "group"
     cross_df=pd.crosstab(df[var1],df[var2])
@@ -132,7 +142,8 @@ def make_cross_hist(df,var1,var2,titre="",typ_bar=1,width=500, height=400,sens="
         ))
     
     st.plotly_chart(fig)
-    
+ 
+#5. Fonction pour tracer l'histogramme croisé de deux variables  version 2   
 def make_cross_hist_2(df,var1,var2,titre="",typ_bar=2,width=500, height=400,sens="v"):
     bar_mode= "stack" if typ_bar==1 else "group"
     cross_df=pd.crosstab(df[var1],df[var2])
@@ -169,7 +180,10 @@ def make_cross_hist_2(df,var1,var2,titre="",typ_bar=2,width=500, height=400,sens
         )
     )
     st.plotly_chart(fig)
-    
+ 
+ #4. Fonction pour tracer l'histogramme croisé de deux variables    
+
+#6. Fonction pour tracer graphique type anneau de progression
 def make_progress_char(value,couleur,titre="",width=500, height=300,ecart=50):
     n=int(ecart*value)
     p=ecart-n
@@ -205,7 +219,8 @@ def make_progress_char(value,couleur,titre="",width=500, height=300,ecart=50):
                         annotations=[dict(text=str(round(100*value,2))+'%', x=0.5, y=0.5,
                         font_size=40, showarrow=False, xanchor="center",font=dict(color=couleur, family="Berlin Sans FB"))])
     st.plotly_chart(fig)
-    
+ 
+#7. Fonction pour tracer graphique type barre de progression version 3    
 def make_cross_hist_3(df,var_alpha,var_num,titre,width=500,height=300,bar_mode=1,agregation="count",color="blue",sens='v'):
     bar_mode="relative" if bar_mode==1 else "group"
     fig = go.Figure()
@@ -234,7 +249,7 @@ def make_cross_hist_3(df,var_alpha,var_num,titre,width=500,height=300,bar_mode=1
 
     st.plotly_chart(fig)
     
-#2. Fonction de test d'indépendance de Khi 2
+#7. Fonction de test d'indépendance de Khi 2
 def test_independance_khi2(df, var1, var2):
     # Création de la table de contingence
     contingency_table = pd.crosstab(df[var1], df[var2])
@@ -254,7 +269,7 @@ def test_independance_khi2(df, var1, var2):
     # Retour des résultats
     return  conclusion, table_cross,chi2, p,dof
   
-#3. Fonction de test de comparaison de la moyenne
+#8. Fonction de test de comparaison de la moyenne
 def test_comparaison_moyenne(df, var1, var2):
     # Séparation des groupes
     groupe1 = df[df[var1] == 1]  
@@ -270,6 +285,7 @@ def test_comparaison_moyenne(df, var1, var2):
         result="Les moyennes des deux groupes ne sont pas significativement différentes."
     return result, fig
 
+#9. Fonction d'affichage des métriques version 2
 def plot_metric(label, value, prefix="", suffix="", show_graph=False, color_graph=""):
     fig = go.Figure()
 
@@ -317,6 +333,7 @@ def plot_metric(label, value, prefix="", suffix="", show_graph=False, color_grap
 
     st.plotly_chart(fig, use_container_width=True)
 
+#10. Fonction d'affichage des métriques version 3
 def plot_metric_2(label,df,var, prefix="", suffix="", show_graph=False, color_graph="#330C73",val_bin=60):
     fig = go.Figure()
     value=df[var].mean()
@@ -360,6 +377,7 @@ def plot_metric_2(label,df,var, prefix="", suffix="", show_graph=False, color_gr
 
     st.plotly_chart(fig, use_container_width=True)
 
+#10. Fonction pour tracer un demi aneau de progression
 def plot_gauge(
     indicator_number, indicator_color, indicator_suffix, indicator_title, max_bound
 ):
@@ -388,7 +406,8 @@ def plot_gauge(
         margin=dict(l=10, r=10, t=50, b=10, pad=8),
     )
     st.plotly_chart(fig, use_container_width=True)
-    
+
+#11. Fonction pour tracer un heatmap
 def make_heat_map(df,vars,oder_var,label_var,titre="",width=500, height=300):
     data_mp = df.groupby(vars).agg({
         oder_var: 'size',
@@ -410,6 +429,7 @@ def make_heat_map(df,vars,oder_var,label_var,titre="",width=500, height=300):
         )
     st.plotly_chart(fig)
 
+#12. Fonction pour tracer des graphiques type barre de progression
 def make_multi_progress_bar(labels,values,colors,titre="",width=500,height=400):
     # Configuration
     max_blocks = 100  # Nombre total de segments
@@ -461,6 +481,7 @@ def make_multi_progress_bar(labels,values,colors,titre="",width=500,height=400):
 
     st.plotly_chart(fig)
 
+#13. Fonction pour afficher un dataframe personalisé
 def make_dataframe(df,col_alpha,col_num,hide_index=False):
     st.dataframe(df,
                  column_order=(col_alpha, col_num),
@@ -476,7 +497,8 @@ def make_dataframe(df,col_alpha,col_num,hide_index=False):
                         min_value=0,
                         max_value=float(df[col_num].max()),
                      )})
-    
+
+#14. Fonction pour tracer la distribution d'un variable quantitative version 1
 def make_distribution(df,var_alpha,var_num,add_vline,add_vline2,titre="",width=500, height=300):
     fig = go.Figure()
     valeur=[]
@@ -526,7 +548,8 @@ def make_distribution(df,var_alpha,var_num,add_vline,add_vline2,titre="",width=5
     fig.update_xaxes(title_text=var_num)  # Titre de l'axe X
     fig.update_yaxes(title_text="Effectif")
     st.plotly_chart(fig)
-    
+
+#16. Fonction pour afficher un nuage de mot 
 def make_wordcloud(texte,titre="",width=800, height=400):
     mot=texte.split(" ")
     mots_exclus = ["de", "à", "et"," et", "et "," de","de "," et "," de ","NON"," ","pas", "les"]
@@ -548,7 +571,10 @@ def make_wordcloud(texte,titre="",width=800, height=400):
         yaxis=dict(visible=False)
     )
     st.plotly_chart(fig)
-    
+ 
+ #13. Fonction pour afficher un dataframe personalisé   
+
+#17. Fonction pour afficher un double anneau de progression 
 def make_dbl_progress_char(labels,vars,colors,titre="",n_secteur=50):
     # Données pour l'anneau externe
     labels2 = ["a"+str(i) for i in range(n_secteur)]
@@ -607,7 +633,8 @@ def make_dbl_progress_char(labels,vars,colors,titre="",n_secteur=50):
 
     # Affichage
     st.plotly_chart(fig)
-       
+
+#18. Fonction pour afficher une carte chlorophete version 1: avec plotly   
 def make_chlorophet_map_2(df, style_carte="carto-positron", palet_color="Blues", opacity=0.8, width=700, height=600):
     """
     Fonction pour créer une carte choroplèthe interactive montrant la distribution des candidats
@@ -784,6 +811,7 @@ def make_chlorophet_map_2(df, style_carte="carto-positron", palet_color="Blues",
     # Affichage avec Streamlit
     st.plotly_chart(fig, use_container_width=True)
 
+#19. Fonction pour afficher une carte chlorophete version 2: avec folium
 def make_chlorophet_map_folium_2(df, style_carte="OpenStreetMap", palet_color="blues", opacity=0.8, width=700, height=600):
     """
     Fonction pour créer une carte choroplèthe interactive montrant la distribution des candidats
@@ -1084,6 +1112,7 @@ def make_chlorophet_map_folium_2(df, style_carte="OpenStreetMap", palet_color="b
     
     return m
 
+#20. Fonction pour afficher histogramme croisé version 4
 def make_cross_hist_b(df, var1, var2, titre="", typ_bar=1, width=800, height=500, sens="v", 
                     palette=None, show_legend=True,bordure=None):
     """
@@ -1188,7 +1217,8 @@ def make_cross_hist_b(df, var1, var2, titre="", typ_bar=1, width=800, height=500
     
     # Affichage dans Streamlit
     st.plotly_chart(fig, use_container_width=True)
-    
+
+#21. Fonction pour afficher un heatmap version 2
 def make_heat_map_2(df, vars, order_var, label_var, titre="", width=500, height=300, 
                    color_scale=None, show_titles=True, text_size=12):
     """
@@ -1313,6 +1343,7 @@ def make_heat_map_2(df, vars, order_var, label_var, titre="", width=500, height=
     
     return fig  # Retourne le graphique pour référence ultérieure
 
+#22. Fonction pour afficher un anneau
 def make_donutchart(df, var, titre="", width=600, height=450, color_palette=None,part=True):
     """
     Crée un graphique en anneau (donut chart) avec des améliorations visuelles.
@@ -1406,7 +1437,8 @@ def make_donutchart(df, var, titre="", width=600, height=450, color_palette=None
     
     return fig  # Retourne le graphique pour référence ultérieure
 
-def make_bar(df, var, color=1, titre="", titre_x="", titre_y="", width=500, height=300, ordre=2, sens='v'):
+#23. Fonction pour afficher un diagpramme barre simple
+def make_bar(df, var, color=1, titre="", titre_x="", titre_y="", width=500, height=300, ordre=2, sens='v',bordure=None):
     """
     Crée un graphique à barres amélioré avec un style professionnel.
     
@@ -1439,7 +1471,8 @@ def make_bar(df, var, color=1, titre="", titre_x="", titre_y="", width=500, heig
         y=y_axis, 
         text="Effectif",
         color_discrete_sequence=val_couleur[color],
-        orientation=sens
+        orientation=sens,
+        
     )
     # Configuration des étiquettes de texte
     fig.update_traces(
@@ -1450,7 +1483,7 @@ def make_bar(df, var, color=1, titre="", titre_x="", titre_y="", width=500, heig
         marker_line_color='rgba(0, 0, 0, 0)',
     )
     # Mise en page améliorée
-    fig.update_layout(
+    fig.update_layout(barcornerradius=bordure,
         title={
             'text': f"<b>{titre}</b>" if titre else "",
             'x': 0.5,
@@ -1493,7 +1526,8 @@ def make_bar(df, var, color=1, titre="", titre_x="", titre_y="", width=500, heig
             bargroupgap=0.1  # Espacement entre les groupes de barres
         )
     st.plotly_chart(fig, use_container_width=True)
- 
+
+#24. Fonction pour afficher une courbe de surface
 def make_area_chart(df,var,titre="",color=1,width=500,height=300):
     df_rempl=df.groupby(var).agg({ "ID":'size'})
     df_rempl=df_rempl.rename(columns={"ID":"Effectif"})
@@ -1518,7 +1552,8 @@ def make_area_chart(df,var,titre="",color=1,width=500,height=300):
         )
     )
     st.plotly_chart(fig) 
-    
+
+#25. Fonction pour afficher une distribution d'une variable quantitative, version 2
 def make_distribution_2(df, var_alpha, var_num, add_vline=None, add_vline2=None, vline_labels=None, 
                      titre="", width=700, height=400, palette=None, bin_size=None, opacity=0.75,
                      show_grid=True):
@@ -1700,6 +1735,7 @@ def make_distribution_2(df, var_alpha, var_num, add_vline=None, add_vline2=None,
     # Afficher dans Streamlit
     st.plotly_chart(fig, use_container_width=True)
 
+#26. Fonction pour définir le thème
 def set_custom_theme():
     """
     Applique un thème personnalisé (dark ou light) à votre application Streamlit
@@ -1776,7 +1812,8 @@ def set_custom_theme():
         }}
         </style>
         """, unsafe_allow_html=True)
-        
+
+#26. Fonction pour afficher histogramme amplilé à barres relatif      
 def make_relative_bar(df, var1, var2, titre="", colors=None, width=650, height=400, 
                      show_values=True, round_digits=1):
     """
@@ -1848,6 +1885,7 @@ def make_relative_bar(df, var1, var2, titre="", colors=None, width=650, height=4
     
     return fig  # Retourner la figure pour utilisation possible ailleurs
 
+#27. Fonction pour une distribution avec les box plot
 def make_hist_box(df,var1,var2,titre="",width=500,height=300):
     fig=px.histogram(df,x=var1,color=var2,marginal="box",color_discrete_sequence=palette,opacity=0.8)
     fig.update_layout(
@@ -1870,7 +1908,7 @@ def make_hist_box(df,var1,var2,titre="",width=500,height=300):
         ))
     st.plotly_chart(fig)
     
-
+#28. Fonction pour afficher une carte dynamiquer version 3
 def make_map_folium(df, style_carte="OpenStreetMap", palet_color="blues", opacity=0.8, width=700, height=600):
     """
     Fonction pour créer une carte choroplèthe interactive montrant la distribution des candidats
@@ -2170,3 +2208,189 @@ def make_map_folium(df, style_carte="OpenStreetMap", palet_color="blues", opacit
     folium_static(m, width=width, height=height)
     
     return m
+
+#29. Fonction de production de carte
+def make_chlorophet_map(df,style_carte="carto-positron",palet_color="Blues",opacity=0.8,width=500, height=300):
+    geo_data_El=df[df["Eligibilite"]=="Eligible"]
+    geo_data_TNE=df[df["Eligibilite"]=="Temporairement Non-eligible"]
+    geo_data_NE=df[df["Eligibilite"]=="Définitivement non-eligible"]
+
+    df_pts_El=geo_data_El.groupby("Quartier").agg({
+    'Quartier': 'size',
+    'Lat': 'first',
+    'Long':'first'
+    }).rename(columns={'Quartier': 'nb_donateur'})
+    df_pts_El["Qrt"]=df_pts_El.index
+
+    df_pts_TNE=geo_data_TNE.groupby("Quartier").agg({
+        'Quartier': 'size',
+        'Lat': 'first',
+        'Long':'first'
+    }).rename(columns={'Quartier': 'nb_donateur'})
+    df_pts_TNE["Qrt"]=df_pts_TNE.index
+
+    df_pts_NE=geo_data_NE.groupby("Quartier").agg({
+        'Quartier': 'size',
+        'Lat': 'first',
+        'Long':'first'
+    }).rename(columns={'Quartier': 'nb_donateur'})
+    df_pts_NE["Qrt"]=df_pts_NE.index
+
+    df_chlph=df.groupby("Arrondissement").agg({
+        'Arrondissement': 'size',
+        'geometry': 'first',
+        'Long':'first',
+        'Lat':'first'
+    }).rename(columns={'Arrondissement': 'nb_donateur'})
+    df_chlph["Arr"]=df_chlph.index
+    df_chlph = gpd.GeoDataFrame(df_chlph, geometry='geometry')
+
+
+    df_pts=df.groupby("Quartier").agg({
+        'Quartier': 'size',
+        'Lat': 'first',
+        'Long':'first'
+    }).rename(columns={'Quartier': 'nb_donateur'})
+    df_pts["Qrt"]=df_pts.index
+    
+    fig = go.Figure(go.Choroplethmapbox(
+        geojson=df_chlph.geometry.__geo_interface__,  # Géométries des arrondissements
+        locations=df_chlph.index,  # Indices des polygones
+        z=df_chlph["nb_donateur"],  # Variable à visualiser (nombre de donateurs)
+        colorscale=palet_color,  # Échelle de couleurs
+        marker_opacity=opacity,  # Opacité des polygones
+        marker_line_width=0.5,  # Épaisseur des bordures
+        colorbar_title="Nombre de Candidat",  # Titre de la barre de couleur
+        hovertext=df_chlph['Arr'],
+        hovertemplate=" %{hovertext}  <br>Nombre de candidat : %{z}<extra></extra>",
+    ))
+    
+    fig.add_trace(go.Scattermapbox(
+        lat=df_chlph["Lat"],
+        lon=df_chlph["Long"],
+        mode='text',
+        text=df_chlph["Arr"],  # Nom des arrondissements
+        textfont=dict(size=12, color="black"),
+        hoverinfo='none'
+    ))
+
+    # Ajout des points pour représenter le nombre de donateurs
+    fig.add_trace(go.Scattermapbox(
+        lat=df_pts["Lat"],  # Colonne des latitudes des points
+        lon=df_pts["Long"],  # Colonne des longitudes des points
+        mode='markers',  # Mode de dispersion (points)
+        name="Total candidat",
+        marker=dict(
+            size=df_pts["nb_donateur"],  # Taille des points basée sur 'nb_donateur'
+            sizemode='area',  # La taille est proportionnelle à la surface
+            sizeref=2. * max(df_pts["nb_donateur"]) / (45.**2),  # Ajustement de la taille
+            color='#003F80',  # Couleur des points
+            opacity=0.8  # Opacité des points
+        ),
+        hovertemplate=(
+            "<b>Quartier :</b> %{text}<br>"
+            "<b>Total candidat :</b> %{marker.size}<extra></extra>"
+        ),  # Format de l'infobulle
+        text=df_pts["Qrt"]
+    ))
+    # Ajout des points pour représenter le nombre de donateurs eligibles
+    fig.add_trace(go.Scattermapbox(
+        lat=df_pts_El["Lat"],  
+        lon=df_pts_El["Long"],  
+        mode='markers',  
+        name="Eligibles",
+        marker=dict(
+            size=df_pts_El["nb_donateur"],  
+            sizemode='area',  
+            sizeref=2. * max(df_pts_El["nb_donateur"]) / (27.**2),  
+            color='#0073E6',  
+            opacity=0.75  
+        ),
+        hovertemplate=(
+            "<b>Quartier :</b> %{text}<br>"
+            "<b> candidat Eligibles :</b> %{marker.size}<extra></extra>"
+        ),
+        text=df_pts_El["Qrt"]
+    ))
+    # Ajout des points pour représenter le nombre de donateurs temporairement non-eligibles
+    fig.add_trace(go.Scattermapbox(
+        lat=df_pts_NE["Lat"],  
+        lon=df_pts_NE["Long"],  
+        mode='markers',  
+        name="Temporairement Non-eligibles",
+        marker=dict(
+            size=df_pts_NE["nb_donateur"],  
+            sizemode='area',  
+            sizeref=2. * max(df_pts_NE["nb_donateur"]) / (17.**2),  
+            color='#B3D9FF',  
+            opacity=0.7  
+        ),
+        hovertemplate=(
+            "<b>Quartier :</b> %{text}<br>"
+            "<b>candidat Temporairement Non-eligibles :</b> %{marker.size}<extra></extra>"
+        ), 
+        text=df_pts_NE["Qrt"]
+    ))
+    # Ajout des points pour représenter le nombre de donateurs Non eligibles
+    fig.add_trace(go.Scattermapbox(
+        lat=df_pts_NE["Lat"],  
+        lon=df_pts_NE["Long"],  
+        mode='markers',  
+        name="Non Eligible",
+        marker=dict(
+            size=df_pts_NE["nb_donateur"],  
+            sizemode='area',  
+            sizeref=2. * max(df_pts_NE["nb_donateur"]) / (10.**2),  
+            color='white',  
+            opacity=0.7  
+        ),
+        hovertemplate=(
+            "<b>Quartier :</b> %{text}<br>"
+            "<b> candidat Non-eligibles :</b> %{marker.size}<extra></extra>"
+        ), 
+        text=df_pts_NE["Qrt"]
+    ))
+
+    # Mise à jour de la mise en page de la carte
+    fig.update_layout(
+        showlegend=True,
+        legend=dict(
+            x=0.0,  # Centré horizontalement
+            y=0.1,  # Sous la carte
+            orientation='h',  # Légende horizontale
+        ),
+        mapbox=dict(
+            #style="open-street-map",
+            style=style_carte,  # Style de la carte
+            #style="carto-darkmatter",
+            center=dict(lat=df_pts["Lat"].mean(), lon=df_pts["Long"].mean()),  # Centrer la carte
+            zoom=10  # Niveau de zoom
+        ),
+        margin=dict(l=0, r=0, t=0, b=0),
+        width=width, height=height,
+    )
+
+    st.plotly_chart(fig)
+
+#30. Fonction de calibrage de la carte
+def calculate_zoom(lon_diff, lat_diff, map_width=800, map_height=600):
+            max_zoom = 18
+            zoom_level = 0
+            while (lon_diff * 2 ** zoom_level < map_width) and (lat_diff * 2 ** zoom_level < map_height):
+                zoom_level += 1
+                if zoom_level >= max_zoom:
+                    break
+            return min(zoom_level, max_zoom)
+
+#31. Fonction de téléchargement de rapport
+def telecharger_pdf(file_path):
+    with open(file_path, "rb") as f:
+        pdf_bytes = f.read()
+    
+    st.download_button(
+        label="📥 Télécharger le rapport PDF",
+        data=pdf_bytes,
+        file_name="Rapport_TDB.pdf",
+        mime="application/pdf",
+    )
+#==========================================================

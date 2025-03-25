@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Main
-
-# In[1]:
-
 
 def verifier_eligibilite_don_sang(
-    sexe: str,  # "M" pour masculin, "F" pour féminin
+    sexe: str,  
     age: int,
     poids: float,
     derniere_donation: int,
@@ -170,70 +166,4 @@ def verifier_eligibilite_don_sang(
             resultat["recommandations"].append("Envisager un don après la fin du cycle menstruel actuel et consulter un médecin pour tout saignement anormal")
     
     return resultat
-
-
-# Exemples d'utilisation
-if __name__ == "__main__":
-    # Exemple 1: Homme éligible
-    resultat_homme = verifier_eligibilite_don_sang(
-        sexe="M",
-        age=35,
-        poids=75.5,
-        derniere_donation=180,
-        maladies_chroniques=["Asthme léger"],
-        medicaments=["Ventoline occasionnelle"],
-        interventions_recentes=False,
-        tatouages_recents=False
-    )
-    
-    print("Exemple 1 (Homme):")
-    print(f"Éligible: {resultat_homme['eligible']}")
-    print(f"Raisons: {resultat_homme['raisons']}")
-    print(f"Recommandations: {resultat_homme['recommandations']}")
-    print("\n" + "-"*50 + "\n")
-    
-    # Exemple 2: Femme non éligible avec cycle menstruel
-    resultat_femme = verifier_eligibilite_don_sang(
-        sexe="F",
-        age=28,
-        poids=62.0,
-        derniere_donation=100,
-        grossesse_recente=False,
-        en_periode_menstruelle=True,
-        cycle_menstruel_irregulier=False,
-        saignements_anormaux=False,
-        interventions_recentes=False,
-        tatouages_recents=False
-    )
-    
-    print("Exemple 2 (Femme):")
-    print(f"Éligible: {resultat_femme['eligible']}")
-    print(f"Raisons: {resultat_femme['raisons']}")
-    print(f"Recommandations: {resultat_femme['recommandations']}")
-    print("\n" + "-"*50 + "\n")
-    
-    # Exemple 3: Femme avec cycle menstruel irrégulier
-    resultat_femme_cycle = verifier_eligibilite_don_sang(
-        sexe="F",
-        age=32,
-        poids=58.5,
-        derniere_donation=120,
-        grossesse_recente=False,
-        en_periode_menstruelle=False,
-        cycle_menstruel_irregulier=True,
-        saignements_anormaux=True,
-        interventions_recentes=False,
-        tatouages_recents=False
-    )
-    
-    print("Exemple 3 (Femme avec cycle irrégulier):")
-    print(f"Éligible: {resultat_femme_cycle['eligible']}")
-    print(f"Raisons: {resultat_femme_cycle['raisons']}")
-    print(f"Recommandations: {resultat_femme_cycle['recommandations']}")
-
-
-# In[ ]:
-
-
-
 
