@@ -267,6 +267,71 @@ title_css = """
 </style>
 """
 
+header_css = """
+<style>
+.header-container {
+    background: linear-gradient(135deg, #ff4b4b 0%, #ff6b6b 100%);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.header-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.1);
+    transform: skew(-15deg) rotate(-15deg);
+    z-index: 1;
+}
+
+.header-title {
+    color: white;
+    font-size: 2.5em;
+    font-weight: 800;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.header-subtitle {
+    color: rgba(255,255,255,0.9);
+    font-size: 1.2em;
+    font-weight: 300;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+    position: relative;
+    z-index: 2;
+}
+
+.image-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.image-wrapper {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.image-wrapper:hover {
+    transform: scale(1.03);
+}
+</style>
+"""
 
 tabs_css = """
 <style>
@@ -307,6 +372,31 @@ tabs_css = """
 </style>
 """
 
+global_font_css = """
+<style>
+/* Définit la taille de police par défaut pour toute la page */
+body, .stMarkdown, .stTextInput>div>div>input, .stSelectbox>div>div>select, 
+.stMultiSelect>div>div>div, .stDateInput>div>div>input, 
+.stNumberInput>div>div>input, .stTextArea>div>div>textarea {
+    font-size: 19px !important; /* Taille de police de base */
+}
+
+/* Styles pour différents types de texte */
+h1 { font-size: 2.5em !important; }  /* Titres principaux */
+h2 { font-size: 2em !important; }    /* Sous-titres */
+h3 { font-size: 1.5em !important; }  /* Titres de section */
+p, div, span { font-size: 19px !important; } /* Texte de paragraphe */
+
+/* Option pour ajuster la taille de police de manière responsive */
+@media (max-width: 600px) {
+    body, .stMarkdown {
+        font-size: 14px !important;
+    }
+}
+</style>
+"""
+
+st.markdown(global_font_css, unsafe_allow_html=True)
 #=======================================================================
 #================== Sélecteur de langue ================================
 def set_language():
@@ -435,23 +525,38 @@ for member in members:
 
 #====================== EN TETE ===========================
 #----------Ajout des images d'en tête ----------------------
-img1, img2 =st.columns(2)
+st.markdown(header_css, unsafe_allow_html=True)
+
+# Image columns with improved styling
+st.markdown('<div class="image-container">', unsafe_allow_html=True)
+img1, img2 = st.columns(2)
+
 with img1:
+    st.markdown('<div class="image-wrapper">', unsafe_allow_html=True)
     image = Image.open("Image.png")
     resized_image = image.resize((626, 200))  
     st.image(resized_image)
+    st.markdown('</div>', unsafe_allow_html=True)
+
 with img2:
+    st.markdown('<div class="image-wrapper">', unsafe_allow_html=True)
     image2 = Image.open("Image2.png")
     resized_image = image2.resize((626, 200))  
     st.image(resized_image)
-  
+    st.markdown('</div>', unsafe_allow_html=True)
 
-#--------------------Affichage du titre et sous-titres avec un meilleur style------------------------------
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Enhanced Header
 st.markdown(
     f"""
-    <div style="text-align:center; padding:10px;">
-        <h1 style="color:#ff4b4b;">🩸 {traduire_texte("Tableau de bord de la campagne de don de sang",lang)} 🩸</h1>
-        <h3 style="color: #4b8bff;">{traduire_texte("Exploiter les données pour une meilleure gestion et planification des dons de sang",lang)}</h3>
+    <div class="header-container">
+        <h1 class="header-title">
+            🩸 {traduire_texte("Tableau de bord de la campagne de don de sang", lang)} 🩸
+        </h1>
+        <h3 class="header-subtitle">
+            {traduire_texte("Exploiter les données pour une meilleure gestion et planification des dons de sang", lang)}
+        </h3>
     </div>
     """,
     unsafe_allow_html=True
