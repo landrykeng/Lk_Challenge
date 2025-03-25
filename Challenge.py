@@ -605,10 +605,6 @@ st.sidebar.markdown(f"""
 
 #_____________________________________________________________________________
 #______________Membre du groupe_______________________________________________
-st.sidebar.title(traduire_texte("Membres du Groupe",lang))
-members = ["ANABA Rodrigue","KENGNE Bienvenu Landry","NOULAYE Merveille","TCHINDA Rinel"]
-for member in members:
-    st.sidebar.markdown(f"✅ {member}")
 #==========================================================
 
 #====================== EN TETE ===========================
@@ -619,7 +615,6 @@ st.markdown(table_css, unsafe_allow_html=True)
 # Image columns with improved styling
 st.markdown('<div class="image-container">', unsafe_allow_html=True)
 img1, img2 = st.columns(2)
-
 with img1:
     st.markdown('<div class="image-wrapper">', unsafe_allow_html=True)
     image = Image.open("Image.png")
@@ -1313,7 +1308,7 @@ with tabs[5]:
     with m3:
         create_member_profile(
             name="TCHINDA Rinel",
-            title="Executive Manager",
+            title="Economiste - Data Scientist",
             image_path="Rinel.jpg",
             about_text="Je suis un data scientist titulaire d'une licence en mathématiques, un master en économie quantitative et ingénierie statistique, alliant expertise analytique et foi évangélique fervente.",)
     with m4:

@@ -1,12 +1,8 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
 
 # # Packages
-import pandas as pd
 import numpy as np
+import pandas as pd
+import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, accuracy_score, roc_curve, roc_auc_score
@@ -14,14 +10,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 import joblib
 import warnings
+import streamlit as st
 warnings.filterwarnings('ignore')
 
-
-# In[2]:
-
-
 # # Importation et nettoyage des données
-def load_and_preprocess_data(file_path='Good_Data.xlsm', sheet='2019'):
+def load_and_preprocess_data(file_path='Data_Model.xlsm', sheet='2019'):
     # Importation de la base
     data = pd.read_excel(file_path, sheet_name=sheet)
     
@@ -30,13 +23,13 @@ def load_and_preprocess_data(file_path='Good_Data.xlsm', sheet='2019'):
     
     # Récupérations des colonnes utiles
     cols = ['ÉLIGIBILITÉ AU DON.', 'Niveau_etude', 'Age', 'Genre', 'Situation_Matrimoniale',
-            'Good_profession', 'Godd_Religion', 'ancien_don_sang', 'Taux _hémoglobine_(g/dl)']
+            'Good_profession', 'Godd_Religion', 'ancien_don_sang', 'Taux_hémoglobine_(g/dl)']
     
     # Création d'un dataframe plus filtré
     df = data[cols]
     
     # Suppression des valeurs manquantes de la colonne Taux _hémoglobine_(g/dl)
-    df = df.dropna(subset=['Taux _hémoglobine_(g/dl)'])
+    df = df.dropna(subset=['Taux_hémoglobine_(g/dl)'])
     
     # Suppression des individus avec des âges non prévus par la réglementation
     df = df[~df['Age'].isin([12.0, 17.0, 119.0])]
@@ -51,7 +44,7 @@ def load_and_preprocess_data(file_path='Good_Data.xlsm', sheet='2019'):
                                      inplace=True)
     
     # Sélection des variables pour le modèle
-    var_model = ['ÉLIGIBILITÉ AU DON.', 'Age', 'Taux _hémoglobine_(g/dl)', 
+    var_model = ['ÉLIGIBILITÉ AU DON.', 'Age', 'Taux_hémoglobine_(g/dl)', 
                  'Genre', 'Good_profession', 'ancien_don_sang']
     datamodel = df[var_model]
     
@@ -71,16 +64,13 @@ def load_and_preprocess_data(file_path='Good_Data.xlsm', sheet='2019'):
     
     # Standardisation des variables quantitatives
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(datamodel[['Age', 'Taux _hémoglobine_(g/dl)']])
-    datamodel[['Age', 'Taux _hémoglobine_(g/dl)']] = X_scaled
+    X_scaled = scaler.fit_transform(datamodel[['Age', 'Taux_hémoglobine_(g/dl)']])
+    datamodel[['Age', 'Taux_hémoglobine_(g/dl)']] = X_scaled
     
     # Sauvegarde du scaler pour réutilisation future
     joblib.dump(scaler, 'scaler.pkl')
     
     return datamodel
-
-
-# In[3]:
 
 
 def split_data(datamodel):
@@ -98,9 +88,6 @@ def split_data(datamodel):
     )
     
     return X_train, X_val, X_test, y_train, y_val, y_test
-
-
-# In[4]:
 
 
 def optimize_knn(X_train, y_train, X_val, y_val):
@@ -121,9 +108,6 @@ def optimize_knn(X_train, y_train, X_val, y_val):
     joblib.dump(best_model, 'knn_model.pkl')
     
     return best_model, best_params
-
-
-# In[9]:
 
 
 def evaluate_model(model, X_train, X_val, X_test, y_train, y_val, y_test):
@@ -167,13 +151,22 @@ def evaluate_model(model, X_train, X_val, X_test, y_train, y_val, y_test):
     return accuracy_train, accuracy_val, accuracy_test, train_df, val_df, test_df #feature_importance
 
 
-# In[6]:
-
 
 def get_feature_importance(model, X_test, y_test):
     """
     Calcule l'importance des caractéristiques en utilisant une méthode basée sur permutation
+    et renvoie un graphique Plotly interactif
+    
+    Paramètres:
+    - model: Modèle entraîné avec une méthode .score()
+    - X_test: DataFrame des caractéristiques de test
+    - y_test: Série des étiquettes de test
+    
+    Retourne:
+    - DataFrame avec l'importance des caractéristiques
+    - Figure Plotly
     """
+    # Calculer l'importance des caractéristiques par permutation
     feature_importance = {}
     baseline_score = model.score(X_test, y_test)
     
@@ -185,24 +178,46 @@ def get_feature_importance(model, X_test, y_test):
     
     # Convertir en DataFrame et trier par importance
     importance_df = pd.DataFrame({
-        'Feature': feature_importance.keys(),
-        'Importance': feature_importance.values()
-    }).sort_values('Importance', ascending=False)
+        'Feature': list(feature_importance.keys()),
+        'Importance': list(feature_importance.values())
+    }).sort_values('Importance', ascending=True)
     
-    # Visualisation
-    plt.figure(figsize=(10, 6))
-    plt.barh(importance_df['Feature'], importance_df['Importance'])
-    plt.xlabel('Diminution de la précision après permutation')
-    plt.ylabel('Caractéristique')
-    plt.title('Importance des caractéristiques')
-    plt.tight_layout()
-    plt.savefig('feature_importance.png')
-    plt.show()
+    # Créer un graphique Plotly horizontal bar chart
+    fig = go.Figure(go.Bar(
+        x=importance_df['Importance'],
+        y=importance_df['Feature'],
+        orientation='h',
+        marker_color='rgba(50, 171, 96, 0.6)',
+        marker_line_color='rgba(50, 171, 96, 1.0)',
+        marker_line_width=1.5
+    ))
     
-    return importance_df
+    # Personnaliser la mise en page
+    fig.update_layout(
+        title='Importance des caractéristiques (Méthode de permutation)',
+        xaxis_title='Diminution de la précision après permutation',
+        yaxis_title='Caractéristique',
+        height=600,
+        width=800,
+        template='plotly_white'
+    )
+    
+    return importance_df, fig
 
-
-# In[7]:
+# Exemple d'utilisation dans Streamlit
+def display_feature_importance(model, X_test, y_test):
+    """
+    Fonction pour afficher l'importance des caractéristiques dans Streamlit
+    """
+    
+    # Calculer l'importance des caractéristiques
+    importance_df, fig = get_feature_importance(model, X_test, y_test)
+    
+    # Afficher le graphique
+    st.plotly_chart(fig, use_container_width=True)
+    
+    # Afficher le tableau d'importance
+    st.dataframe(importance_df)
 
 
 def predict_new_individual(new_data):
@@ -240,7 +255,7 @@ def predict_new_individual(new_data):
             if 'Age' in new_data:
                 data_preprocessed['Age'] = new_data['Age']
             if 'Taux_hemoglobine' in new_data:
-                data_preprocessed['Taux _hémoglobine_(g/dl)'] = new_data['Taux_hemoglobine']
+                data_preprocessed['Taux_hémoglobine_(g/dl)'] = new_data['Taux_hemoglobine']
             
             # Colonnes catégorielles
             if 'Genre' in new_data and new_data['Genre'] == 1:
@@ -259,7 +274,7 @@ def predict_new_individual(new_data):
             # Standardiser les variables quantitatives
             if 'Age' in new_data and 'Taux_hemoglobine' in new_data:
                 # Identifier les colonnes quantitatives dans le DataFrame
-                quant_cols = ['Age', 'Taux _hémoglobine_(g/dl)']
+                quant_cols = ['Age', 'Taux_hémoglobine_(g/dl)']
                 quant_cols_present = [col for col in quant_cols if col in data_preprocessed.columns]
                 
                 if quant_cols_present:
@@ -269,7 +284,7 @@ def predict_new_individual(new_data):
             # Si nous n'avons pas les noms des colonnes, créer un DataFrame simple
             data_preprocessed = pd.DataFrame({
                 'Age': [new_data.get('Age', 0)],
-                'Taux _hémoglobine_(g/dl)': [new_data.get('Taux_hemoglobine', 0)],
+                'Taux_hémoglobine_(g/dl)': [new_data.get('Taux_hemoglobine', 0)],
                 'Genre_1': [1 if new_data.get('Genre', 0) == 1 else 0],
                 'ancien_don_sang_1': [1 if new_data.get('ancien_don_sang', 0) == 1 else 0]
             })
@@ -280,7 +295,7 @@ def predict_new_individual(new_data):
                 data_preprocessed[prof_col] = 1
             
             # Standardiser les variables quantitatives
-            quant_cols = ['Age', 'Taux _hémoglobine_(g/dl)']
+            quant_cols = ['Age', 'Taux_hémoglobine_(g/dl)']
             data_preprocessed[quant_cols] = scaler.transform(data_preprocessed[quant_cols])
         
         # Faire la prédiction
@@ -307,47 +322,4 @@ def predict_new_individual(new_data):
         }
 
 
-# In[13]:
-
-
-def main():
-    # Chargement et prétraitement des données
-    print("Chargement et prétraitement des données...")
-    datamodel = load_and_preprocess_data()
-    
-    # Division des données
-    print("Division des données en ensembles d'entraînement, validation et test...")
-    X_train, X_val, X_test, y_train, y_val, y_test = split_data(datamodel)
-    
-    # Optimisation du modèle KNN
-    print("Optimisation des hyperparamètres du modèle KNN...")
-    best_model, best_params = optimize_knn(X_train, y_train, X_val, y_val)
-    
-    # Évaluation du modèle
-    print("Évaluation du modèle...")
-    results = evaluate_model(best_model, X_train, X_val, X_test, y_train, y_val, y_test)
-    return best_model, results
-
-
-# In[14]:
-
-
-main()
-
-
-# In[15]:
-
-
-# Exemple de prédiction pour un nouvel individu
-print("\nExemple de prédiction pour un nouvel individu:")
-new_individual = {
-    'Age': 35,
-    'Taux_hemoglobine': 14.2,
-    'Genre': 1,  # Homme
-    'Good_profession': 2,  # Catégorie professionnelle 2
-    'ancien_don_sang': 1  # A déjà donné du sang
-}
-
-prediction_result = predict_new_individual(new_individual)
-print(f"Prédiction: {prediction_result}")
 

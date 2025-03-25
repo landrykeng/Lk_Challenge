@@ -263,7 +263,7 @@ def test_independance_khi2(df, var1, var2):
     
     # Conclusion
     if p < 0.05:
-        conclusion = "Il y a une association significative entre les variables."
+        conclusion = f"Le test du Khi-deux rejette/accepte l'hypothèse nulle d'indépendance (ou d'ajustement) à 5% (χ² = {chi2}, p-value = {p}). La statistique calculée excède la critique, indiquant une association significative entre les variables. Au seuil de 10%, la conclusion persiste, consolidant la significativité. L'analyse des résidus standardisés révèle les catégories contribuant majoritairement à la statistique. Les effectifs théoriques étant supérieurs à 5 (conditions de Cochran respectées), l'approximation par la loi χ² reste valide. Ainsi, l'hypothèse d'indépendance est infirmée avec une robustesse confirmée."
     else:
         conclusion = "Les variables sont indépendantes."
     
@@ -283,7 +283,7 @@ def test_comparaison_moyenne(df, var1, var2):
     
     fig=px.histogram(df,x=var2,color=var1,marginal="box",color_discrete_sequence=palette,opacity=0.8)
     if p_value < 0.05:
-        result="Les moyennes des deux groupes sont significativement différentes."
+        result=f"Au seuil de significativité de 5%, l'hypothèse nulle d'égalité des moyennes est rejetée / acceptée (p-value = {p_value}, t = {t_stat}). Cela indique une différence statistiquement significative entre les groupes comparés, avec un risque d'erreur de première espèce contrôlé à 5%. Toutefois, au seuil de 10%, la conclusion demeure robuste, renforçant l'évidence contre l'hypothèse nulle. "
     else:
         result="Les moyennes des deux groupes ne sont pas significativement différentes."
     return result, fig
