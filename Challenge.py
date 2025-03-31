@@ -1003,13 +1003,13 @@ with tabs[3]:
                 options=["Célibataire", "Marié(e)", "Divorcé(e)", "Veuf/Veuve", "Union libre"])
             
             # Religion
-            religion = st.selectbox("Religion",options=All_religion)
+            religion = st.selectbox("Religion",options=All_religion+[""], default=[""])
         
         with col2:
             # Profession
-            profession = st.selectbox("Profession",options=metier,)
+            profession = st.selectbox("Profession",options=metier+[""], default=[""])
             # Quartier de résidence 
-            quartier = st.selectbox("Quartier de résidence",options=all_Quartier)
+            quartier = st.selectbox("Quartier de résidence",options=all_Quartier+[""], default=[""])
             
             # Nationalité 
             nationalite_options = [
