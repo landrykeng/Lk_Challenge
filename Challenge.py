@@ -613,23 +613,9 @@ st.markdown(header_css, unsafe_allow_html=True)
 st.markdown(table_css, unsafe_allow_html=True)
 
 # Image columns with improved styling
-st.markdown('<div class="image-container">', unsafe_allow_html=True)
-img1, img2 = st.columns(2)
-with img1:
-    st.markdown('<div class="image-wrapper">', unsafe_allow_html=True)
-    image = Image.open("Image.png")
-    resized_image = image.resize((626, 200))  
-    st.image(resized_image)
-    st.markdown('</div>', unsafe_allow_html=True)
+"""
 
-with img2:
-    st.markdown('<div class="image-wrapper">', unsafe_allow_html=True)
-    image2 = Image.open("Image2.png")
-    resized_image = image2.resize((626, 200))  
-    st.image(resized_image)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
+"""
 
 # Enhanced Header
 st.markdown(
@@ -1003,13 +989,13 @@ with tabs[3]:
                 options=["Célibataire", "Marié(e)", "Divorcé(e)", "Veuf/Veuve", "Union libre"])
             
             # Religion
-            religion = st.selectbox("Religion",options=All_religion+[""], default=[""])
+            religion = st.selectbox("Religion",options=All_religion)
         
         with col2:
             # Profession
-            profession = st.selectbox("Profession",options=metier+[""], default=[""])
+            profession = st.selectbox("Profession",options=metier)
             # Quartier de résidence 
-            quartier = st.selectbox("Quartier de résidence",options=all_Quartier+[""], default=[""])
+            quartier = st.selectbox("Quartier de résidence",options=all_Quartier)
             
             # Nationalité 
             nationalite_options = [
