@@ -1129,10 +1129,10 @@ with tabs[3]:
         st.subheader("Résultat de l'évaluation")
         
         if resultat["eligible"]:
-            st.success("✅ Vous êtes éligible pour passer aux examens approfondis pour le don de sang. Veuillez prendre un rendez-vous")
+            st.success(traduire_texte("✅ Vous êtes éligible pour passer aux examens approfondis pour le don de sang. Veuillez prendre un rendez-vous",lang))
             statut="Temporairement éligible"
         elif (medicaments!=None) | (maladies_chroniques!=None) | tatouages_recents :
-            st.error("❌ Vous n'êtes pas éligible pour le don de sang. Merci pour l'élant de coeur dont vous avez fait preuve")
+            st.error(traduire_texte("❌ Vous n'êtes pas éligible pour le don de sang. Merci pour l'élant de coeur dont vous avez fait preuve",lang))
             statut="Non-éligible"
         else:
             st.error(traduire_texte("❌ Vous n'êtes pas éligible pour le don de sang actuellement.",lang))
