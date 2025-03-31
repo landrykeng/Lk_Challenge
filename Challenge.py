@@ -1135,22 +1135,22 @@ with tabs[3]:
             st.error("❌ Vous n'êtes pas éligible pour le don de sang. Merci pour l'élant de coeur dont vous avez fait preuve")
             statut="Non-éligible"
         else:
-            st.error("❌ Vous n'êtes pas éligible pour le don de sang actuellement.")
+            st.error(traduire_texte("❌ Vous n'êtes pas éligible pour le don de sang actuellement.",lang))
             statut="Temporairement non-éligible"
         
         # Affichage des raisons
         st.subheader("Détails:")
         for raison in resultat["raisons"]:
-            st.write(f"- {raison}")
+            st.write(f"- {traduire_texte(raison,lang)}")
         
         # Affichage des recommandations si présentes
         if resultat["recommandations"]:
             st.subheader("Recommandations:")
             for recommandation in resultat["recommandations"]:
-                st.write(f"- {recommandation}")
+                st.write(f"- {traduire_texte(recommandation,lang)}")
         
         # Avertissement 
-        st.info("⚠️ Cette évaluation est indicative et ne remplace pas l'avis d'un professionnel de santé. Veuillez consulter le personnel médical du centre de don pour une évaluation définitive.")
+        st.info(traduire_texte("⚠️ Cette évaluation est indicative et ne remplace pas l'avis d'un professionnel de santé. Veuillez consulter le personnel médical du centre de don pour une évaluation définitive.",lang))
         
         #Fonction d'enregistrement d'un nouveau formulaire.
         def save(df):
