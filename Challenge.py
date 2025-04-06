@@ -4,6 +4,8 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 import streamlit as st
+import traceback
+import ollama
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,8 +32,10 @@ from my_fonction import *
 #from Good_KNN import *
 from Fonction_Classement import *
 from PIL import Image
-import base64
 from pathlib import Path
+from gpt4all import GPT4All
+import json
+from streamlit_echarts import st_echarts
 #==================================================================================================
 
 
@@ -199,6 +203,48 @@ st.markdown("""
         }
         </style>
         """, unsafe_allow_html=True)
+
+useless_style="""
+<style>
+.sidebar-link {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar-link-right {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-align: right;
+}
+
+.sidebar-link-center {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-align: center;
+}
+</style>
+"""
 
 sidebar_css = """
 <style>
@@ -488,6 +534,28 @@ profile_css = """
 </style>
 """
 
+button_style = """
+    <style>
+    div[data-baseweb="segmented-control"] > div {
+        background-color: #f0f2f6;  /* Couleur de fond */
+        border-radius: 10px;  /* Coins arrondis */
+        padding: 5px;
+    }
+    
+    div[data-baseweb="segmented-control"] button {
+        color: white !important;  /* Couleur du texte */
+        background-color: #4CAF50 !important;  /* Couleur de fond des boutons */
+        border-radius: 8px !important;  /* Arrondi des boutons */
+        padding: 10px 20px !important;  /* Espacement interne */
+        font-weight: bold !important;
+    }
+
+    div[data-baseweb="segmented-control"] button:hover {
+        background-color: #45a049 !important;  /* Couleur au survol */
+    }
+    </style>
+    """
+
 st.markdown(global_font_css, unsafe_allow_html=True)
 #=======================================================================
 #================== Sélecteur de langue ================================
@@ -688,9 +756,9 @@ st.markdown(tabs_css, unsafe_allow_html=True)
 
 # Define tabs with improved design
 tabs = st.tabs([
-    f"📂 {traduire_texte('Données Brutes', lang)}", 
-    f"📊 {traduire_texte('Visualisation des Indicateurs', lang)}",
-    f"📄 {traduire_texte('Produire un rapport', lang)}",
+    f"📂 {traduire_texte(' Feuille des Données', lang)}", 
+    f"📊 {traduire_texte('Tableau de Bord', lang)}",
+    f"📄 {traduire_texte('Autres graphiques et rapport', lang)}",
     f"📝 {traduire_texte('Formulaire', lang)}",
     f"🖥️ {traduire_texte('Nouveau Tableau de Bord', lang)}", 
     f"👥 {traduire_texte('Profil du groupe', lang)}",
@@ -699,12 +767,11 @@ tabs = st.tabs([
 #----ONGLET 1: BASES DE DONNEES
 with tabs[0]:
     
-    st.write(traduire_texte("données avec traitement incluant",lang))
-    st.dataframe(data)
-    st.write(traduire_texte("Données géospatialisée",lang))
-    st.dataframe(geo_data)
-    st.write(traduire_texte("Données sur les donneurs",lang))
-    st.dataframe(data_don)
+    Make_Global_DataFrame(data, title=traduire_texte("Données",lang),cle="tab1")
+    #st.dataframe(geo_data)
+    Make_Global_DataFrame(geo_data, title=traduire_texte("Données géospatialisée",lang))
+    #st.dataframe(data_don)
+    Make_Global_DataFrame(data_don, title=traduire_texte("Données sur les donneurs",lang))
     
 #----ONGLET 2: TABLEAU DE BORD PROPREMENT DIT
 with tabs[1]:
@@ -729,10 +796,15 @@ with tabs[1]:
             with da1:
                 make_bar(data,var="Religion",titre=traduire_texte("Répartition par réligion",lang),ordre=1,width=500,height=350,sens='h',bordure=10)
             with da2:
-                make_heat_map_2(data,vars=['Region', 'Arrondissement','Quartier'],order_var="ID",label_var='Quartier',titre=traduire_texte("Répartition des candidats",lang))
+                #liquidfill_option = {
+                   #     "series": [{"type": "liquidFill", "data": [0.7, 0.8, 0.4, 0.3]}]
+                   # }
+                #st_echarts(liquidfill_option)
+                make_heat_map(data,vars=['Region', 'Arrondissement','Quartier'],oder_var="ID",label_var='Quartier',titre=traduire_texte("Répartition des candidats",lang))
             
             dd1, dd2,dd3 =st.columns([2,4.5,3.5])
             with dd1:
+                st.markdown(profile_css, unsafe_allow_html=True)
                 make_donutchart(data,var="Genre",titre=traduire_texte("Genre des candidats",lang))
             with dd2:
                 make_cross_hist_b(data,var2="Niveau_etude",var1="Eligibilité",titre=traduire_texte("Niveau d'étude",lang),sens='v',typ_bar=1)
@@ -744,6 +816,7 @@ with tabs[1]:
             
     #SECTION 2: ANALYSE GEOGRAPHIQUE DANS DOUALA 
     st.markdown('<div id="section2"></div>', unsafe_allow_html=True)  
+    st.markdown(button_style, unsafe_allow_html=True)
     with st.expander(traduire_texte("Analyse géographique dans Douala",lang), expanded=True,icon="🩸"):  
         cc1,cc2,cc3,cc4,cc5=st.columns([2, 1,1.5,2,3.5])
         with cc1:
@@ -753,15 +826,14 @@ with tabs[1]:
         with cc3:
             style=st.selectbox(traduire_texte("Type de carte",lang),options=["open-street-map","carto-positron","carto-darkmatter"])
         with cc4:
-            genre=st.multiselect(traduire_texte("Filtre: Genre",lang),options=data["Genre"].unique(),default=data["Genre"].unique())
+            genre=st.segmented_control(traduire_texte("Filtre: Genre",lang),options=data["Genre"].unique(),selection_mode="multi",default=data["Genre"].unique(),key="Genre1")
         with cc5:
-            Statut_Mat=st.multiselect(traduire_texte("Filtre: Statut Marital",lang),options=data["Situation_Mat"].unique(),default=data["Situation_Mat"].unique())
-               
+            Statut_Mat=st.segmented_control(traduire_texte("Filtre: Statut Marital",lang),options=data["Situation_Mat"].unique(),selection_mode="multi",default=data["Situation_Mat"].unique())   
         col1, col2 = st.columns([5, 3.4])
         geo_data_dla=geo_data[geo_data["Genre"].isin(genre)] if len(genre)!=0 else geo_data 
         geo_data_dla=geo_data[geo_data["Situation_Matrimoniale"].isin(Statut_Mat)] if len(Statut_Mat)!=0 else geo_data_dla 
         with col1:       
-            make_chlorophet_map_folium_2(geo_data_dla,style_carte=style,palet_color=couleur,opacity=opacity,width=1000,height=650)
+            make_chlorophet_map_echarts(geo_data_dla,style_carte=style,palet_color=couleur,opacity=opacity,width=1000,height=650)
         with col2:
             geo_data_dla["Categorie_profession"]=geo_data_dla["Categorie_profession"].replace("Personnel des services directs aux particuliers, commercants vendeurs","commercants vendeurs")
             make_bar(geo_data_dla,"Categorie_profession",titre=traduire_texte("Categorie Professionnelle",lang),ordre=1,sens='h',height=400,width=600,bordure=10) 
@@ -772,7 +844,7 @@ with tabs[1]:
         with cb1:
             make_cross_hist_b(geo_data_dla,"Eligibilite","Arrondissement",titre=traduire_texte("Répartition par arrondissement",lang),width=400,height=450,typ_bar=0,bordure=10)
         with cb2:
-            make_donutchart(geo_data_dla,var="ancien_don_sang",titre=traduire_texte("ancien donateur",lang))
+            make_donutchart_2(geo_data_dla,var="ancien_don_sang",titre=traduire_texte("ancien donateur",lang))
         with cb3:
             #make_cross_hist_3(geo_data_dla,"Niveau_etude","Age",titre="",agregation="avg",width=400,height=300)
             make_bar(geo_data_dla,var="Classe_age",titre=traduire_texte("Répartition des ages",lang),width=700,height=450,bordure=10)
@@ -782,25 +854,26 @@ with tabs[1]:
     with st.expander(translations[lang1]["section3"],expanded=True,icon="🩸"):    
         b11, b12, b13, b14,b15, b16 =st.columns([1,1.3,1.5,4.2,1.7,2.1])
         with b11:
-            couleur_2=st.selectbox("Couleur",sequence_couleur)
+            couleur_2=st.selectbox(traduire_texte("Couleur",lang),sequence_couleur)
         with b12:
-            opacity_2=st.slider("Transparence",min_value=0.0,max_value=1.0,value=0.8,step=0.01)
+            opacity_2=st.slider(traduire_texte("Transparence",lang),min_value=0.0,max_value=1.0,value=0.8,step=0.01)
         with b13:
-            style_2=st.selectbox("Thme carte",options=["open-street-map","carto-positron","carto-darkmatter"])
+            style_2=st.selectbox(traduire_texte("Thme carte",lang),options=["open-street-map","carto-positron","carto-darkmatter"])
         with b14:
-            arrondissement=st.multiselect("Arrondissement",options=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"],default=["Douala 1er"])
+            arrondissement=st.multiselect(traduire_texte("Arrondissement",lang),options=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"],default=["Douala 1er"])
         with b15:
-            last_don=st.multiselect("Filtre: Ancien donateur",options=data["Don_pass"].unique(),default=data["Don_pass"].unique())
+            last_don=st.segmented_control(traduire_texte("Filtre: Ancien donateur",lang),options=data["Don_pass"].unique(),selection_mode="multi",default=data["Don_pass"].unique())
         with b16:    
-            genre2=st.multiselect(" Filtre: Genre",options=data["Genre"].unique(),default=data["Genre"].unique())
+            genre2=st.segmented_control(traduire_texte("Genre",lang),options=data["Genre"].unique(),selection_mode="multi", default=data["Genre"].unique(),key="genre_selection")
             
         geo_data_arr=geo_data[geo_data["Arrondissement"].isin(arrondissement)] if len(arrondissement)!=0 else geo_data
+        data_arr=data[data["Arrondissement"].isin(arrondissement)] if len(arrondissement)!=0 else data
         geo_data_arr=geo_data_arr[geo_data_arr["ancien_don_sang"].isin(last_don)] if len(last_don)!=0 else geo_data_arr
         geo_data_arr=geo_data_arr[geo_data_arr["Genre"].isin(genre2)] if len(genre2)!=0 else geo_data_arr
         
         b1, b2 =st.columns([6.5,2.5])
         with b1:
-            make_chlorophet_map_folium_2(geo_data_arr,style_carte=style_2,palet_color=couleur_2,opacity=opacity_2,width=1000,height=500)
+            make_chlorophet_map_folium_2(geo_data_arr,style_carte=style_2,palet_color=couleur_2,opacity=opacity_2,width=1200,height=500)
         with b2:     
             geo_data_arr_for_table=geo_data_arr.groupby("Quartier").agg({
                 "ID":"size"
@@ -809,7 +882,13 @@ with tabs[1]:
             geo_data_arr_for_table=geo_data_arr_for_table.rename(columns={ "ID": "Nb_Candidats"})
             geo_data_arr_for_table["Quartier"]=geo_data_arr_for_table.index
             make_dataframe(geo_data_arr_for_table,col_alpha="Quartier",col_num="Nb_Candidats",hide_index=True)
-    
+        ba=st.columns(2)
+        with ba[0]:
+            make_cross_hist_b_ech(geo_data_arr,"Eligibilite","Categorie_profession",titre=traduire_texte("Répartition par Catégory professionnelle",lang),width=800,height=750,typ_bar=2,bordure=10)
+            st.write("Bonjour")
+            #make_bar(geo_data_dla,"Categorie_profession",titre=traduire_texte("Categorie Professionnelle",lang),ordre=1,sens='h',height=400,width=600,bordure=10) 
+        with ba[1]:
+            make_donutchart_2(geo_data_arr,var="Situation_Matrimoniale",titre=traduire_texte("Statut Matrimonial",lang))
     #SECTION 4 :  CONDITION DE SANTE ET ELIGIBILITE
     st.markdown('<div id="section4"></div>', unsafe_allow_html=True)
     with st.expander(translations[lang1]["section4"], expanded=True,icon="❤️"):
@@ -821,9 +900,15 @@ with tabs[1]:
             data_el=data_el.rename(columns={"ID":"Nb_Candidats"})
             data_el["Proportion"]=data_el["Nb_Candidats"]/float(data_el["Nb_Candidats"].sum())
             make_progress_char(data_el["Proportion"][1],couleur="rgba(" + str(255*(1-data_el["Proportion"][1])) + "," + str(255*data_el["Proportion"][1]) +",0,1)",titre="Taux d'éligibilité")
+            data_mot=data[data["Autre_Raison"].notna()]
+            mot=" ".join(data_mot["Autre_Raison"])
+            #make_wordcloud(mot,titre="Autre raison",width=600,height=400)
+            st.dataframe(data_el[["Nb_Candidats"]])
+            
         with c42:
-            statut_el=st.multiselect("Statut des candidats",options=data["Eligibilité"].unique(),default=data["Eligibilité"].unique())
+            statut_el=st.segmented_control(traduire_texte("Statut des candidats",lang),options=data["Eligibilité"].unique(),selection_mode="multi",default=data["Eligibilité"].unique())
             data_nl=data_el[data_el.index!="Eligible"]
+            #data_nl=data_el
             make_multi_progress_bar(labels=data_nl.index,values=data_nl["Proportion"],colors=["red","orange"],titre="Candidats Non éligible",width=500,height=300)
         with c43:
             data_raison=data[data["Raisons"].notna()]
@@ -838,25 +923,22 @@ with tabs[1]:
             make_dataframe(group_raison,col_alpha="Raisons",col_num="Effectif")
         c4b1, c4b2 ,c4b3=st.columns(3)
         with c4b1:
+            data_raison = data[data["Eligibilité"].isin(statut_el)] if len(statut_el) != 0 else data
             make_hist_box(data_raison,var1="Tx_hémoglobine",var2="Eligibilité",height=400)
-        with c4b2:
-            data_mot=data[data["Autre_Raison"].notna()]
-            mot=" ".join(data_mot["Autre_Raison"])
-            #make_wordcloud(mot,titre="Autre raison",width=600,height=400)
-            st.dataframe(data_el[["Nb_Candidats"]]) 
-            make_distribution_2(data_raison,var_alpha="Genre",var_num="Tx_hémoglobine",add_vline=12,add_vline2=13,titre="Distribution du taux d'hémoglobine")
+        with c4b2: 
+            make_distribution_2(data_raison,var_alpha="Genre",var_num="Tx_hémoglobine",add_vline=12,add_vline2=13,titre=traduire_texte("Distribution du taux d'hémoglobine",lang))
         with c4b3:
-            make_cross_hist_b(data,"Eligibilité","Classe_age",titre="Statut par classe d'age",typ_bar=1)
+            make_cross_hist_b(data,"Eligibilité","Classe_age",titre=traduire_texte("Statut par classe d'age",lang),height=400,typ_bar=1)
         
     #SECTION 5:   PROFILAGE DES DONNEURS IDEAUX
     st.markdown('<div id="section5"></div>', unsafe_allow_html=True)
     with st.expander(translations[lang1]["section5"], expanded=True,icon="❤️"):
             c5a1,c5a2,c5a3=st.columns(3)
             with c5a1:
-                make_relative_bar(data,var1="Eligibilité",var2="Don_pass",width=500,height=400,titre="Proportion des anciens donneurs",)
+                make_relative_bar(data,var1="Eligibilité",var2="Don_pass",width=500,height=400,titre=traduire_texte("Proportion des anciens donneurs",lang),)
                 data_SM=data.groupby("Situation_Mat").agg({"ID":"size"})
                 data_SM["Proportion"]=data_SM["ID"]/float(data_SM["ID"].sum())
-                make_multi_progress_bar(labels=data_SM.index, values=data_SM["Proportion"],colors=px.colors.qualitative.Vivid_r,width=500,height=400,titre="Taux d'éligibilité par statut Marital")
+                make_multi_progress_bar(labels=data_SM.index, values=data_SM["Proportion"],colors=px.colors.qualitative.Vivid_r,width=500,height=400,titre=traduire_texte("Taux d'éligibilité par statut Marital",lang))
             with c5a2:
                 tx_el_F=data[(data["Genre"]=="Femme") & (data["Eligibilité"]=="Eligible")].shape[0]/data[data["Genre"]=="Femme"].shape[0]
                 tx_el_M=data[(data["Genre"]=="Homme") & (data["Eligibilité"]=="Eligible")].shape[0]/data[data["Genre"]=="Homme"].shape[0]
@@ -870,8 +952,8 @@ with tabs[1]:
             with c5a3:
                 data_prof=data.groupby("Niveau_etude").agg({"ID":"size"})
                 data_prof["Proportion"]=data_prof["ID"]/float(data_prof["ID"].sum())
-                make_multi_progress_bar(labels=data_prof.index, values=data_prof["Proportion"],colors=px.colors.qualitative.Vivid,width=500,height=400,titre="Taux d'éligibilité par niveaux d'éducation")
-                make_cross_hist_b(data,var2="Religion",var1="Eligibilité",width=500,height=550,titre="Réligion",typ_bar=1)
+                make_multi_progress_bar(labels=data_prof.index, values=data_prof["Proportion"],colors=px.colors.qualitative.Vivid,width=500,height=400,titre=traduire_texte("Taux d'éligibilité par niveaux d'éducation",lang))
+                make_cross_hist_b(data,var2="Religion",var1="Eligibilité",width=500,height=550,titre=traduire_texte("Réligion",lang),typ_bar=1)
     
     #SECTION 6:   ANALYSE DE L'EFFICACITE DE LA CAMPAGNE
     st.markdown('<div id="section6"></div>', unsafe_allow_html=True)
@@ -880,39 +962,37 @@ with tabs[1]:
         data_don["ID"]="Don_" + (data_don.index+1).astype(str)
         data_don=data_don.rename(columns={"Groupe Sanguin ABO / Rhesus ":"Gpr_sang"})
         with c61:
-            make_progress_char(data_don.shape[0]/data.shape[0],"green",titre="Efficacité de la compagne")
-        with c62: 
+            make_progress_char(data_don.shape[0]/data.shape[0],"green",titre=traduire_texte("Efficacité de la compagne",lang))
             data_don=data_don.set_index("ID",drop=True)
             data_don["ID"]=data_don.index
             data_don["Date"]=data_don["Horodateur"].dt.date
             data_don["Heure"]=data_don['Horodateur'].dt.strftime('%d-%m-%Y %H')
             trend_don=pd.crosstab(data_don["Date"],data_don["Sexe"])
-            make_bar(data_don,var="Date",color=0,titre="Répartition des dons dans le temps",height=400)
+            make_bar(data_don,var="Date",color=0,titre=traduire_texte("Répartition des dons dans le temps",lang),height=400)
+            make_area_chart(data_don,var="Heure",titre="Heure d'affluence",height=300)
+        with c62: 
+            st.write(traduire_texte("Répartition des groupes sanguin",lang))
+            make_blood_group(data_don,"Gpr_sang")
+            make_cross_hist_b(data_don,var1="Type de donation",var2="Classe_age",typ_bar=0,titre=traduire_texte("répartition des type de don par classe d'age",lang),bordure=7 )
         with c63:
-            make_area_chart(data_don,var="Heure",titre="Heure d'affluence",height=400)
-            
-        c6a,c6b,c6c=st.columns(3)
-        with c6a:
-           make_relative_bar(data_don,var1="Gpr_sang",var2="Type de donation",titre="Répartition des donneurs par groupe sanguin ")
-        with c6b:
-            make_cross_hist_b(data_don,var1="Type de donation",var2="Classe_age",typ_bar=0,titre="répartition des type de don par classe d'age",bordure=7 )      
-        with c6c:
-            make_donutchart(data_don,var="Phenotype ", titre="Différent type de phénotype des donneurs")
+            make_relative_bar(data_don,var1="Gpr_sang",var2="Type de donation",titre=traduire_texte("Répartition des donneurs par groupe sanguin ", lang))
+            make_donutchart(data_don,var="Phenotype ", titre=traduire_texte("Différent type de phénotype des donneurs",lang))
+            #make_area_chart(data_don,var="Heure",titre="Heure d'affluence",height=400)
 
 #----ONGLET 3: TEST STATISTIQUES
 with tabs[2]:
-    st.write("Faite vos test statistiques")
+    st.write(traduire_texte("Faite vos test statistiques",lang))
     cc1,cc2=st.columns([3,7])
     with cc1:
-        Test=st.selectbox("Choisissez le test à effectuer",["Test d'indépendance","Test de comparaison de la moyenne", "Test de comparaison de la dispersion"])
-        var1=st.selectbox("Variable1 de test",options=var_qual )
-        var2=st.selectbox("Variable2 de test",options=var_qual if Test=="Test d'indépendance" else var_quant)
+        Test=st.selectbox(traduire_texte("Choisissez le test à effectuer",lang),["Test d'indépendance","Test de comparaison de la moyenne", "Test de comparaison de la dispersion"])
+        var1=st.selectbox(traduire_texte("Variable 1 de test",lang),options=var_qual )
+        var2=st.selectbox(traduire_texte("Variable 2 de test",lang),options=var_qual if Test=="Test d'indépendance" else var_quant)
     with cc2:
-        if st.button("Lancer le test"): 
+        if st.button(traduire_texte("Lancer le test",lang)): 
             if var1=="" or var2=="":
-                st.write("Veuillez sélectionner des variables de test")
+                st.write(traduire_texte("Veuillez sélectionner des variables de test",lang))
             else:
-                if Test=="Test d'indépendance":
+                if Test==traduire_texte("Test d'indépendance",lang):
                     conclusion, table_cross,chi2, p,dof=test_independance_khi2(data,var1,var2)
                     st.write(conclusion)
                     st.dataframe(table_cross)
@@ -920,14 +1000,14 @@ with tabs[2]:
                     table_cross.rename(columns={'index': var1}, inplace=True)
                     make_cross_hist_b(data,var2,var1,typ_bar=0)
                     make_relative_bar(data,var2,var1,height=600)
-                elif Test=="Test de comparaison de la moyenne":
+                elif Test==traduire_texte("Test de comparaison de la moyenne",lang):
                     conclusion, graph= test_comparaison_moyenne(data, var1, var2)
                     st.write(conclusion)
                     st.plotly_chart(graph)
                 else:
                     pass
     
-    st.write("Afficher votre rapport ")
+    #st.write("Afficher votre rapport ")
     telecharger_pdf("Challenge_Proposal_2.pdf")
 
 #----ONGLET 4: FORMULAIRE
@@ -1233,7 +1313,7 @@ with tabs[4]:
             #make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre="Répartition des candidats par arrondissement",bordure=9,width=600)
         ca1,ca2,ca3,ca4=st.columns(4)
         with ca1:
-            make_donutchart(df_new_arr,var="sexe",titre="Répartiton des candidats par sexe")
+            make_donutchart_2(df_new_arr,var="sexe",titre="Répartiton des candidats par sexe")
         with ca2:
             make_cross_hist_b(df_new_arr,var2="statut_matrimonial",var1="Statut",titre="Statut matrimonial des candidats",typ_bar=0,bordure=7)
         with ca3:
@@ -1260,228 +1340,269 @@ with tabs[4]:
             data_mot=df_new[df_new["Raison"].notna()]
             mot=" ".join(data_mot["Raison"])
             make_wordcloud(mot,titre="Raison de Non éléigibilité",width=600,height=400)
+    Make_Global_DataFrame(df_new,title=traduire_texte("Nouvelle Base de donnée",lang))
 #----ONGLET 6:
 with tabs[5]:
     st.markdown(profile_css, unsafe_allow_html=True)
-
-    def get_image_as_base64(image_path):
-        """Convertit une image en base64 pour l'affichage dans HTML"""
-        try:
-            with open(image_path, "rb") as img_file:
-                return base64.b64encode(img_file.read()).decode('utf-8')
-        except Exception:
-            # Image par défaut si l'image n'est pas trouvée
-            return ""  # Retourner une chaîne vide si l'image n'est pas trouvée
-
-    def create_member_profile(name, title, image_path, about_text, email="", phone=""):
-        # Créer une carte stylisée avec ombres et arrondis
-        with st.container():
-            # Appliquer un style CSS personnalisé à la carte
-            st.markdown("""
-            <style>
-            .member-card {
-                background-color: white;
-                border-radius: 10px;
-                padding: 20px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                margin-bottom: 20px;
-                transition: transform 0.3s;
-                height: 100%;
-            }
-            .member-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            }
-            .member-image {
-                width: 120px;
-                height: 120px;
-                border-radius: 50%;
-                object-fit: cover;
-                margin: 0 auto;
-                display: block;
-                border: 3px solid #4e8df5;
-            }
-            .member-name {
-                color: #1a1a1a;
-                font-size: 18px;
-                font-weight: bold;
-                text-align: center;
-                margin-top: 15px;
-                margin-bottom: 5px;
-            }
-            .member-title {
-                color: #4e8df5;
-                font-size: 14px;
-                font-style: italic;
-                text-align: center;
-                margin-bottom: 15px;
-            }
-            .member-about {
-                color: #333;
-                font-size: 14px;
-                text-align: justify;
-                line-height: 1.5;
-                margin-bottom: 15px;
-            }
-            .contact-info {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-                margin-top: 15px;
-                color: #555;
-            }
-            .contact-item {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 13px;
-            }
-            .contact-icon {
-                color: #4e8df5;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 20px;
-            }
-            .contact-text {
-                color: #555;
-            }
-            .contact-text:hover {
-                color: #4e8df5;
-                text-decoration: underline;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-            
-            # Obtenir l'image en base64
-            img_base64 = get_image_as_base64(image_path)
-            
-            # Créer la structure HTML de la carte
-            if img_base64:
-                img_html = f'<img src="data:image/png;base64,{img_base64}" class="member-image">'
-            else:
-                # Si l'image n'est pas trouvée, utiliser une div colorée à la place
-                img_html = f'<div style="width: 120px; height: 120px; border-radius: 50%; background-color: #4e8df5; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{name[0]}</div>'
-            
-            # Préparer la section des contacts
-            contact_html = '<div class="contact-info">'
-            
-            # Ajouter l'email avec icône si fourni
-            if email:
-                contact_html += f"""
-                <div class="contact-item">
-                    <div class="contact-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
-                        </svg>
-                    </div>
-                    <a href="mailto:{email}" class="contact-text">{email}</a>
-                </div>
-                """
-            
-            # Ajouter le téléphone avec icône si fourni
-            if phone:
-                contact_html += f"""
-                <div class="contact-item">
-                    <div class="contact-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
-                        </svg>
-                    </div>
-                    <a href="tel:{phone}" class="contact-text">{phone}</a>
-                </div>
-                """
-            
-            contact_html += '</div>'
-            
-            # Assembler la carte complète
-            card_html = f"""
-            <div class="member-card">
-                {img_html}
-                <div class="member-name">{name}</div>
-                <div class="member-title">{title}</div>
-                <div class="member-about">{about_text}</div>
-                {contact_html}
-            </div>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
-                
-                # Obtenir l'image en base64
-            img_base64 = get_image_as_base64(image_path)
-            
-            # Créer la structure HTML de la carte
-            if img_base64:
-                img_html = f'<img src="data:image/png;base64,{img_base64}" class="member-image">'
-            else:
-                # Si l'image n'est pas trouvée, utiliser une div colorée à la place
-                img_html = f'<div style="width: 120px; height: 120px; border-radius: 50%; background-color: #4e8df5; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{name[0]}</div>'
-            
-            card_html = f"""
-            <div class="member-card">
-                {img_html}
-                <div class="member-name">{name}</div>
-                <div class="member-title">{title}</div>
-                <div class="member-about">{about_text}</div>
-            </div>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
-
-    # Fonction principale pour afficher les profils
-    def display_team_profiles():
-        st.markdown("""
-        <style>
-        .main-title {
-            font-size: 32px;
-            font-weight: bold;
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #4e8df5;
-            padding-bottom: 10px;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        st.markdown('<div class="main-title">Notre Équipe</div>', unsafe_allow_html=True)
-        
-        # Description de l'équipe
-        st.markdown("""
-        <div style="text-align: center; margin-bottom: 40px; padding: 0 10%;">
-            Notre équipe est composée de professionnels passionnés dans les domaines des statistiques, 
-            de l'économie et de la data science, chacun apportant une expertise unique à nos projets.
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Arrangement des profils en 2 colonnes
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            create_member_profile(
-                name="KENGNE Landry",
-                title="Mathématicien, Statisticien Economiste",
-                image_path="Landry_Pro.jpg",
-                about_text="Titulaire d'une licence en mathématique à l'Université de Yaoundé I. Actuellement en Master I en Statistiques et Economie appliquée à l'ISSEA.",
-                email="landrykengne99@gmail.com")
-        with col3:   
-            create_member_profile(
-                name="TCHINDA Rinel",
-                title="Economiste - Data Scientist",
-                image_path="Rinel.jpg",
-                about_text="Je suis un data scientist titulaire d'une licence en mathématiques, un master en économie quantitative et ingénierie statistique, alliant expertise analytique et foi évangélique fervente.")
-        
-        with col2:
-            create_member_profile(
-                name="NOULAYE Merveille",
-                title="Elève ingénieure statisticienne économiste",
-                image_path="Merveille_pro.jpg",
-                about_text="Jeune statisticienne en devenir dynamique et passionnée des métiers de la data. Je privilégie le travail en équipe dans la recherche des solutions efficaces et rapide face aux problèmes que je rencontre.")
-        with col4:    
-            create_member_profile(
-                name="ANABA Rodrigue",
-                title="Economiste - Data Scientist",
-                image_path="ANABA.jpg",
-                about_text="Diplômé d'une Licence en Sciences Économiques, je suis actuellement en dernière année du cycle d'Ingénieur Statisticien Économiste à l'ISSEA. J'ai une solide maîtrise des méthodes statistiques avancées et des outils de modélisation économétrique.")
-
-    # Appel de la fonction principale
     display_team_profiles()
+    
+    selection=st.segmented_control("control", options=["Nord","Sud","Ouest","Est"],selection_mode="single")
+    selection=st.pills("controlez", options=["Nord","Sud","Ouest","Est"],selection_mode="single")
+    st.markdown(f" Vous avez sélectioné{selection}")
+
+    from streamlit_echarts import st_echarts
+
+    categories = ["A", "B", "C", "D", "E"]
+    values = [10, 22, 28, 43, 49]
+
+    # Calcul des proportions
+    total = sum(values)
+    proportions = [round((value / total) * 100, 1) for value in values]
+
+    # Préparation des données pour les tooltips
+    tooltip_data = []
+    for i in range(len(categories)):
+        tooltip_data.append({
+            "value": values[i],
+            "proportion": proportions[i]
+        })
+
+    # Configuration améliorée du graphique
+    options = {
+        "title": {
+            "text": "Analyse des données par catégorie",
+            "left": "center",
+            "textStyle": {
+                "fontSize": 18
+            }
+        },
+        "tooltip": {
+            "trigger": "axis",
+            "formatter": "{b}<br/>Valeur: {c}<br/>Proportion: {d}%",
+            "backgroundColor": "rgba(50,50,50,0.8)",
+            "borderRadius": 8,
+            "textStyle": {
+                "color": "#fff"
+            },
+            "extraCssText": "box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);"
+        },
+        "xAxis": {
+            "type": "category",
+            "data": categories,
+            "axisLabel": {
+                "fontWeight": "bold"
+            },
+            "axisTick": {
+                "alignWithLabel": True
+            }
+        },
+        "yAxis": {
+            "type": "value",
+            "name": "Valeur",
+            "nameLocation": "middle",
+            "nameGap": 30
+        },
+        "series": [{
+            "name": "Données",
+            "data": [
+                {"value": values[0], "itemStyle": {"color": "rgb(55, 162, 255)"}, "tooltip": {"formatter": f"<b>{categories[0]}</b><br/>Valeur: {values[0]}<br/>Proportion: {proportions[0]}%"}},
+                {"value": values[1], "itemStyle": {"color": "rgb(75, 142, 250)"}, "tooltip": {"formatter": f"<b>{categories[1]}</b><br/>Valeur: {values[1]}<br/>Proportion: {proportions[1]}%"}},
+                {"value": values[2], "itemStyle": {"color": "rgb(95, 122, 245)"}, "tooltip": {"formatter": f"<b>{categories[2]}</b><br/>Valeur: {values[2]}<br/>Proportion: {proportions[2]}%"}},
+                {"value": values[3], "itemStyle": {"color": "rgb(115, 102, 240)"}, "tooltip": {"formatter": f"<b>{categories[3]}</b><br/>Valeur: {values[3]}<br/>Proportion: {proportions[3]}%"}},
+                {"value": values[4], "itemStyle": {"color": "rgb(135, 82, 235)"}, "tooltip": {"formatter": f"<b>{categories[4]}</b><br/>Valeur: {values[4]}<br/>Proportion: {proportions[4]}%"}}
+            ],
+            "type": "bar",
+            "barWidth": "50%",
+            "itemStyle": {
+                "borderRadius": [5, 5, 0, 0]
+            },
+            "emphasis": {
+                "itemStyle": {
+                    "shadowBlur": 10,
+                    "shadowOffsetX": 0,
+                    "shadowColor": "rgba(0, 0, 0, 0.5)"
+                }
+            }
+        }],
+        "grid": {
+            "left": "5%",
+            "right": "5%",
+            "bottom": "10%",
+            "top": "15%",
+            "containLabel": True
+        }
+    }
+
+    # Affichage du graphique
+    st.title("Graphique à barres interactif")
+    st_echarts(options=options, height="400px")
+   
+    
+    def display_chatbot():
+        with st.expander("Chat Bot", expanded=True):
+            # Initialize session state for messages
+            if 'messages' not in st.session_state:
+                st.session_state.messages = []
+            
+            # File upload configuration options
+            col1, col2 = st.columns(2)
+            with col1:
+                accept_file = st.selectbox('File Upload:', [False, True, 'multiple'], index=1)
+            with col2:
+                file_type = st.selectbox('File Type:', [None, 'csv', 'png', 'jpg', 'txt', 'pdf'], index=0)
+            
+            # Display chat history
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    if message["role"] == "user" and "file_info" in message:
+                        st.markdown(message["content"])
+                        if message["file_info"]["type"] == "csv":
+                            st.dataframe(message["file_info"]["preview"])
+                        elif message["file_info"]["type"] in ["png", "jpg"]:
+                            st.image(message["file_info"]["preview"])
+                    else:
+                        st.markdown(message["content"])
+            
+            # Chat input
+            user_prompt = st.chat_input("What can I help you with?", accept_file=accept_file, file_type=file_type)
+            
+            if user_prompt:
+                # Extract text and prepare prompt
+                text_prompt = user_prompt.text
+                file_info = None
+                
+                # Process files if uploaded
+                if user_prompt.get("files") and len(user_prompt["files"]) > 0:
+                    try:
+                        file = user_prompt["files"][0]
+                        file_content = file.getvalue()
+                        file_extension = file.name.split(".")[-1].lower()
+                        
+                        if file_extension == "csv":
+                            df = pd.read_csv(io.BytesIO(file_content))
+                            records = df.to_dict(orient='records')
+                            full_prompt = f"Question: {text_prompt}\nFile content (first 5 rows): {json.dumps(records[:5])}"
+                            file_info = {
+                                "type": "csv",
+                                "preview": df.head(),
+                                "name": file.name
+                            }
+                        
+                        elif file_extension in ["png", "jpg", "jpeg"]:
+                            image = Image.open(io.BytesIO(file_content))
+                            full_prompt = f"Question: {text_prompt}\nImage uploaded: {file.name}"
+                            file_info = {
+                                "type": file_extension,
+                                "preview": image,
+                                "name": file.name
+                            }
+                        
+                        elif file_extension == "txt":
+                            text_content = file_content.decode('utf-8')
+                            full_prompt = f"Question: {text_prompt}\nText file content: {text_content[:500]}..."
+                            file_info = {
+                                "type": "txt",
+                                "preview": text_content[:500] + "..." if len(text_content) > 500 else text_content,
+                                "name": file.name
+                            }
+                        
+                        else:
+                            full_prompt = f"Question: {text_prompt}\nFile uploaded: {file.name}"
+                            file_info = {
+                                "type": "unknown",
+                                "name": file.name
+                            }
+                    
+                    except Exception as e:
+                        st.error(f"Error processing file: {str(e)}")
+                        full_prompt = text_prompt
+                else:
+                    full_prompt = text_prompt
+                
+                # Add user message to chat history
+                user_message = {
+                    "role": "user", 
+                    "content": text_prompt
+                }
+                if file_info:
+                    user_message["file_info"] = file_info
+                    
+                st.session_state.messages.append(user_message)
+                
+                # Display user message
+                with st.chat_message("user"):
+                    st.markdown(text_prompt)
+                    if file_info:
+                        if file_info["type"] == "csv":
+                            st.dataframe(file_info["preview"])
+                        elif file_info["type"] in ["png", "jpg", "jpeg"]:
+                            st.image(file_info["preview"])
+                
+                # Generate and display assistant response
+                with st.chat_message("assistant"):
+                    message_placeholder = st.empty()
+                    
+                    try:
+                        # Create a list to store the content
+                        accumulated_content = []
+                        
+                        # Prepare messages for the model
+                        messages_for_model = []
+                        for msg in st.session_state.messages:
+                            if msg["role"] == "user" and "file_info" in msg:
+                                # For messages with files, use the full prompt
+                                if msg == user_message:  # Only for the current message
+                                    messages_for_model.append({"role": "user", "content": full_prompt})
+                            else:
+                                messages_for_model.append({"role": msg["role"], "content": msg["content"]})
+                        
+                        # Get response from the model
+                        response = ollama.chat(
+                            model='gemma2',
+                            messages=messages_for_model,
+                            stream=True
+                        )
+                        
+                        full_response = ""
+                        for chunk in response:
+                            content_chunk = chunk['message']['content']
+                            full_response += content_chunk
+                            message_placeholder.markdown(full_response + "▌")
+                        
+                        # Final update without cursor
+                        message_placeholder.markdown(full_response)
+                        
+                        # Add assistant message to chat history
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": full_response
+                        })
+                        
+                    except Exception as e:
+                        error_message = f"Error generating response: {str(e)}\n\n```\n{traceback.format_exc()}\n```"
+                        message_placeholder.error(error_message)
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": "I'm sorry, I encountered an error while processing your request."
+                        })
+
+    # Main app
+    def main():
+        display_chatbot()
+        # Add sidebar with options
+        st.markdown("Settings")
+        
+        # Model selection
+        model = st.selectbox(
+            "Choose a model:",
+            ["gemma2", "llama3", "mistral", "phi3"],
+            index=0
+        )
+        
+        # Reset button
+        if st.button("Reset Conversation"):
+            st.session_state.messages = []
+            st.rerun()
+
+    if __name__ == "__main__":
+        main()
