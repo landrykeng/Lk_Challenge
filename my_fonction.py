@@ -120,30 +120,29 @@ def traduire_texte(texte, langue='English'):
     """
     Traduit le texte donné vers la langue cible en utilisant Google Translate.
 
-    :param texte: Le texte en français à traduire.
-    :param langue_cible: La langue cible pour la traduction (par défaut 'en' pour anglais).
+    :param texte: Le texte à traduire.
+    :param langue: La langue cible pour la traduction (par défaut 'English').
     :return: Le texte traduit.
     """
-    if langue=="":
+    if langue == "" or not texte:
         return texte
-    else:
-        if langue=="Français":
-            langue='fr'
-        else:
-            langue='en'
+    
+    try:
+        # Déterminer le code de langue cible
+        if langue == "Français":
+            code_langue = 'fr'
+        else:  # Par défaut, traduire vers l'anglais
+            code_langue = 'en'
             
-        #traducteur = Translator(service_urls=['translate.google.com'])
-        traducteur = GoogleTranslator(source='auto', target='en')
-        #traducteur = Translator()
-        try:
-                # Utiliser un timeout pour éviter les attentes trop longues
-            traduction = traducteur.translate(texte, dest=langue)
-            return traduction.text
-        except (ConnectionError, Timeout):
-            return texte
-        except Exception:
-        # Pour toute autre erreur, retourner le texte original
-            return texte
+        # Utiliser deep_translator
+        from deep_translator import GoogleTranslator
+        traducteur = GoogleTranslator(source='auto', target=code_langue)
+        traduction = traducteur.translate(texte)
+        return traduction
+        
+    except Exception as e:
+        #print(f"Erreur lors de la traduction: {e}")
+        return texte  # En cas d'erreur, retourner le texte original
     
 #3. Fonction d'affichage des métriques version 1
 def display_single_metric_advanced(label, value, delta, unit="", caption="", color_scheme="blue"):
