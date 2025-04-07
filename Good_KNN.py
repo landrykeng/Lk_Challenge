@@ -254,8 +254,8 @@ def predict_new_individual(new_data):
             # Mettre à jour les colonnes disponibles
             if 'Age' in new_data:
                 data_preprocessed['Age'] = new_data['Age']
-            if 'Taux_hémoglobine_(g/dl)' in new_data:
-                data_preprocessed['Tx_hemo'] = new_data['Taux_hémoglobine_(g/dl)']
+            if 'Tx_hemo' in new_data:
+                data_preprocessed['Tx_hemo'] = new_data['Tx_hemo']
             
             # Colonnes catégorielles
             if 'Genre' in new_data and new_data['Genre'] == 1:
@@ -272,7 +272,7 @@ def predict_new_individual(new_data):
                     data_preprocessed['ancien_don_sang_1'] = 1
             
             # Standardiser les variables quantitatives
-            if 'Age' in new_data and 'Taux_hémoglobine_(g/dl)' in new_data:
+            if 'Age' in new_data and 'Tx_hemo' in new_data:
                 # Identifier les colonnes quantitatives dans le DataFrame
                 quant_cols = ['Age', 'Tx_hemo']
                 quant_cols_present = [col for col in quant_cols if col in data_preprocessed.columns]
@@ -284,7 +284,7 @@ def predict_new_individual(new_data):
             # Si nous n'avons pas les noms des colonnes, créer un DataFrame simple
             data_preprocessed = pd.DataFrame({
                 'Age': [new_data.get('Age', 0)],
-                'Taux_hémoglobine_(g/dl)': [new_data.get('Taux_hémoglobine_(g/dl)', 0)],
+                'Tx_hemo': [new_data.get('Tx_hemo', 0)],
                 'Genre_1': [1 if new_data.get('Genre', 0) == 1 else 0],
                 'ancien_don_sang_1': [1 if new_data.get('ancien_don_sang', 0) == 1 else 0]
             })
