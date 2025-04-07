@@ -33,7 +33,7 @@ from Fonction_Classement import *
 from PIL import Image
 from pathlib import Path
 import json
-#from streamlit_echarts import st_echarts
+from streamlit_echarts import st_echarts
 #==================================================================================================
 
 
