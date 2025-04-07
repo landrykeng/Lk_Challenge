@@ -3070,7 +3070,7 @@ def display_team_profiles():
                 about_text="Jeune statisticienne en devenir dynamique et passionnée des métiers de la data. Je privilégie le travail en équipe dans la recherche des solutions efficaces et rapide face aux problèmes que je rencontre.")
         with col4:    
             create_member_profile(
-                name="ANABA Rodrigue",
+                name="🇨🇲 ANABA Rodrigue",
                 title="Economiste - Data Scientist",
                 image_path="ANABA.jpg",
                 email="student.rodrigue.anabaohandza@issea-cemac.org",
