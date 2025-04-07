@@ -1346,7 +1346,7 @@ with tabs[4]:
 #----ONGLET 6:
 with tabs[5]:
     st.markdown(profile_css, unsafe_allow_html=True)
-    display_team_profiles()
+    display_team_profiles2()
     
     st.image("QR_code.jpg", use_container_width=False,width=700)
     

@@ -3015,7 +3015,7 @@ def create_member_profile(name, title, image_path, about_text, email="", phone="
             
 
 # Fonction principale pour afficher les profils
-def display_team_profiles():
+def display_team_profiles2():
         st.markdown("""
         <style>
         .main-title {
