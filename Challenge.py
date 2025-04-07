@@ -32,7 +32,6 @@ from my_fonction import *
 from Fonction_Classement import *
 from PIL import Image
 from pathlib import Path
-from gpt4all import GPT4All
 import json
 from streamlit_echarts import st_echarts
 #==================================================================================================
