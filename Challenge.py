@@ -831,7 +831,7 @@ with tabs[1]:
         geo_data_dla=geo_data[geo_data["Genre"].isin(genre)] if len(genre)!=0 else geo_data 
         geo_data_dla=geo_data[geo_data["Situation_Matrimoniale"].isin(Statut_Mat)] if len(Statut_Mat)!=0 else geo_data_dla 
         with col1:       
-            make_chlorophet_map_echarts(geo_data_dla,style_carte=style,palet_color=couleur,opacity=opacity,width=1000,height=650)
+            make_chlorophet_map_folium_2(geo_data_dla,style_carte=style,palet_color=couleur,opacity=opacity,width=1000,height=650)
         with col2:
             geo_data_dla["Categorie_profession"]=geo_data_dla["Categorie_profession"].replace("Personnel des services directs aux particuliers, commercants vendeurs","commercants vendeurs")
             make_bar(geo_data_dla,"Categorie_profession",titre=traduire_texte("Categorie Professionnelle",lang),ordre=1,sens='h',height=400,width=600,bordure=10) 
