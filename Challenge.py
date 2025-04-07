@@ -145,6 +145,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+#pour les conteneurs de graphiques
 st.markdown("""
         <style>
         /* Styles de base pour tous les thèmes */
@@ -172,14 +173,14 @@ st.markdown("""
 
         /* Effet de survol - Mode Clair */
         body:not(.dark) .stContainer:hover {
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);  /* Ombre plus prononcée */
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);  /* Ombre plus prononcée */
             transform: translateY(-5px);  /* Léger soulèvement */
             border-color: rgba(200, 200, 200, 0.9);  /* Bordure plus visible */
         }
 
         /* Effet de survol - Mode Sombre */
         body.dark .stContainer:hover {
-            box-shadow: 0 8px 12px rgba(255, 255, 255, 0.3);  /* Ombre claire */
+            box-shadow: 0 8px 12px rgba(255, 255, 255, 0.5);  /* Ombre claire */
             transform: translateY(-5px);  /* Léger soulèvement */
             border-color: rgba(100, 100, 110, 0.9);  /* Bordure plus visible */
         }
@@ -189,7 +190,7 @@ st.markdown("""
             background-color: rgba(250, 250, 250, 0.95);  /* Fond très légèrement gris */
             border-radius: 8px;  /* Coins légèrement arrondis */
             padding: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);  /* Ombre très légère */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);  /* Ombre très légère */
         }
 
         /* Style spécifique pour les graphiques - Mode Sombre */
@@ -631,6 +632,9 @@ translations = {
 st.sidebar.image("Logo.png", use_container_width=True)
 lang = set_language()
 lang1="Français" if lang=="" else lang
+with st.sidebar.expander(traduire_texte("QR Code & Lien", lang), expanded=True):
+    st.image("QR_code.jpg", use_container_width=True)
+
 #them=set_custom_theme()
 #__________Table des matières ________________________
 st.sidebar.markdown(sidebar_css, unsafe_allow_html=True)
@@ -842,7 +846,7 @@ with tabs[1]:
         with cb1:
             make_cross_hist_b(geo_data_dla,"Eligibilite","Arrondissement",titre=traduire_texte("Répartition par arrondissement",lang),width=400,height=450,typ_bar=0,bordure=10)
         with cb2:
-            make_donutchart_2(geo_data_dla,var="ancien_don_sang",titre=traduire_texte("ancien donateur",lang))
+            make_donutchart(geo_data_dla,var="ancien_don_sang",titre=traduire_texte("ancien donateur",lang))
         with cb3:
             #make_cross_hist_3(geo_data_dla,"Niveau_etude","Age",titre="",agregation="avg",width=400,height=300)
             make_bar(geo_data_dla,var="Classe_age",titre=traduire_texte("Répartition des ages",lang),width=700,height=450,bordure=10)
@@ -1029,18 +1033,18 @@ with tabs[3]:
     #Formulaire   
     with st.form(key="formulaire_eligibilite"):
         # Informations de base (obligatoires)
-        st.subheader("Informations générales")
+        st.subheader(traduire_texte("Informations générales",lang))
         col1, col2 = st.columns(2)
         
         with col1:
             sexe = st.radio("Sexe", options=["M", "F"], index=0, 
                             format_func=lambda x: "Masculin" if x == "M" else "Féminin")
-            age = st.number_input("Âge (années)", min_value=16, max_value=80, value=30, step=1)
+            age = st.number_input(traduire_texte("Âge (années)", lang), min_value=16, max_value=80, value=30, step=1)
         
         with col2:
-            poids = st.number_input("Poids (kg)", min_value=40.0, max_value=150.0, value=70.0, step=0.5)
+            poids = st.number_input(traduire_texte("Poids (kg)", lang), min_value=40.0, max_value=150.0, value=70.0, step=0.5)
             derniere_donation_options = ["Jamais donné", "Plus de 3 mois", "Plus de 2 mois", "Dans les 2 derniers mois"]
-            derniere_donation_choix = st.selectbox("Dernière donation", options=derniere_donation_options)
+            derniere_donation_choix = st.selectbox(traduire_texte("Dernière donation",lang), options=derniere_donation_options)
             
             # Conversion du choix en jours
             if derniere_donation_choix == "Jamais donné":
@@ -1053,29 +1057,29 @@ with tabs[3]:
                 derniere_donation = 30
         
         # Informations socio-démographiques
-        st.subheader("Informations socio-démographiques")
+        st.subheader(traduire_texte("Informations socio-démographiques", lang))
         col1, col2 = st.columns(2)
         
         with col1:
             # Niveau d'étude (bouton radio)
             niveau_etude = st.radio(
-                "Niveau d'étude", 
+                traduire_texte("Niveau d'étude",lang), 
                 options=["Aucun","Primaire", "Secondaire", "Universitaire 1er cycle", "Universitaire 2e cycle", "Universitaire 3e cycle"],
                 index=2
             )
             
             # Statut matrimonial (liste de choix)
-            statut_matrimonial = st.selectbox("Statut matrimonial",
+            statut_matrimonial = st.selectbox(traduire_texte("Statut matrimonial", lang),
                 options=["Célibataire", "Marié(e)", "Divorcé(e)", "Veuf/Veuve", "Union libre"])
             
             # Religion
-            religion = st.selectbox("Religion",options=All_religion)
+            religion = st.selectbox(traduire_texte("Religion",lang),options=All_religion)
         
         with col2:
             # Profession
-            profession = st.selectbox("Profession",options=metier)
+            profession = st.selectbox(traduire_texte("Profession",lang),options=metier)
             # Quartier de résidence 
-            quartier = st.selectbox("Quartier de résidence",options=all_Quartier)
+            quartier = st.selectbox(traduire_texte("Quartier de résidence",lang),options=all_Quartier)
             
             # Nationalité 
             nationalite_options = [
@@ -1084,31 +1088,31 @@ with tabs[3]:
                 "Autre pays africain", "Autre pays hors Afrique"
             ]
             nationalite = st.selectbox(
-                "Nationalité",
+                traduire_texte("Nationalité",lang),
                 options=nationalite_options,
                 index=0
             )
         
         # Critères spécifiques aux femmes
         if sexe == "F":
-            st.subheader("Informations spécifiques (femmes)")
+            st.subheader(traduire_texte("Informations spécifiques (femmes)",lang))
             
             col1, col2 = st.columns(2)
             
             with col1:
-                grossesse_recente = st.checkbox("Grossesse récente")
+                grossesse_recente = st.checkbox(traduire_texte("Grossesse récente", lang))
                 if grossesse_recente:
-                    temps_depuis_grossesse = st.number_input("Temps depuis l'accouchement (mois)", 
+                    temps_depuis_grossesse = st.number_input(traduire_texte("Temps depuis l'accouchement (mois)",lang), 
                                                              min_value=0, max_value=24, value=3)
                 else:
                     temps_depuis_grossesse = None
                 
-                allaitement = st.checkbox("Allaitement en cours")
+                allaitement = st.checkbox(traduire_texte("Allaitement en cours",lang))
                 
             with col2:
-                en_periode_menstruelle = st.checkbox("Actuellement en période menstruelle")
-                cycle_menstruel_irregulier = st.checkbox("Cycle menstruel irrégulier")
-                saignements_anormaux = st.checkbox("Saignements anormaux")
+                en_periode_menstruelle = st.checkbox(traduire_texte("Actuellement en période menstruelle",lang))
+                cycle_menstruel_irregulier = st.checkbox(traduire_texte("Cycle menstruel irrégulier",lang))
+                saignements_anormaux = st.checkbox(traduire_texte("Saignements anormaux",lang))
         else:
             # Valeurs par défaut pour les hommes
             grossesse_recente = None
@@ -1119,11 +1123,11 @@ with tabs[3]:
             saignements_anormaux = None
         
         # Critères médicaux
-        st.subheader("Informations médicales")
+        st.subheader(traduire_texte("Informations médicales",lang))
         
         # Maladies chroniques
         maladies_selections = st.multiselect(
-            "Sélectionnez vos conditions médicales",
+            traduire_texte("Sélectionnez vos conditions médicales",lang),
             options=list(df_ctrl["Maladie"].dropna())
         )
         
@@ -1139,7 +1143,7 @@ with tabs[3]:
         
         # Médicaments
         medicaments_selections = st.multiselect(
-            "Sélectionnez les médicaments que vous prenez actuellement",
+            traduire_texte("Sélectionnez les médicaments que vous prenez actuellement",lang),
             options=list(df_ctrl["Traitement"].dropna())
         )
         
@@ -1157,18 +1161,18 @@ with tabs[3]:
         col1, col2 = st.columns(2)
         
         with col1:
-            interventions_recentes = st.checkbox("Intervention chirurgicale récente")
+            interventions_recentes = st.checkbox(traduire_texte("Intervention chirurgicale récente",lang))
             if interventions_recentes:
-                temps_depuis_intervention = st.number_input("Temps depuis l'intervention (jours)", 
+                temps_depuis_intervention = st.number_input(traduire_texte("Temps depuis l'intervention (jours)",lang), 
                                                            min_value=0, max_value=365, value=30)
             else:
                 temps_depuis_intervention = None
         
         with col2:
-            tatouages_recents = st.checkbox("Tatouage ou piercing récent (moins de 4 mois)")
+            tatouages_recents = st.checkbox(traduire_texte("Tatouage ou piercing récent (moins de 4 mois)",lang))
         
         # Bouton de soumission
-        submit_button = st.form_submit_button(label="Évaluer mon éligibilité")
+        submit_button = st.form_submit_button(label=traduire_texte("Évaluer mon éligibilité",lang))
     
     # Traitement des données après soumission
     if submit_button:
@@ -1192,7 +1196,7 @@ with tabs[3]:
         )
        
         # Affichage des résultats
-        st.subheader("Résultat de l'évaluation")
+        st.subheader(traduire_texte("Résultat de l'évaluation",lang))
         
         if resultat["eligible"]:
             st.success(traduire_texte("✅ Vous êtes éligible pour passer aux examens approfondis pour le don de sang. Veuillez prendre un rendez-vous",lang))
@@ -1205,7 +1209,7 @@ with tabs[3]:
             statut="Temporairement non-éligible"
         
         # Affichage des raisons
-        st.subheader("Détails:")
+        st.subheader(traduire_texte("Détails:",lang))
         for raison in resultat["raisons"]:
             st.write(f"- {traduire_texte(raison,lang)}")
         
@@ -1231,11 +1235,11 @@ with tabs[3]:
                         "statut_matrimonial": statut_matrimonial,
                         "niveau_etude": niveau_etude,
                         "profession": profession,
-                        "Catégorie_Professionnelle":profession_dict[profession],
-                        "quartier": quartier_dict[quartier][3],
-                        "Arrondissement":quartier_dict[quartier][0] ,
-                        "Lat":quartier_dict[quartier][1] ,
-                        "Long":quartier_dict[quartier][2] ,
+                        "Catégorie_Professionnelle":profession_dict[profession] if profession in profession_dict else profession,
+                        "quartier": quartier_dict[quartier][3] if quartier in quartier_dict else quartier,
+                        "Arrondissement":quartier_dict[quartier][0] if quartier in quartier_dict else None,
+                        "Lat":quartier_dict[quartier][1] if quartier in quartier_dict else None ,
+                        "Long":quartier_dict[quartier][2] if quartier in quartier_dict else None ,
                         "religion": religion,
                         "nationalite": nationalite,
                         "derniere_donation": derniere_donation,
@@ -1250,16 +1254,16 @@ with tabs[3]:
                     with pd.ExcelWriter("Infos.xlsx", engine='openpyxl', mode='a', 
                                                 if_sheet_exists='replace') as writer:
                             df.to_excel(writer, sheet_name="New_Base", index=False)
-                    st.success("Les informations ont été enregistrées avec succès!")
+                    st.success(traduire_texte("Les informations ont été enregistrées avec succès!",lang))
                 except Exception as e:
-                        st.error(f"Erreur lors de l'enregistrement: {e}")
+                        st.error(traduire_texte(f"Erreur lors de l'enregistrement: {e}",lang))
 
         save(df_new)    
  
 #----ONGLET 5: TABLEAU DE BORD DE LA NOUVELLE CAMPAGNE
 with tabs[4]:
     #==================================================================================================================
-    mise_a_ajour=st.button("Mettre à Jour le Tableau de bord")
+    mise_a_ajour=st.button(traduire_texte("Mettre à Jour le Tableau de bord",lang))
     if mise_a_ajour:
         pass
         #st.rerun()
@@ -1280,18 +1284,18 @@ with tabs[4]:
     with ab3:
         plot_metric_2(translations[lang1]["metric_text4"],df_new,"poids",prefix="",suffix=" kg",show_graph=True,color_graph="rgba(10, 242, 20, 0.2)",val_bin=45)
         
-    with st.expander("Information Globales sur les Nouvea candidat", expanded=True,icon="❤️"):
+    with st.expander(traduire_texte("Information Globales sur les Nouvea candidat",lang), expanded=True,icon="❤️"):
         f11, f12, f13, f14,f15 =st.columns([1,1.3,1.5,4.2,1.7])
         with f11:
-            couleur_3=st.selectbox("Couleur de fond",sequence_couleur)
+            couleur_3=st.selectbox(traduire_texte("Couleur de fond",lang),sequence_couleur)
         with f12:
-            opacity_3=st.slider("Transparence sur les arrondissement",min_value=0.0,max_value=1.0,value=0.8,step=0.01)
+            opacity_3=st.slider(traduire_texte("Transparence sur les arrondissement",lang),min_value=0.0,max_value=1.0,value=0.8,step=0.01)
         with f13:
-            style_3=st.selectbox("Theme du fond de carte",options=["open-street-map","carto-positron","carto-darkmatter"])
+            style_3=st.selectbox(traduire_texte("Theme du fond de carte",lang),options=["open-street-map","carto-positron","carto-darkmatter"])
         with f14:
-            arrondissement_2=st.multiselect("Selectionner des Arrondissement",options=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"],default=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"])
+            arrondissement_2=st.multiselect(traduire_texte("Selectionner des Arrondissement",lang),options=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"],default=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"])
         with f15:
-            genre3=st.multiselect(" Filtre: Sexe",options=df_new["sexe"].dropna().unique(),default=df_new["sexe"].dropna().unique())
+            genre3=st.multiselect(traduire_texte(" Filtre: Sexe",lang),options=df_new["sexe"].dropna().unique(),default=df_new["sexe"].dropna().unique())
             
         df_new_arr_geo=New_geo_data[New_geo_data["Arrondissement"].isin(arrondissement_2)] if len(arrondissement_2)!=0 else New_geo_data
         df_new_arr_geo=df_new_arr_geo[df_new_arr_geo["sexe"].isin(genre3)] if len(genre3)!=0 else df_new_arr_geo
@@ -1311,9 +1315,9 @@ with tabs[4]:
             #make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre="Répartition des candidats par arrondissement",bordure=9,width=600)
         ca1,ca2,ca3,ca4=st.columns(4)
         with ca1:
-            make_donutchart_2(df_new_arr,var="sexe",titre="Répartiton des candidats par sexe")
+            make_donutchart(df_new_arr,var="sexe",titre=traduire_texte("Répartiton des candidats par sexe",lang))
         with ca2:
-            make_cross_hist_b(df_new_arr,var2="statut_matrimonial",var1="Statut",titre="Statut matrimonial des candidats",typ_bar=0,bordure=7)
+            make_cross_hist_b(df_new_arr,var2="statut_matrimonial",var1="Statut",titre=traduire_texte("Statut matrimonial des candidats",lang),typ_bar=0,bordure=7)
         with ca3:
             make_cross_hist_b(df_new_arr,var2="religion",var1="Statut",bordure=12)
         with ca4:
@@ -1321,15 +1325,15 @@ with tabs[4]:
     with st.expander("2",expanded=True):
         caa1,caa2,caa3=st.columns(3)
         with caa1:
-            make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre="Répartition des candidats par arrondissement",bordure=9,width=600)
+            make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre=traduire_texte("Répartition des candidats par arrondissement",lang),bordure=9,width=600, height=400)
         with caa2:
-            make_area_chart(df_new,var="date_heure",titre="Evolution des inscriptions",width=500,height=400)
+            make_area_chart(df_new,var="date_heure",titre=traduire_texte("Evolution des inscriptions",lang),width=500,height=400)
         with caa3:
-            make_bar(df_new,var="Classe_age",color=2,width=500,height=400, titre="Classe d'age des candidats",bordure=12)
+            make_bar(df_new,var="Classe_age",color=2,width=500,height=400, titre=traduire_texte("Classe d'age des candidats",lang),bordure=12)
         cd1,cd2,cd3=st.columns(3)
         with cd1:
             df_new["Catégorie_Professionnelle"]=df_new["Catégorie_Professionnelle"].replace("Personnel des services directs aux particuliers, commercants vendeurs","commercants")
-            make_bar(df_new,var="Catégorie_Professionnelle",titre="Categorie professionnelle", sens='h',height=400,bordure=10)
+            make_bar(df_new,var="Catégorie_Professionnelle",titre=traduire_texte("Categorie professionnelle",lang), sens='h',height=400,bordure=10)
         with cd2:
             tx_el_F_2=df_new[(df_new["sexe"]=="F") & (df_new["Statut"]=="Temporairement éligible")].shape[0]/df_new[df_new["sexe"]=="F"].shape[0]
             tx_el_M_2=df_new[(df_new["sexe"]=="M") & (df_new["Statut"]=="Temporairement éligible")].shape[0]/df_new[df_new["sexe"]=="M"].shape[0]
@@ -1337,102 +1341,14 @@ with tabs[4]:
         with cd3:
             data_mot=df_new[df_new["Raison"].notna()]
             mot=" ".join(data_mot["Raison"])
-            make_wordcloud(mot,titre="Raison de Non éléigibilité",width=600,height=400)
+            make_wordcloud(mot,titre=traduire_texte("Raison de Non éléigibilité",lang),width=600,height=400)
     Make_Global_DataFrame(df_new,title=traduire_texte("Nouvelle Base de donnée",lang))
 #----ONGLET 6:
 with tabs[5]:
     st.markdown(profile_css, unsafe_allow_html=True)
     display_team_profiles()
     
-    selection=st.segmented_control("control", options=["Nord","Sud","Ouest","Est"],selection_mode="single")
-    selection=st.pills("controlez", options=["Nord","Sud","Ouest","Est"],selection_mode="single")
-    st.markdown(f" Vous avez sélectioné{selection}")
-
-    from streamlit_echarts import st_echarts
-
-    categories = ["A", "B", "C", "D", "E"]
-    values = [10, 22, 28, 43, 49]
-
-    # Calcul des proportions
-    total = sum(values)
-    proportions = [round((value / total) * 100, 1) for value in values]
-
-    # Préparation des données pour les tooltips
-    tooltip_data = []
-    for i in range(len(categories)):
-        tooltip_data.append({
-            "value": values[i],
-            "proportion": proportions[i]
-        })
-
-    # Configuration améliorée du graphique
-    options = {
-        "title": {
-            "text": "Analyse des données par catégorie",
-            "left": "center",
-            "textStyle": {
-                "fontSize": 18
-            }
-        },
-        "tooltip": {
-            "trigger": "axis",
-            "formatter": "{b}<br/>Valeur: {c}<br/>Proportion: {d}%",
-            "backgroundColor": "rgba(50,50,50,0.8)",
-            "borderRadius": 8,
-            "textStyle": {
-                "color": "#fff"
-            },
-            "extraCssText": "box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);"
-        },
-        "xAxis": {
-            "type": "category",
-            "data": categories,
-            "axisLabel": {
-                "fontWeight": "bold"
-            },
-            "axisTick": {
-                "alignWithLabel": True
-            }
-        },
-        "yAxis": {
-            "type": "value",
-            "name": "Valeur",
-            "nameLocation": "middle",
-            "nameGap": 30
-        },
-        "series": [{
-            "name": "Données",
-            "data": [
-                {"value": values[0], "itemStyle": {"color": "rgb(55, 162, 255)"}, "tooltip": {"formatter": f"<b>{categories[0]}</b><br/>Valeur: {values[0]}<br/>Proportion: {proportions[0]}%"}},
-                {"value": values[1], "itemStyle": {"color": "rgb(75, 142, 250)"}, "tooltip": {"formatter": f"<b>{categories[1]}</b><br/>Valeur: {values[1]}<br/>Proportion: {proportions[1]}%"}},
-                {"value": values[2], "itemStyle": {"color": "rgb(95, 122, 245)"}, "tooltip": {"formatter": f"<b>{categories[2]}</b><br/>Valeur: {values[2]}<br/>Proportion: {proportions[2]}%"}},
-                {"value": values[3], "itemStyle": {"color": "rgb(115, 102, 240)"}, "tooltip": {"formatter": f"<b>{categories[3]}</b><br/>Valeur: {values[3]}<br/>Proportion: {proportions[3]}%"}},
-                {"value": values[4], "itemStyle": {"color": "rgb(135, 82, 235)"}, "tooltip": {"formatter": f"<b>{categories[4]}</b><br/>Valeur: {values[4]}<br/>Proportion: {proportions[4]}%"}}
-            ],
-            "type": "bar",
-            "barWidth": "50%",
-            "itemStyle": {
-                "borderRadius": [5, 5, 0, 0]
-            },
-            "emphasis": {
-                "itemStyle": {
-                    "shadowBlur": 10,
-                    "shadowOffsetX": 0,
-                    "shadowColor": "rgba(0, 0, 0, 0.5)"
-                }
-            }
-        }],
-        "grid": {
-            "left": "5%",
-            "right": "5%",
-            "bottom": "10%",
-            "top": "15%",
-            "containLabel": True
-        }
-    }
-
-    # Affichage du graphique
-    st.title("Graphique à barres interactif")
-    st_echarts(options=options, height="400px")
+    st.image("QR_code.jpg", use_container_width=False,width=700)
+    
    
  

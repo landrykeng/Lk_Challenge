@@ -9,8 +9,23 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, classification_report
 import joblib
+from Challenge import *
+from Functions_RF import *
 
 # Custom styles
+
+st.markdown(global_font_css, unsafe_allow_html=True)
+
+st.markdown(sidebar_css, unsafe_allow_html=True)
+
+st.markdown(table_css, unsafe_allow_html=True)
+
+st.markdown(title_css, unsafe_allow_html=True)
+
+st.markdown(header_css, unsafe_allow_html=True)
+
+st.markdown(global_font_css, unsafe_allow_html=True)
+
 
 st.markdown(
     """
@@ -462,96 +477,112 @@ profile_css = """
 </style>
 """
 
+lang1=st.sidebar.selectbox("🌍 Choisissez la langue / Choose the language", ["", "Français", "English"])
 
-data=pd.read_excel("Base-KNN.xlsx")
+st.markdown(tabs_css, unsafe_allow_html=True)
+tb = st.tabs([
+    f" {traduire_texte('Modèles de prédiction  KNN & Random Forest', lang)}", 
+    f" {traduire_texte('à propos des modèles de prédiction', lang)}",
+])
 
-X_train, X_val, X_test, y_train, y_val, y_test=split_data(data)
-best_model, best_params=optimize_knn(X_train, y_train, X_val, y_val)
+with tb[0]:
+    choix_model=st.selectbox(traduire_texte("Choisir un model pour la prédiction",lang1), options=["KNN","Random Forest"])
+    col=st.columns(2)
+    with col[0]:
+        data=pd.read_excel("Base-KNN.xlsx") if choix_model=="KNN" else pd.read_excel("Base-RF.xlsx")
+        data.rename(columns={"Taux _hémoglobine_(g/dl)":"Tx_hemo"})
+        X_train, X_val, X_test, y_train, y_val, y_test=split_data(data)
+        best_model, best_params=optimize_knn(X_train, y_train, X_val, y_val) if choix_model=="KNN" else optimize_rforest(X_train, y_train, X_val, y_val)
 
-accuracy_train, accuracy_val, accuracy_test, train_df, val_df, test_df=evaluate_model(best_model, X_train, X_val, X_test, y_train, y_val, y_test)
+        accuracy_train, accuracy_val, accuracy_test, train_df, val_df, test_df=evaluate_model(best_model, X_train, X_val, X_test, y_train, y_val, y_test)
 
-importance_df, fig=get_feature_importance(best_model, X_test, y_test)
+        importance_df, fig=get_feature_importance(best_model, X_test, y_test)
 
-display_feature_importance(best_model, X_test, y_test)
-
-def main():
-    st.title("Prédiction d'Éligibilité au Don de Sang")
-    
-    # Définition des catégories professionnelles
-    profession_categories = {
-    1: "artisants et ouvriers d'industrie",
-    2: "Employes de type administratif",
-    3: "Personnel des services directs aux particuliers, commercants vendeurs",
-    4: "dirigeants, cadre de direction et gerants",
-    5: "professions intermediaires",
-    6: "Intellectuels et scientifiques",
-    7: "Élève",
-    8: "Chomeurs",
-    9: "Non précisée",
-    10: "forces de defense et securité personnel",
-    11: "Agriculture, elevage, peche et foret"
-}
-    
-    # Formulaire de saisie
-    with st.form(key='prediction_form'):
-        st.header("Informations Personnelles")
-        
-        # Colonnes pour une meilleure disposition
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            age = st.number_input("Âge", min_value=18, max_value=65, value=30, step=1)
-            genre = st.radio("Genre", options=["Femme", "Homme"], index=0)
-        
-        with col2:
-            taux_hemoglobine = st.number_input("Taux d'Hémoglobine (g/dl)", min_value=8.0, max_value=20.0, value=14.0, step=0.1)
-            ancien_don_sang = st.checkbox("A déjà donné du sang")
-        
-        profession = st.selectbox(
-            "Catégorie Professionnelle", 
-            options=list(profession_categories.keys()),
-            format_func=lambda x: profession_categories[x]
-        )
-        
-        # Bouton de prédiction
-        submit_button = st.form_submit_button(label='Prédire Éligibilité')
-    
-    # Traitement de la prédiction
-    if submit_button:
-        # Préparer les données pour la prédiction
-        new_individual = {
-            'Age': age,
-            'Taux_hemoglobine': taux_hemoglobine,
-            'Genre': 1 if genre == "Homme" else 0,
-            'Good_profession': profession,
-            'ancien_don_sang': 1 if ancien_don_sang else 0
-        }
-        
-        # Faire la prédiction
-        try:
-            prediction_result = predict_new_individual(new_individual)
+        display_feature_importance(best_model, X_test, y_test)
+    with col[1]:
+        def main():
+            st.title(traduire_texte("Prédiction d'Éligibilité au Don de Sang",lang1))
             
-            # Afficher le résultat
-            if 'error' in prediction_result:
-                st.error(f"Erreur de prédiction : {prediction_result['error']}")
-            else:
-                # Mise en forme du résultat
-                if prediction_result['prediction'] == 1:
-                    st.success(f"🟢 Éligible au don de sang")
+            # Définition des catégories professionnelles
+            profession_categories = {
+            1: "artisants et ouvriers d'industrie",
+            2: "Employes de type administratif",
+            3: "Personnel des services directs aux particuliers, commercants vendeurs",
+            4: "dirigeants, cadre de direction et gerants",
+            5: "professions intermediaires",
+            6: "Intellectuels et scientifiques",
+            7: "Élève",
+            8: "Chomeurs",
+            9: "Non précisée",
+            10: "forces de defense et securité personnel",
+            11: "Agriculture, elevage, peche et foret"
+        }
+            
+            # Formulaire de saisie
+            with st.form(key='prediction_form'):
+                st.header(traduire_texte("Informations Personnelles",lang1))
+                
+                # Colonnes pour une meilleure disposition
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    age = st.number_input("Âge", min_value=18, max_value=65, value=30, step=1)
+                    genre = st.radio("Genre", options=["Femme", "Homme"], index=0)
+                
+                with col2:
+                    taux_hemoglobine = st.number_input(traduire_texte("Taux d'Hémoglobine (g/dl)",lang1), min_value=8.0, max_value=20.0, value=14.0, step=0.1)
+                    ancien_don_sang = st.checkbox(traduire_texte("A déjà donné du sang",lang1))
+                
+                profession = st.selectbox(
+                    traduire_texte("Catégorie Professionnelle",lang1), 
+                    options=list(profession_categories.keys()),
+                    format_func=lambda x: profession_categories[x]
+                )
+                
+                # Bouton de prédiction
+                submit_button = st.form_submit_button(label=traduire_texte('Prédire Éligibilité',lang1))
+            
+            # Traitement de la prédiction
+            if submit_button:
+                # Préparer les données pour la prédiction
+                new_individual = {
+                    'Age': age,
+                    'Tx_hemo': taux_hemoglobine,
+                    'Genre': 1 if genre == "Homme" else 0,
+                    'Good_profession': profession,
+                    'ancien_don_sang': 1 if ancien_don_sang else 0
+                }
+                if (genre=="Femme" and taux_hemoglobine<13) or (genre=="Homme" and taux_hemoglobine<12):
+                    st.warning(traduire_texte(f"🔴 Non éligible au don de sang",lang1))
                 else:
-                    st.warning(f"🔴 Non éligible au don de sang")
-                
-                # Afficher la probabilité si disponible
-                if prediction_result['probability'] is not None:
-                    st.info(f"Probabilité d'éligibilité : {prediction_result['probability']*100:.2f}%")
-                
-                # Informations détaillées
-                with st.expander("Détails de la Prédiction"):
-                    st.write("Informations saisies :")
-                    st.table(pd.DataFrame.from_dict(new_individual, orient='index', columns=['Valeur']))
-        
-        except Exception as e:
-            st.error(f"Une erreur s'est produite : {e}")
+                    # Faire la prédiction
+                    try:
+                        prediction_result = predict_new_individual(new_individual) if choix_model=="KNN" else predict_new_individual_RF(new_individual,choice=6)
+                        
+                        # Afficher le résultat
+                        if 'error' in prediction_result:
+                            st.error(traduire_texte(f"Erreur de prédiction : {prediction_result['error']}", lang1))
+                        else:
+                            # Mise en forme du résultat
+                            if prediction_result['prediction'] == 1:
+                                st.success(traduire_texte(f"🟢 Éligible au don de sang",lang1))
+                            else:
+                                st.warning(traduire_texte(f"🔴 Non éligible au don de sang",lang1))
+                            
+                            # Afficher la probabilité si disponible
+                            if prediction_result['probability'] is not None:
+                                st.info(traduire_texte(f"Probabilité d'éligibilité : {prediction_result['probability']*100:.2f}%",lang1))
+                            
+                            # Informations détaillées
+                            with st.expander(traduire_texte("Détails de la Prédiction",lang1)):
+                                st.write(traduire_texte("Informations saisies :", lang1))
+                                st.table(pd.DataFrame.from_dict(new_individual, orient='index', columns=['Valeur']))
+                    
+                    except Exception as e:
+                        st.error(f"Une erreur s'est produite : {e}")
 
-if __name__ == "__main__":
-    main()
+        if __name__ == "__main__":
+            main()
+
+with tb[1]:
+    pass

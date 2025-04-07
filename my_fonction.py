@@ -95,6 +95,92 @@ useless_style="""
 </style>
 """
 
+echart_style="""
+        <style>
+        /* Styles de base pour tous les thèmes */
+        .stContainer {
+            border-radius: 10px;  /* Coins arrondis */
+            border: 2px solid transparent;  /* Bordure transparente par défaut */
+            padding: 20px;  /* Espacement intérieur */
+            margin-bottom: 20px;  /* Espace entre les conteneurs */
+            transition: all 0.3s ease;  /* Animation douce */
+        }
+
+        /* Mode Clair (par défaut) */
+        body:not(.dark) .stContainer {
+            background-color: rgba(255, 255, 255, 0.9);  /* Fond blanc légèrement transparent */
+            border-color: rgba(224, 224, 224, 0.7);  /* Bordure grise légère */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);  /* Ombre douce */
+        }
+
+        /* Mode Sombre */
+        body.dark .stContainer {
+            background-color: rgba(30, 30, 40, 0.9);  /* Fond sombre légèrement transparent */
+            border-color: rgba(60, 60, 70, 0.7);  /* Bordure sombre légère */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);  /* Ombre plus marquée */
+        }
+
+        /* Effet de survol - Mode Clair */
+        body:not(.dark) .stContainer:hover {
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);  /* Ombre plus prononcée */
+            transform: translateY(-5px);  /* Léger soulèvement */
+            border-color: rgba(200, 200, 200, 0.9);  /* Bordure plus visible */
+        }
+
+        /* Effet de survol - Mode Sombre */
+        body.dark .stContainer:hover {
+            box-shadow: 0 8px 12px rgba(255, 255, 255, 0.5);  /* Ombre claire */
+            transform: translateY(-5px);  /* Léger soulèvement */
+            border-color: rgba(100, 100, 110, 0.9);  /* Bordure plus visible */
+        }
+
+        /* Style spécifique pour les graphiques - Mode Clair */
+        body:not(.dark) .stPlotlyChart {
+            background-color: rgba(250, 250, 250, 0.95);  /* Fond très légèrement gris */
+            border-radius: 8px;  /* Coins légèrement arrondis */
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);  /* Ombre très légère */
+        }
+
+        /* Style spécifique pour les graphiques - Mode Sombre */
+        body.dark .stPlotlyChart {
+            background-color: rgba(40, 40, 50, 0.95);  /* Fond sombre légèrement transparent */
+            border-radius: 8px;  /* Coins légèrement arrondis */
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);  /* Ombre très légère */
+        }
+
+        /* Style spécifique pour les graphiques ECharts */
+        .echarts-container {
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body:not(.dark) .echarts-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(224, 224, 224, 0.7);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        body.dark .echarts-container {
+            background-color: rgba(30, 30, 40, 0.9);
+            border: 2px solid rgba(60, 60, 70, 0.7);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        body:not(.dark) .echarts-container:hover {
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+        }
+
+        body.dark .echarts-container:hover {
+            box-shadow: 0 8px 12px rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+        </style>
+    """
 #==================================================================================================
 
 #==================================================================================================
@@ -116,6 +202,11 @@ def class_age(age):
         return "+60 ans"
 
 #2. Fonction de tranduction 
+
+# Créer des traducteurs à l'avance pour les langues fréquemment utilisées
+traducteur_en = GoogleTranslator(source='auto', target='en')
+traducteur_fr = GoogleTranslator(source='auto', target='fr')
+
 def traduire_texte(texte, langue='English'):
     """
     Traduit le texte donné vers la langue cible en utilisant Google Translate.
@@ -128,20 +219,16 @@ def traduire_texte(texte, langue='English'):
         return texte
     
     try:
-        # Déterminer le code de langue cible
+        # Utiliser le traducteur préinitialisé approprié
         if langue == "Français":
-            code_langue = 'fr'
+            traduction = traducteur_fr.translate(texte)
         else:  # Par défaut, traduire vers l'anglais
-            code_langue = 'en'
+            traduction = traducteur_en.translate(texte)
             
-        # Utiliser deep_translator
-        from deep_translator import GoogleTranslator
-        traducteur = GoogleTranslator(source='auto', target=code_langue)
-        traduction = traducteur.translate(texte)
         return traduction
         
     except Exception as e:
-        #print(f"Erreur lors de la traduction: {e}")
+        # print(f"Erreur lors de la traduction: {e}")
         return texte  # En cas d'erreur, retourner le texte original
     
 #3. Fonction d'affichage des métriques version 1
@@ -2900,21 +2987,15 @@ def create_member_profile(name, title, image_path, about_text, email="", phone="
             contact_html = '<div class="contact-info">'
             
             # Ajouter l'email avec icône si fourni
-            if email:
-                contact_html += f"""
-                <div class="contact-item">
-                    <a href="mailto:{email}" class="contact-text">{email}</a>
-                </div>
-                """
-            
-            
-            contact_html += '</div>'
-            
             # Assembler la carte complète
             card_html = f"""
             <div class="member-card">
                 {img_html}
                 <div class="member-name">{name}</div>
+                <div class="member-title">
+                    <center> <a href="mailto:{email}" class="contact-text"> 📧 : {email} </center></a>
+                </div>
+                <div class="member-name">📞 : {phone}</div>
                 <div class="member-title">{title}</div>
                 <div class="member-about">{about_text}</div>
                 {contact_html}
@@ -2932,15 +3013,6 @@ def create_member_profile(name, title, image_path, about_text, email="", phone="
                 # Si l'image n'est pas trouvée, utiliser une div colorée à la place
                 img_html = f'<div style="width: 120px; height: 120px; border-radius: 50%; background-color: #4e8df5; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{name[0]}</div>'
             
-            card_html = f"""
-            <div class="member-card">
-                {img_html}
-                <div class="member-name">{name}</div>
-                <div class="member-title">{title}</div>
-                <div class="member-about">{about_text}</div>
-            </div>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
 
 # Fonction principale pour afficher les profils
 def display_team_profiles():
@@ -2977,12 +3049,15 @@ def display_team_profiles():
                 title="Mathématicien, Statisticien Economiste",
                 image_path="Landry_Pro.jpg",
                 about_text="Titulaire d'une licence en mathématique à l'Université de Yaoundé I. Actuellement en Master I en Statistiques et Economie appliquée à l'ISSEA.",
-                email="landrykengne99@gmail.com")
+                email="landrykengne99@gmail.com",
+                phone="+237 6 98 28 05 37")
         with col3:   
             create_member_profile(
                 name="TCHINDA Rinel",
                 title="Economiste - Data Scientist",
                 image_path="Rinel.jpg",
+                email="cezangue@gmail.com",
+                phone="+237 6 73 83 11 57",
                 about_text="Je suis un data scientist titulaire d'une licence en mathématiques, un master en économie quantitative et ingénierie statistique, alliant expertise analytique et foi évangélique fervente.")
         
         with col2:
@@ -2990,12 +3065,16 @@ def display_team_profiles():
                 name="NOULAYE Merveille",
                 title="Elève ingénieure statisticienne économiste",
                 image_path="Merveille_pro.jpg",
+                email="noulayemerveille@gmail.com",
+                phone="+237 6 77 39 32 86",
                 about_text="Jeune statisticienne en devenir dynamique et passionnée des métiers de la data. Je privilégie le travail en équipe dans la recherche des solutions efficaces et rapide face aux problèmes que je rencontre.")
         with col4:    
             create_member_profile(
                 name="ANABA Rodrigue",
                 title="Economiste - Data Scientist",
                 image_path="ANABA.jpg",
+                email="student.rodrigue.anabaohandza@issea-cemac.org",
+                phone="+237 6 96 26 90 77",
                 about_text="Diplômé d'une Licence en Sciences Économiques, je suis actuellement en dernière année du cycle d'Ingénieur Statisticien Économiste à l'ISSEA. J'ai une solide maîtrise des méthodes statistiques avancées et des outils de modélisation économétrique.")
 
 
@@ -3391,3 +3470,191 @@ def make_chlorophet_map_echarts(df, style_carte="light", palet_color="blues", op
     st_echarts(option, height=height, width=width)
     
     #return option
+
+
+def make_donutchart_3(df, var, titre="", width=600, height=450, color_palette=None, part=True):
+    """
+    Crée un graphique en anneau (donut chart) avec des améliorations visuelles en utilisant ECharts.
+    
+    Args:
+        df: DataFrame contenant les données
+        var: Variable à visualiser
+        titre: Titre du graphique
+        width: Largeur du graphique
+        height: Hauteur du graphique
+        color_palette: Liste de couleurs personnalisées pour le graphique
+        part: Afficher les pourcentages (True par défaut)
+        
+    Returns:
+        Affiche le graphique dans Streamlit via ECharts
+    """
+    # Appliquer le style CSS personnalisé une seule fois (c'est mieux de le faire dans votre script principal)
+    st.markdown("""
+        <style>
+        /* Vos styles CSS ici */
+        .custom-echarts-container {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(224, 224, 224, 0.7);
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+        }
+        
+        .dark-mode .custom-echarts-container {
+            background-color: rgba(30, 30, 40, 0.9);
+            border-color: rgba(60, 60, 70, 0.7);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .custom-echarts-container:hover {
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Créer un conteneur Streamlit avec une classe personnalisée
+    container = st.container(height=400,key=25,border=True)
+    
+    # Agrégation des données
+    data_grouped = df.groupby(var).size().reset_index(name='Effectif')
+    
+    # Calculer les pourcentages pour l'affichage dans les étiquettes
+    total = data_grouped['Effectif'].sum()
+    data_grouped['Pourcentage'] = (data_grouped['Effectif'] / total * 100).round(1)
+    
+    # Trier par effectif décroissant pour une meilleure présentation
+    data_grouped = data_grouped.sort_values('Effectif', ascending=False)
+    
+    # Préparation des données pour ECharts
+    categories = data_grouped[var].tolist()
+    values = data_grouped['Effectif'].tolist()
+    percentages = data_grouped['Pourcentage'].tolist()
+    
+    # Couleurs par défaut si non spécifiées
+    if color_palette is None:
+        # Assurez-vous que 'palette' est défini ou utilisez une palette par défaut
+        try:
+            color_palette = palette
+        except NameError:
+            color_palette = ["#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de", "#3ba272", "#fc8452", "#9a60b4", "#ea7ccc"]
+    
+    # Limiter les couleurs à la longueur des données
+    colors = color_palette[:len(categories)]
+    
+    # Construction des données pour les séries
+    series_data = []
+    for i, (cat, val, pct) in enumerate(zip(categories, values, percentages)):
+        # Déterminer si ce segment doit être légèrement détaché
+        offset = 10 if (i == 0) and (len(data_grouped) > 2) else 0
+        
+        item = {
+            "name": cat,
+            "value": val,
+            "itemStyle": {"color": colors[i % len(colors)]},
+            "tooltip": {"formatter": f"<b>{cat}</b><br>Effectif: {val} ({pct}%)"},
+        }
+        
+        # Ajouter l'offset pour le premier segment si nécessaire
+        if offset > 0:
+            item["offset"] = offset
+            
+        series_data.append(item)
+    
+    # Configuration du graphique
+    options = {
+        "title": {
+            "text": titre,
+            "left": "center",
+            "textStyle": {
+                "fontWeight": "bold",
+                "fontSize": 18
+            }
+        },
+        "tooltip": {
+            "trigger": "item",
+            "backgroundColor": "rgba(255, 255, 255, 0.9)",
+            "borderColor": "#ccc",
+            "borderWidth": 1,
+            "textStyle": {
+                "color": "#333"
+            },
+            "formatter": "{b}: {c} ({d}%)"
+        },
+        "legend": {
+            "orient": "horizontal",
+            "bottom": "bottom",
+            "left": "center",
+            "data": categories
+        },
+        "series": [
+            {
+                "name": var,
+                "type": "pie",
+                "radius": ["40%", "70%"],  # Effet donut
+                "center": ["50%", "50%"],
+                "avoidLabelOverlap": False,
+                "itemStyle": {
+                    "borderRadius": 4,
+                    "borderColor": "#fff",
+                    "borderWidth": 2
+                },
+                "label": {
+                    "show": part,
+                    "position": "inside",
+                    "formatter": "{b}\n{d}%" if part else "{b}",
+                    "fontSize": 10,
+                    "fontWeight": "bold"
+                },
+                "emphasis": {
+                    "itemStyle": {
+                        "shadowBlur": 10,
+                        "shadowOffsetX": 0,
+                        "shadowColor": "rgba(0, 0, 0, 0.5)"
+                    },
+                    "label": {
+                        "show": True,
+                        "fontSize": 12,
+                        "fontWeight": "bold"
+                    }
+                },
+                "labelLine": {
+                    "show": False
+                },
+                "data": series_data
+            }
+        ]
+    }
+    
+    # Ajout du nombre total au centre
+    options["graphic"] = [{
+        "type": "text",
+        "left": "center",
+        "top": "50%",
+        "style": {
+            "text": f"{total:,}\nTotal",
+            "textAlign": "center",
+            "fill": "#333",
+            "fontSize": 16,
+            "fontWeight": "bold"
+        }
+    }]
+    
+    # Dans le conteneur Streamlit, créer une div personnalisée
+    with container:
+        #pass # Créer une div avec style personnalisé
+        
+        st_echarts(
+                options=options,
+                height=f"{height}px",
+                width="100%",  # Pour utiliser toute la largeur disponible
+            )
+        #st.markdown(f'<div class="custom-echarts-container"> {a}</div>', unsafe_allow_html=True)
+            
+        # Affichage dans Streamlit
+    
+        
+        # Fermer la div
+    #st.markdown('</div>', unsafe_allow_html=True)
