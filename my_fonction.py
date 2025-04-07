@@ -3041,7 +3041,7 @@ def display_team_profiles2():
         """, unsafe_allow_html=True)
         
         # Arrangement des profils en 2 colonnes
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3= st.columns([1,1,2])
         
         with col1:
             create_member_profile(
@@ -3051,7 +3051,22 @@ def display_team_profiles2():
                 about_text="Titulaire d'une licence en mathématique à l'Université de Yaoundé I. Actuellement en Master I en Statistiques et Economie appliquée à l'ISSEA.",
                 email="landrykengne99@gmail.com",
                 phone="+237 6 98 28 05 37")
-        with col3:   
+            create_member_profile(
+                name="ANABA Rodrigue",
+                title="Economiste - Data Scientist",
+                image_path="ANABA.jpg",
+                email="student.rodrigue.anabaohandza@issea-cemac.org",
+                phone="+237 6 96 26 90 77",
+                about_text="Diplômé d'une Licence en Sciences Économiques, je suis actuellement en dernière année du cycle d'Ingénieur Statisticien Économiste à l'ISSEA. J'ai une solide maîtrise des méthodes statistiques avancées et des outils de modélisation économétrique.")
+            
+        with col2:
+            create_member_profile(
+                name="NOULAYE Merveille",
+                title="Elève ingénieure statisticienne économiste",
+                image_path="Merveille_pro.jpg",
+                email="noulayemerveille@gmail.com",
+                phone="+237 6 77 39 32 86",
+                about_text="Jeune statisticienne en devenir dynamique et passionnée des métiers de la data. Je privilégie le travail en équipe dans la recherche des solutions efficaces et rapide face aux problèmes que je rencontre.")   
             create_member_profile(
                 name="TCHINDA Rinel",
                 title="Economiste - Data Scientist",
@@ -3060,22 +3075,9 @@ def display_team_profiles2():
                 phone="+237 6 73 83 11 57",
                 about_text="Je suis un data scientist titulaire d'une licence en mathématiques, un master en économie quantitative et ingénierie statistique, alliant expertise analytique et foi évangélique fervente.")
         
-        with col2:
-            create_member_profile(
-                name="NOULAYE Merveille",
-                title="Elève ingénieure statisticienne économiste",
-                image_path="Merveille_pro.jpg",
-                email="noulayemerveille@gmail.com",
-                phone="+237 6 77 39 32 86",
-                about_text="Jeune statisticienne en devenir dynamique et passionnée des métiers de la data. Je privilégie le travail en équipe dans la recherche des solutions efficaces et rapide face aux problèmes que je rencontre.")
-        with col4:    
-            create_member_profile(
-                name="🇨🇲 ANABA Rodrigue",
-                title="Economiste - Data Scientist",
-                image_path="ANABA.jpg",
-                email="student.rodrigue.anabaohandza@issea-cemac.org",
-                phone="+237 6 96 26 90 77",
-                about_text="Diplômé d'une Licence en Sciences Économiques, je suis actuellement en dernière année du cycle d'Ingénieur Statisticien Économiste à l'ISSEA. J'ai une solide maîtrise des méthodes statistiques avancées et des outils de modélisation économétrique.")
+        with col3:
+            st.image("QR_code.jpg", use_container_width=False,width=700)    
+            
 
 
 def make_cross_hist_b_ech(df, var1, var2, titre="", typ_bar=1, width=800, height=500, sens="v", 
