@@ -22,9 +22,13 @@ from branca.colormap import linear
 from streamlit_folium import folium_static
 import datetime
 from st_aggrid.grid_options_builder import GridOptionsBuilder
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 from requests.exceptions import ConnectionError, Timeout
 from st_aggrid import AgGrid
+from streamlit_echarts import st_echarts
+import base64
+
+
 #==================================================================================================
 
 #============Variables Globales====================================================================
@@ -48,6 +52,49 @@ sequence_couleur=['reds', 'agsunset', 'algae', 'amp', 'armyrose', 'balance',
              'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid',
              'turbo', 'twilight', 'viridis', 'ylgn', 'ylgnbu', 'ylorbr',
              'ylorrd']
+
+useless_style="""
+<style>
+.sidebar-link {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar-link-right {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-align: right;
+}
+
+.sidebar-link-center {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-align: center;
+}
+</style>
+"""
+
 #==================================================================================================
 
 #==================================================================================================
@@ -85,7 +132,8 @@ def traduire_texte(texte, langue='English'):
         else:
             langue='en'
             
-        traducteur = Translator(service_urls=['translate.google.com'])
+        #traducteur = Translator(service_urls=['translate.google.com'])
+        traducteur = GoogleTranslator(source='auto', target='en')
         #traducteur = Translator()
         try:
                 # Utiliser un timeout pour éviter les attentes trop longues
@@ -219,6 +267,8 @@ def make_progress_char(value,couleur,titre="",width=500, height=300,ecart=50):
                                     yanchor='top'),
                         showlegend=False,
                         margin=dict(l=0, r=0, t=30, b=10),
+                        paper_bgcolor='rgba(248,248,250,0)',
+                        plot_bgcolor='rgba(248,248,250,0)',
                         annotations=[dict(text=str(round(100*value,2))+'%', x=0.5, y=0.5,
                         font_size=40, showarrow=False, xanchor="center",font=dict(color=couleur, family="Berlin Sans FB"))])
     st.plotly_chart(fig)
@@ -332,6 +382,8 @@ def plot_metric(label, value, prefix="", suffix="", show_graph=False, color_grap
         showlegend=False,
         #plot_bgcolor="white",
         height=100,
+        paper_bgcolor='rgba(248,248,250,0)',
+        plot_bgcolor='rgba(248,248,250,0)',
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -372,6 +424,7 @@ def plot_metric_2(label,df,var, prefix="", suffix="", show_graph=False, color_gr
     fig.update_yaxes(visible=False, fixedrange=True)
     fig.update_layout(
         paper_bgcolor='rgba(248,248,250,0)',
+        plot_bgcolor='rgba(248,248,250,0)',
         # paper_bgcolor="lightgrey",
         margin=dict(t=0, b=0),
         showlegend=False,
@@ -481,6 +534,8 @@ def make_multi_progress_bar(labels,values,colors,titre="",width=500,height=400):
         xaxis=dict(visible=False), 
         yaxis=dict(visible=False),
         margin=dict(l=50, r=20, t=20, b=20),
+        paper_bgcolor='rgba(248,248,250,0)',
+        plot_bgcolor='rgba(248,248,250,0)',
     )
 
     st.plotly_chart(fig)
@@ -534,7 +589,10 @@ def make_distribution(df,var_alpha,var_num,add_vline,add_vline2,titre="",width=5
         line=dict(color="green", width=2))
     fig.update_layout(barmode='stack',xaxis=dict(visible=True), 
         yaxis=dict(visible=True),)
-    fig.update_layout(margin=dict(l=5, r=1, t=30, b=10),width=width, height=height,
+    fig.update_layout(margin=dict(l=5, r=1, t=30, b=10),
+                      paper_bgcolor='rgba(248,248,250,0)',
+                      plot_bgcolor='rgba(248,248,250,0)',
+                      width=width, height=height,
                     title=dict(
         text=titre,
         x=0.0,  
@@ -625,6 +683,8 @@ def make_dbl_progress_char(labels,vars,colors,titre="",n_secteur=50):
                         yanchor='top'),
         showlegend=False,
         margin=dict(l=0, r=0, t=40, b=10),
+        paper_bgcolor='rgba(248,248,250,0)',
+        plot_bgcolor='rgba(248,248,250,0)',
         annotations=[dict(text= str(round(100*val2,2))+'%', x=0.5, y=0.25,
         font_size=50, showarrow=False, xanchor="center",font=dict(color=col2, family="Berlin Sans FB")),
                     dict(text=str(round(100*val1,2))+'%', x=0.5, y=0.6,
@@ -1190,7 +1250,7 @@ def make_cross_hist_b(df, var1, var2, titre="", typ_bar=1, width=800, height=500
             'bgcolor': 'rgba(255,255,255,0)',
             'bordercolor': 'rgba(0,0,0,0)',
             'borderwidth': 1,
-            'font': {'size': 12}
+            'font': police_label
         } if show_legend else None
     )
     
@@ -1425,14 +1485,14 @@ def make_donutchart(df, var, titre="", width=600, height=450, color_palette=None
             y=-0.15,                   # Position sous le graphique
             xanchor='center',
             x=0.5,                     # Centré
-            font=dict(size=12),
+            font=dict(size=16),
             bgcolor='rgba(255,255,255,0)',
             bordercolor='rgba(0,0,0,0)',
             borderwidth=1
         ),
         uniformtext=dict(
-            minsize=10,
-            mode='hide'                # Cache le texte s'il est trop petit pour s'adapter
+            minsize=15,
+            #mode='hide'                # Cache le texte s'il est trop petit pour s'adapter
         )
     )
     
@@ -1545,6 +1605,8 @@ def make_area_chart(df,var,titre="",color=1,width=500,height=300):
         yanchor='top'),)
     fig.update_layout(
         title=titre,
+        paper_bgcolor='rgba(248,248,250,0)',
+        plot_bgcolor='rgba(248,248,250,0)',
         margin=dict(l=5, r=1, t=30, b=10),
         legend=dict(
             x=0.8,  # Position horizontale (à droite)
@@ -1696,8 +1758,8 @@ def make_distribution_2(df, var_alpha, var_num, add_vline=None, add_vline2=None,
         bargroupgap=0.1,  # Espace entre les groupes de barres
         width=width,
         height=height,
-        paper_bgcolor='rgba(250,250,250,0)',
-        plot_bgcolor='rgba(250,250,250,0)',
+        paper_bgcolor='rgba(248,248,250,0)',
+        plot_bgcolor='rgba(248,248,250,0)',
         margin=dict(l=8, r=4, t=8, b=8),  # Marges ajustées
         legend={
             'title': var_alpha,
@@ -1861,7 +1923,7 @@ def make_relative_bar(df, var1, var2, titre="", colors=None, width=650, height=4
     fig.update_traces(
         texttemplate=f'%{{text:.{round_digits}f}}%', 
         textposition='inside',
-        textfont=dict(size=18, color='white')
+        textfont=dict(size=25)
     )
     
     fig.update_layout(
@@ -1872,9 +1934,11 @@ def make_relative_bar(df, var1, var2, titre="", colors=None, width=650, height=4
             text=titre,
             x=0.5,  # Centrer le titre
             xanchor='center',
-            font=dict(size=16)
+            font=dict(size=20)
         ),
         margin=dict(l=10, r=5, t=20, b=40),
+        paper_bgcolor='rgba(248,248,250,0)',
+        plot_bgcolor='rgba(248,248,250,0)',
         legend=dict(
             orientation='h',
             yanchor='bottom',
@@ -1903,6 +1967,8 @@ def make_hist_box(df,var1,var2,titre="",width=500,height=300):
             font=dict(size=16)
         ),
         margin=dict(l=10, r=5, t=20, b=40),
+        paper_bgcolor='rgba(248,248,250,0)',
+        plot_bgcolor='rgba(248,248,250,0)',
         legend=dict(
             orientation='h',
             yanchor='bottom',
@@ -2398,3 +2464,931 @@ def telecharger_pdf(file_path):
         mime="application/pdf",
     )
 #==========================================================
+
+def make_blood_group(df, var):
+    df1=df.groupby(var).agg({ "Horodateur":"size"})
+    df1=df1.rename(columns={"Horodateur":"Effectif"})
+    df1["Modal"]=df1.index
+    df1["prop"]=df1["Effectif"]/df1["Effectif"].sum()
+    mod=list(df1["Modal"])
+    val=list(df1["Effectif"])
+    prop=list(df1["prop"])
+    p=len(mod)//4
+    i=1
+    k=0
+    while i<=p:
+        col=st.columns(4)
+        for j in range(4):
+            with col[j]:
+                st.markdown(f"""
+                    <h3 class="sidebar-link">{mod[k]}🩸
+                    <br><center>{val[k]} </center>
+                    <br> <center>{round(prop[k]*100, 2)}% </center>
+                    </h3>
+                """, unsafe_allow_html=True)
+                k=k+1
+        i=i+1
+        
+def make_donutchart_2(df, var, titre="", width=600, height=450, color_palette=None, part=True):
+    """
+    Crée un graphique en anneau (donut chart) avec des améliorations visuelles en utilisant ECharts.
+    
+    Args:
+        df: DataFrame contenant les données
+        var: Variable à visualiser
+        titre: Titre du graphique
+        width: Largeur du graphique
+        height: Hauteur du graphique
+        color_palette: Liste de couleurs personnalisées pour le graphique
+        part: Afficher les pourcentages (True par défaut)
+        
+    Returns:
+        Affiche le graphique dans Streamlit via ECharts
+    """
+    st.write(". ")
+    # Agrégation des données
+    data_grouped = df.groupby(var).size().reset_index(name='Effectif')
+    
+    # Calculer les pourcentages pour l'affichage dans les étiquettes
+    total = data_grouped['Effectif'].sum()
+    data_grouped['Pourcentage'] = (data_grouped['Effectif'] / total * 100).round(1)
+    
+    # Trier par effectif décroissant pour une meilleure présentation
+    data_grouped = data_grouped.sort_values('Effectif', ascending=False)
+    
+    # Préparation des données pour ECharts
+    categories = data_grouped[var].tolist()
+    values = data_grouped['Effectif'].tolist()
+    percentages = data_grouped['Pourcentage'].tolist()
+    
+    # Couleurs par défaut si non spécifiées
+    if color_palette is None:
+        color_palette = palette
+    
+    # Limiter les couleurs à la longueur des données
+    colors = color_palette[:len(categories)]
+    
+    # Construction des données pour les séries
+    series_data = []
+    for i, (cat, val, pct) in enumerate(zip(categories, values, percentages)):
+        # Déterminer si ce segment doit être légèrement détaché
+        offset = 10 if (i == 0) and (len(data_grouped) > 2) else 0
+        
+        item = {
+            "name": cat,
+            "value": val,
+            "itemStyle": {"color": colors[i % len(colors)]},
+            "tooltip": {"formatter": f"<b>{cat}</b><br>Effectif: {val} ({pct}%)"},
+        }
+        
+        # Ajouter l'offset pour le premier segment si nécessaire
+        if offset > 0:
+            item["offset"] = offset
+            
+        series_data.append(item)
+    
+    # Configuration du graphique
+    options = {
+        "title": {
+            "text": titre,
+            "left": "center",
+            "textStyle": {
+                "fontWeight": "bold",
+                "fontSize": 18
+            }
+        },
+        "tooltip": {
+            "trigger": "item",
+            "backgroundColor": "rgba(255, 255, 255, 0.9)",
+            "borderColor": "#ccc",
+            "borderWidth": 1,
+            "textStyle": {
+                "color": "#333"
+            },
+            "formatter": "{b}: {c} ({d}%)"
+        },
+        "legend": {
+            "orient": "horizontal",
+            "bottom": "bottom",
+            "left": "center",
+            "data": categories
+        },
+        "series": [
+            {
+                "name": var,
+                "type": "pie",
+                "radius": ["40%", "70%"],  # Effet donut
+                "center": ["50%", "50%"],
+                "avoidLabelOverlap": False,
+                "itemStyle": {
+                    "borderRadius": 4,
+                    "borderColor": "#fff",
+                    "borderWidth": 2
+                },
+                "label": {
+                    "show": part,
+                    "position": "inside",
+                    "formatter": "{b}\n{d}%" if part else "{b}",
+                    "fontSize": 10,
+                    "fontWeight": "bold"
+                },
+                "emphasis": {
+                    "itemStyle": {
+                        "shadowBlur": 10,
+                        "shadowOffsetX": 0,
+                        "shadowColor": "rgba(0, 0, 0, 0.5)"
+                    },
+                    "label": {
+                        "show": True,
+                        "fontSize": 12,
+                        "fontWeight": "bold"
+                    }
+                },
+                "labelLine": {
+                    "show": False
+                },
+                "data": series_data
+            }
+        ]
+    }
+    
+    # Ajout du nombre total au centre
+    options["graphic"] = [{
+        "type": "text",
+        "left": "center",
+        "top": "50%",
+        "style": {
+            "text": f"{total:,}\nTotal",
+            "textAlign": "center",
+            "fill": "#333",
+            "fontSize": 16,
+            "fontWeight": "bold"
+        }
+    }]
+    
+    # Affichage dans Streamlit
+    st_echarts(
+        options=options,
+        height=f"{height}px",
+        width="100%"  # Pour utiliser toute la largeur disponible
+    )
+    
+def Make_Global_DataFrame(df, title="", height=None, pagination=True, filters=True, width="100%", search=True, sort=True, selection=False, hide_columns=None, column_config=None, download=False, download_filename="data.csv", cle="key1"):
+    """
+    Affiche un DataFrame de façon stylée avec des options de filtrage, tri, pagination et téléchargement.
+    
+    Args:
+        df: DataFrame pandas à afficher
+        title: Titre à afficher au-dessus du tableau (optionnel)
+        height: Hauteur du tableau en pixels (None = automatique)
+        pagination: Activer la pagination (True par défaut)
+        filters: Activer les filtres par colonne (True par défaut)
+        width: Largeur du tableau ("100%" par défaut)
+        search: Activer la recherche globale (True par défaut)
+        sort: Activer le tri des colonnes (True par défaut)
+        selection: Activer la sélection de lignes (False par défaut)
+        hide_columns: Liste des colonnes à masquer (None par défaut)
+        column_config: Configuration personnalisée des colonnes (dictionnaire)
+        download: Activer l'option de téléchargement (False par défaut)
+        download_filename: Nom du fichier à télécharger ("data.csv" par défaut)
+        
+    Returns:
+        En mode sélection, retourne les données sélectionnées, sinon None
+    """
+
+    # Vérifier si le DataFrame est vide
+    if df.empty:
+        st.warning("Le DataFrame est vide.")
+        return None
+    
+    # Afficher le titre si fourni
+    if title:
+        st.subheader(title)
+    
+    # Créer une copie du DataFrame pour éviter de modifier l'original
+    df_display = df.copy()
+    
+    # Masquer les colonnes spécifiées
+    if hide_columns:
+        df_display = df_display.drop(columns=[col for col in hide_columns if col in df_display.columns])
+    
+    # Section de filtrage manuel (avant le tableau)
+    if filters:
+        with st.expander("Filtres avancés", expanded=False):
+            cols = st.columns(min(3, len(df_display.columns)))
+            filter_conditions = []
+            
+            for i, column in enumerate(df_display.columns):
+                col_idx = i % 3
+                with cols[col_idx]:
+                    # Adapter le type de filtre en fonction du type de données
+                    if pd.api.types.is_numeric_dtype(df_display[column]):
+                        min_val, max_val = float(df_display[column].min()), float(df_display[column].max())
+                        if min_val != max_val:
+                            filter_val = st.slider(f"Filtrer par {column}", min_val, max_val, (min_val, max_val),key=random.randint(1, 1000000))
+                            if filter_val != (min_val, max_val):
+                                filter_conditions.append(f"{filter_val[0]} <= `{column}` <= {filter_val[1]}")
+                    elif pd.api.types.is_datetime64_any_dtype(df_display[column]):
+                        min_date, max_date = df_display[column].min(), df_display[column].max()
+                        if min_date != max_date:
+                            filter_date = st.date_input(f"Filtrer par {column}", (min_date, max_date),key=random.randint(1, 1000000))
+                            if len(filter_date) == 2 and (filter_date[0] != min_date or filter_date[1] != max_date):
+                                filter_conditions.append(f"`{column}` >= '{filter_date[0]}' and `{column}` <= '{filter_date[1]}'")
+                    else:
+                        # Pour les colonnes textuelles ou catégorielles
+                        unique_values = df_display[column].dropna().unique()
+                        if len(unique_values) < 20:  # Utiliser une liste déroulante si peu de valeurs
+                            selected_values = st.multiselect(f"Filtrer par {column}", unique_values, key=random.randint(1, 1000000))
+                            if selected_values:
+                                filter_conditions.append(f"`{column}` in {selected_values}")
+                        else:  # Utiliser un champ texte pour beaucoup de valeurs
+                            filter_text = st.text_input(f"Chercher dans {column}",key=random.randint(1, 1000000))
+                            if filter_text:
+                                filter_conditions.append(f"`{column}`.str.contains('{filter_text}', case=False, na=False)")
+            
+            # Appliquer les filtres
+            if filter_conditions:
+                combined_filter = " and ".join(filter_conditions)
+                try:
+                    df_display = df_display.query(combined_filter)
+                    st.info(f"{len(df_display)} lignes après filtrage")
+                except Exception as e:
+                    st.error(f"Erreur de filtrage: {e}")
+    
+    # Configuration des options de st.dataframe
+    df_kwargs = {
+        "use_container_width": width == "100%",
+        "hide_index": True,
+    }
+    
+    # Ajout des options conditionnelles
+    if height:
+        df_kwargs["height"] = height
+    
+    # Configuration avancée des colonnes
+    if column_config:
+        df_kwargs["column_config"] = column_config
+    
+    # Configuration des options d'affichage
+    config = {}
+    if pagination:
+        config["page_size"] = 10
+    if not sort:
+        config["sorting"] = False
+    if search:
+        config["search_bar"] = True
+    if selection:
+        config["selection"] = "multi"
+    
+    if config:
+        df_kwargs["column_order"] = list(df_display.columns)
+        if selection:  # Ajouter column_labels uniquement pour data_editor
+            df_kwargs["column_labels"] = {col: col.replace("_", " ").title() for col in df_display.columns}
+    
+    # Option de téléchargement
+    #if download:
+        # Préparation des formats disponibles
+    download_formats = {
+            "CSV": ".csv",
+            "Excel": ".xlsx",
+            "JSON": ".json"
+        }
+        
+    col1, col2, col3 = st.columns([3, 2, 1])
+    with col1:
+            selected_format = st.selectbox("Format:", options=list(download_formats.keys()), index=0,key=random.randint(1, 1000000))
+        
+    with col2:  
+            filename = st.text_input("Nom du fichier:", download_filename.split('.')[0], key=random.randint(1, 1000000))
+        
+    with col3:
+            ext = download_formats[selected_format]
+            download_filename = f"{filename}{ext}"
+            
+            buffer = io.BytesIO()
+            
+            if selected_format == "CSV":
+                df_display.to_csv(buffer, index=False)
+            elif selected_format == "Excel":
+                df_display.to_excel(buffer, index=False)
+            elif selected_format == "JSON":
+                buffer.write(df_display.to_json(orient="records").encode())
+            
+            buffer.seek(0)
+            
+            st.download_button(
+                label="Télécharger",
+                data=buffer,
+                file_name=download_filename,
+                mime="application/octet-stream", key=random.randint(1, 1000000)
+            )
+    
+    # Affichage du DataFrame avec les options configurées
+    if selection:
+        return st.data_editor(df_display, **df_kwargs,key=random.randint(1, 1000000))
+    else:
+        if "column_labels" in df_kwargs:
+            # Retirer l'argument non supporté pour st.dataframe
+            labels_dict = df_kwargs.pop("column_labels")
+        st.dataframe(df_display,**df_kwargs, key=cle)
+        
+    # Information sur le nombre de lignes
+    st.caption(f"Total: {len(df_display)} lignes affichées (sur {len(df)} au total)")
+    
+    return None
+
+def get_image_as_base64(image_path):
+        """Convertit une image en base64 pour l'affichage dans HTML"""
+        try:
+            with open(image_path, "rb") as img_file:
+                return base64.b64encode(img_file.read()).decode('utf-8')
+        except Exception:
+            # Image par défaut si l'image n'est pas trouvée
+            return ""  # Retourner une chaîne vide si l'image n'est pas trouvée
+
+def create_member_profile(name, title, image_path, about_text, email="", phone=""):
+        # Créer une carte stylisée avec ombres et arrondis
+        with st.container():
+            # Appliquer un style CSS personnalisé à la carte
+            st.markdown("""
+            <style>
+            .member-card {
+                background-color: white;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+                transition: transform 0.3s;
+                height: 100%;
+            }
+            .member-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            }
+            .member-image {
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                object-fit: cover;
+                margin: 0 auto;
+                display: block;
+                border: 3px solid #4e8df5;
+            }
+            .member-name {
+                color: #1a1a1a;
+                font-size: 18px;
+                font-weight: bold;
+                text-align: center;
+                margin-top: 15px;
+                margin-bottom: 5px;
+            }
+            .member-title {
+                color: #4e8df5;
+                font-size: 14px;
+                font-style: italic;
+                text-align: center;
+                margin-bottom: 15px;
+            }
+            .member-about {
+                color: #333;
+                font-size: 14px;
+                text-align: justify;
+                line-height: 1.5;
+                margin-bottom: 15px;
+            }
+            .contact-info {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+                margin-top: 15px;
+                color: #555;
+            }
+            .contact-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 13px;
+            }
+            .contact-icon {
+                color: #4e8df5;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 20px;
+            }
+            .contact-text {
+                color: #555;
+            }
+            .contact-text:hover {
+                color: #4e8df5;
+                text-decoration: underline;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            
+            # Obtenir l'image en base64
+            img_base64 = get_image_as_base64(image_path)
+            
+            # Créer la structure HTML de la carte
+            if img_base64:
+                img_html = f'<img src="data:image/png;base64,{img_base64}" class="member-image">'
+            else:
+                # Si l'image n'est pas trouvée, utiliser une div colorée à la place
+                img_html = f'<div style="width: 120px; height: 120px; border-radius: 50%; background-color: #4e8df5; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{name[0]}</div>'
+            
+            # Préparer la section des contacts
+            contact_html = '<div class="contact-info">'
+            
+            # Ajouter l'email avec icône si fourni
+            if email:
+                contact_html += f"""
+                <div class="contact-item">
+                    <a href="mailto:{email}" class="contact-text">{email}</a>
+                </div>
+                """
+            
+            
+            contact_html += '</div>'
+            
+            # Assembler la carte complète
+            card_html = f"""
+            <div class="member-card">
+                {img_html}
+                <div class="member-name">{name}</div>
+                <div class="member-title">{title}</div>
+                <div class="member-about">{about_text}</div>
+                {contact_html}
+            </div>
+            """
+            st.markdown(card_html, unsafe_allow_html=True)
+                
+                # Obtenir l'image en base64
+            img_base64 = get_image_as_base64(image_path)
+            
+            # Créer la structure HTML de la carte
+            if img_base64:
+                img_html = f'<img src="data:image/png;base64,{img_base64}" class="member-image">'
+            else:
+                # Si l'image n'est pas trouvée, utiliser une div colorée à la place
+                img_html = f'<div style="width: 120px; height: 120px; border-radius: 50%; background-color: #4e8df5; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{name[0]}</div>'
+            
+            card_html = f"""
+            <div class="member-card">
+                {img_html}
+                <div class="member-name">{name}</div>
+                <div class="member-title">{title}</div>
+                <div class="member-about">{about_text}</div>
+            </div>
+            """
+            st.markdown(card_html, unsafe_allow_html=True)
+
+# Fonction principale pour afficher les profils
+def display_team_profiles():
+        st.markdown("""
+        <style>
+        .main-title {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #4e8df5;
+            padding-bottom: 10px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        st.markdown('<div class="main-title">Notre Équipe</div>', unsafe_allow_html=True)
+        
+        # Description de l'équipe
+        st.markdown("""
+        <div style="text-align: center; margin-bottom: 40px; padding: 0 10%;">
+            Notre équipe est composée de professionnels passionnés dans les domaines des statistiques, 
+            de l'économie et de la data science, chacun apportant une expertise unique à nos projets.
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Arrangement des profils en 2 colonnes
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            create_member_profile(
+                name="KENGNE Landry",
+                title="Mathématicien, Statisticien Economiste",
+                image_path="Landry_Pro.jpg",
+                about_text="Titulaire d'une licence en mathématique à l'Université de Yaoundé I. Actuellement en Master I en Statistiques et Economie appliquée à l'ISSEA.",
+                email="landrykengne99@gmail.com")
+        with col3:   
+            create_member_profile(
+                name="TCHINDA Rinel",
+                title="Economiste - Data Scientist",
+                image_path="Rinel.jpg",
+                about_text="Je suis un data scientist titulaire d'une licence en mathématiques, un master en économie quantitative et ingénierie statistique, alliant expertise analytique et foi évangélique fervente.")
+        
+        with col2:
+            create_member_profile(
+                name="NOULAYE Merveille",
+                title="Elève ingénieure statisticienne économiste",
+                image_path="Merveille_pro.jpg",
+                about_text="Jeune statisticienne en devenir dynamique et passionnée des métiers de la data. Je privilégie le travail en équipe dans la recherche des solutions efficaces et rapide face aux problèmes que je rencontre.")
+        with col4:    
+            create_member_profile(
+                name="ANABA Rodrigue",
+                title="Economiste - Data Scientist",
+                image_path="ANABA.jpg",
+                about_text="Diplômé d'une Licence en Sciences Économiques, je suis actuellement en dernière année du cycle d'Ingénieur Statisticien Économiste à l'ISSEA. J'ai une solide maîtrise des méthodes statistiques avancées et des outils de modélisation économétrique.")
+
+
+def make_cross_hist_b_ech(df, var1, var2, titre="", typ_bar=1, width=800, height=500, sens="v", 
+                    palette=None, show_legend=True, bordure=None):
+    """
+    Crée un histogramme croisé optimisé pour les données de campagne de don de sang.
+    
+    Args:
+        df: DataFrame contenant les données
+        var1: Variable pour grouper (apparaîtra dans la légende)
+        var2: Variable pour l'axe des x/y selon l'orientation
+        titre: Titre du graphique
+        typ_bar: 1 pour empilé, 2 pour groupé
+        width: Largeur du graphique
+        height: Hauteur du graphique
+        sens: Orientation - "v" (vertical) ou "h" (horizontal)
+        palette: Liste de couleurs personnalisée (si None, utilise la palette de don de sang par défaut)
+        show_legend: Afficher ou masquer la légende
+        bordure: pour les bordure
+        
+    Returns:
+        Affiche le graphique dans Streamlit
+    """
+    # Définition des couleurs pour le thème don de sang si non spécifiées
+    if palette is None:
+        # Palette de couleurs orientée sang (rouge) et médical (bleu) #FDC7D3,
+        palette = ['#FDC7D3', '#F61A49', '#640419', '#49030D', '#4575B4', '#74ADD1', '#ABD9E9', '#E0F3F8']  # nuances de bleu
+    
+    bar_mode = "stack" if typ_bar == 1 else "cluster"
+    
+    # Création du tableau croisé et formatage
+    cross_df = pd.crosstab(df[var1], df[var2])
+    table_cross = cross_df.reset_index().melt(id_vars=var1, var_name=var2, value_name='Effectif')
+    table_cross = table_cross.sort_values("Effectif", ascending=False)
+    
+    # Déterminer les axes selon l'orientation
+    x_axis = var2 if sens == "v" else 'Effectif'
+    y_axis = var1 if sens == "h" else 'Effectif'
+    
+    # Création du graphique avec Streamlit Echarts
+    options = {
+        "xAxis": {
+            "type": "category",
+            "data": list(table_cross[x_axis].unique()),
+            "axisLabel": {
+                "rotate": 45,
+                "fontSize": 12,
+                "fontFamily": "Arial, sans-serif"
+            }
+        },
+        "yAxis": {
+            "type": "value",
+            "name": "Effectif",
+            "nameLocation": "center",
+            "nameGap": 30,
+            "splitLine": {
+                "lineStyle": {
+                    "color": "rgba(211,211,211,0.5)"
+                }
+            },
+            "axisLabel": {
+                "fontSize": 12,
+                "fontFamily": "Arial, sans-serif"
+            }
+        },
+        "series": [
+            {
+                "name": cat,
+                "type": "bar",
+                "data": list(table_cross[table_cross[var1] == cat]["Effectif"]),
+                "stack": bar_mode,
+                "label": {
+                    "show": True,
+                    "position": "auto",
+                    "fontSize": 12,
+                    "fontFamily": "Arial, sans-serif"
+                },
+                "itemStyle": {
+                    "color": palette[i]
+                }
+            } for i, cat in enumerate(table_cross[var1].unique())
+        ],
+        "tooltip": {
+            "trigger": "axis",
+            "axisPointer": {
+                "type": "shadow"
+            }
+        },
+        "title": {
+            "text": titre,
+            "left": "center",
+            "top": "5%",
+            "textStyle": {
+                "fontSize": 18,
+                "fontWeight": "bold",
+                "fontFamily": "Arial, sans-serif"
+            }
+        },
+        "legend": {
+            "type": "scroll",
+            "orient": "horizontal",
+            "right": "15%",
+            "top": "10%",
+            "itemWidth": 16,
+            "itemHeight": 12,
+            "itemGap": 8,
+            "textStyle": {
+                "fontSize": 12,
+                "fontFamily": "Arial, sans-serif"
+            }
+        },
+        "grid": {
+            "left": "1%",
+            "right": "1%",
+            "bottom": "1%",
+            "containLabel": True
+        }
+    }
+    
+    if sens == "h":
+        options["xAxis"], options["yAxis"] = options["yAxis"], options["xAxis"]
+        for serie in options["series"]:
+            serie["type"] = "bar"
+            serie["data"] = list(table_cross[table_cross[var1] == serie["name"]]["Effectif"])
+    st.write(" ")        
+    st_echarts(options, width=width, height=height)
+
+
+def make_chlorophet_map_echarts(df, style_carte="light", palet_color="blues", opacity=0.8, width="700px", height="600px"):
+    """
+    Fonction pour créer une carte choroplèthe interactive montrant la distribution des candidats
+    par statut d'éligibilité à travers différents quartiers et arrondissements, en utilisant ECharts.
+    
+    Parameters:
+    -----------
+    df : GeoDataFrame
+        DataFrame contenant les données géospatiales des candidats
+    style_carte : str, default="light"
+        Style de fond de carte ECharts (options: "light", "dark")
+    palet_color : str, default="blues"
+        Palette de couleurs pour la choroplèthe (options: "blues", "reds", "greens", "yellows")
+    opacity : float, default=0.8
+        Opacité des polygones de la choroplèthe (0-1)
+    width : str ou int, default="700px"
+        Largeur de la carte (peut être int ou str)
+    height : str ou int, default="600px"
+        Hauteur de la carte (peut être int ou str)
+    """
+    import json
+    import numpy as np
+    
+    # Convertir les dimensions en chaînes si elles sont des nombres
+    if isinstance(width, int):
+        width = f"{width}px"
+    if isinstance(height, int):
+        height = f"{height}px"
+    
+    # Nettoyer les données en supprimant les lignes avec des coordonnées NaN
+    df_clean = df.dropna(subset=['Lat', 'Long']).copy()
+    
+    # Définition des catégories d'éligibilité et des couleurs associées
+    eligibility_categories = {
+        "Eligible": {"color": "#0073E6", "symbol_size": 12, "opacity": 0.75},
+        "Temporairement Non-eligible": {"color": "#B3D9FF", "symbol_size": 8, "opacity": 0.7},
+        "Définitivement non-eligible": {"color": "#FF5733", "symbol_size": 4, "opacity": 0.7}
+    }
+    
+    # Préparation des données par statut d'éligibilité
+    series_data = []
+    all_category_data = []
+    
+    # Fonction pour calculer la taille du marqueur en fonction du nombre de candidats
+    def calculate_size(count, max_count, base_size=10):
+        return base_size * (1 + np.sqrt(count / max_count * 100) / 2)
+    
+    # Préparation des données par arrondissement
+    arr_data = df_clean.groupby("Arrondissement").agg({
+        'Arrondissement': 'size',
+        'Long': 'mean',
+        'Lat': 'mean'
+    }).rename(columns={'Arrondissement': 'nb_donateur'})
+    arr_data["name"] = arr_data.index
+    arr_data = arr_data.reset_index(drop=True)
+    
+    # Convertir en format compatible pour ECharts
+    arr_points = []
+    max_arr_count = arr_data["nb_donateur"].max() if not arr_data.empty else 1
+    
+    for _, row in arr_data.iterrows():
+        size = calculate_size(row["nb_donateur"], max_arr_count, base_size=15)
+        arr_points.append({
+            "name": str(row["name"]),
+            "value": [float(row["Long"]), float(row["Lat"]), int(row["nb_donateur"])],
+            "symbolSize": float(size),  # Convertir en float pour la sérialisation JSON
+            "itemStyle": {"color": "#003366", "opacity": float(opacity)}
+        })
+    
+    # Ajouter la série pour les arrondissements
+    series_data.append({
+        "name": "Arrondissements",
+        "type": "scatter",
+        "coordinateSystem": "geo",
+        "data": arr_points,
+        "encode": {
+            "value": 2,
+            "tooltip": [2]
+        },
+        "label": {
+            "formatter": "{b}",
+            "position": "right",
+            "show": True,
+            "color": "#000",
+            "fontSize": 12
+        },
+        "emphasis": {
+            "label": {
+                "show": True
+            }
+        }
+    })
+    
+    # Préparation des données pour le total des candidats par quartier
+    qrt_data = df_clean.groupby("Quartier").agg({
+        'Quartier': 'size',
+        'Long': 'mean',
+        'Lat': 'mean'
+    }).rename(columns={'Quartier': 'nb_donateur'})
+    qrt_data["name"] = qrt_data.index
+    qrt_data = qrt_data.reset_index(drop=True)
+    
+    # Convertir en format compatible pour ECharts
+    qrt_points = []
+    max_qrt_count = qrt_data["nb_donateur"].max() if not qrt_data.empty else 1
+    
+    for _, row in qrt_data.iterrows():
+        size = calculate_size(row["nb_donateur"], max_qrt_count)
+        qrt_points.append({
+            "name": str(row["name"]),
+            "value": [float(row["Long"]), float(row["Lat"]), int(row["nb_donateur"])],
+            "symbolSize": float(size),
+            "itemStyle": {"color": "#003F80", "opacity": float(opacity)}
+        })
+    
+    # Ajouter la série pour les quartiers
+    series_data.append({
+        "name": "Total candidats par quartier",
+        "type": "effectScatter",
+        "coordinateSystem": "geo",
+        "data": qrt_points,
+        "encode": {
+            "value": 2,
+            "tooltip": [2]
+        },
+        "rippleEffect": {
+            "brushType": "stroke"
+        },
+        "showEffectOn": "render",
+        "hoverAnimation": True
+    })
+    
+    # Traiter chaque catégorie d'éligibilité
+    for category, config in eligibility_categories.items():
+        cat_data = df_clean[df_clean["Eligibilite"] == category]
+        
+        if not cat_data.empty:
+            # Agréger par quartier
+            grouped_cat = cat_data.groupby("Quartier").agg({
+                'Quartier': 'size',
+                'Long': 'mean',
+                'Lat': 'mean'
+            }).rename(columns={'Quartier': 'nb_donateur'})
+            grouped_cat["name"] = grouped_cat.index
+            grouped_cat = grouped_cat.reset_index(drop=True)
+            
+            # Convertir en format compatible pour ECharts
+            cat_points = []
+            max_cat_count = grouped_cat["nb_donateur"].max() if not grouped_cat.empty else 1
+            
+            for _, row in grouped_cat.iterrows():
+                size = calculate_size(row["nb_donateur"], max_cat_count, base_size=config["symbol_size"])
+                cat_points.append({
+                    "name": f"{row['name']} ({category})",
+                    "value": [float(row["Long"]), float(row["Lat"]), int(row["nb_donateur"])],
+                    "symbolSize": float(size),
+                    "itemStyle": {"color": config["color"], "opacity": float(config["opacity"])}
+                })
+                
+                # Ajouter à la liste globale pour visualisation toggle
+                all_category_data.append({
+                    "category": category,
+                    "quartier": row["name"],
+                    "coords": [float(row["Long"]), float(row["Lat"])],
+                    "count": int(row["nb_donateur"])
+                })
+            
+            # Ajouter la série pour cette catégorie
+            series_data.append({
+                "name": category,
+                "type": "scatter",
+                "coordinateSystem": "geo",
+                "data": cat_points,
+                "encode": {
+                    "value": 2,
+                    "tooltip": [2]
+                }
+            })
+    
+    # Définir la palette de couleurs
+    if palet_color == "blues":
+        visual_range_color = ['#f7fbff', '#08519c']
+    elif palet_color == "reds":
+        visual_range_color = ['#fee5d9', '#a50f15']
+    elif palet_color == "greens":
+        visual_range_color = ['#edf8e9', '#006d2c']
+    elif palet_color == "yellows":
+        visual_range_color = ['#ffffd4', '#bd0026']
+    else:
+        visual_range_color = ['#f7fbff', '#08519c']  # Default to Blues
+    
+    # Définir le thème de la carte
+    if style_carte == "dark":
+        map_theme = "dark"
+    else:
+        map_theme = "light"
+    
+    # Calculer la position centrale pour la carte
+    center_lat = df_clean["Lat"].mean()
+    center_lon = df_clean["Long"].mean()
+    
+    # Configurer les options ECharts
+    option = {
+        "title": {
+            "text": "Distribution des Candidats par Éligibilité",
+            "left": "center",
+            "top": "20px"
+        },
+        "backgroundColor": "#fff" if map_theme == "light" else "#333",
+        "tooltip": {
+            "trigger": "item",
+            "formatter": """
+            function(params) {
+                if (params.seriesName === 'Arrondissements') {
+                    return 'Arrondissement: ' + params.name + '<br/>Candidats: ' + params.value[2];
+                } else if (params.seriesName === 'Total candidats par quartier') {
+                    return 'Quartier: ' + params.name + '<br/>Total candidats: ' + params.value[2];
+                } else {
+                    return params.name + '<br/>Candidats: ' + params.value[2];
+                }
+            }
+            """
+        },
+        "legend": {
+            "orient": "vertical",
+            "left": "left",
+            "data": ["Arrondissements", "Total candidats par quartier"] + list(eligibility_categories.keys()),
+            "textStyle": {
+                "color": "black" if map_theme == "light" else "white"
+            }
+        },
+        "geo": {
+            "map": "world",  # ECharts utilise une carte du monde par défaut
+            "roam": True,    # Permet de zoomer et déplacer la carte
+            "center": [center_lon, center_lat],
+            "zoom": 11,      # Zoom initial
+            "scaleLimit": {
+                "min": 8,
+                "max": 18
+            },
+            "itemStyle": {
+                "areaColor": "#f3f3f3" if map_theme == "light" else "#1a1a1a",
+                "borderColor": "#ccc",
+                "borderWidth": 0.5
+            },
+            "emphasis": {
+                "itemStyle": {
+                    "areaColor": "#e6e6e6" if map_theme == "light" else "#2a2a2a"
+                },
+                "label": {
+                    "show": False
+                }
+            }
+        },
+        "series": series_data
+    }
+    
+    # Convertir en JSON et revenir en dictionnaire pour s'assurer de la compatibilité
+    option_json = json.dumps(option, default=lambda x: x if not hasattr(x, 'item') else x.item())
+    option = json.loads(option_json)
+    
+    # Afficher la carte avec st_echarts
+    # CORRECTION: ne pas utiliser le paramètre map avec une chaîne de caractères
+    st_echarts(option, height=height, width=width)
+    
+    #return option
