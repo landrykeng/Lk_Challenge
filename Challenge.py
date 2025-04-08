@@ -4,6 +4,7 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 import streamlit as st
+import traceback
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,9 +28,11 @@ import datetime as dt
 import warnings
 warnings.filterwarnings('ignore')
 from my_fonction import *
-#from Good_KNN import *
 from Fonction_Classement import *
 from PIL import Image
+from pathlib import Path
+import json
+from streamlit_echarts import st_echarts
 #==================================================================================================
 
 
@@ -141,6 +144,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+#pour les conteneurs de graphiques
 st.markdown("""
         <style>
         /* Styles de base pour tous les thèmes */
@@ -168,14 +172,14 @@ st.markdown("""
 
         /* Effet de survol - Mode Clair */
         body:not(.dark) .stContainer:hover {
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);  /* Ombre plus prononcée */
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);  /* Ombre plus prononcée */
             transform: translateY(-5px);  /* Léger soulèvement */
             border-color: rgba(200, 200, 200, 0.9);  /* Bordure plus visible */
         }
 
         /* Effet de survol - Mode Sombre */
         body.dark .stContainer:hover {
-            box-shadow: 0 8px 12px rgba(255, 255, 255, 0.3);  /* Ombre claire */
+            box-shadow: 0 8px 12px rgba(255, 255, 255, 0.5);  /* Ombre claire */
             transform: translateY(-5px);  /* Léger soulèvement */
             border-color: rgba(100, 100, 110, 0.9);  /* Bordure plus visible */
         }
@@ -185,7 +189,7 @@ st.markdown("""
             background-color: rgba(250, 250, 250, 0.95);  /* Fond très légèrement gris */
             border-radius: 8px;  /* Coins légèrement arrondis */
             padding: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);  /* Ombre très légère */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);  /* Ombre très légère */
         }
 
         /* Style spécifique pour les graphiques - Mode Sombre */
@@ -197,6 +201,48 @@ st.markdown("""
         }
         </style>
         """, unsafe_allow_html=True)
+
+useless_style="""
+<style>
+.sidebar-link {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar-link-right {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-align: right;
+}
+
+.sidebar-link-center {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-align: center;
+}
+</style>
+"""
 
 sidebar_css = """
 <style>
@@ -393,6 +439,17 @@ tabs_css = """
     border-radius: 15px;
     padding: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    overflow-x: auto;        /* Permet le défilement horizontal */
+    flex-wrap: nowrap;       /* Empêche le retour à la ligne */
+    -webkit-overflow-scrolling: touch;  /* Défilement fluide sur iOS */
+    scrollbar-width: none;   /* Cache la barre de défilement sur Firefox */
+    max-width: 95vw;         /* Utilise presque toute la largeur de l'écran */
+    margin: 0 auto;          /* Centre le conteneur */
+}
+
+/* Cache la barre de défilement sur Chrome/Safari */
+.stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
+    display: none;
 }
 
 .stTabs [data-baseweb="tab"] {
@@ -403,6 +460,8 @@ tabs_css = """
     font-weight: 500;
     color: #4a4a4a;
     background-color: transparent;
+    white-space: nowrap;     /* Empêche le texte de se retourner à la ligne */
+    flex-shrink: 0;          /* Empêche les onglets de rétrécir */
 }
 
 .stTabs [data-baseweb="tab"]:hover {
@@ -418,6 +477,15 @@ tabs_css = """
 
 .stTabs [data-baseweb="tab"] svg {
     margin-right: 8px;
+}
+
+/* Réglages supplémentaires pour petits écrans */
+@media (max-width: 768px) {
+    .stTabs [data-baseweb="tab"] {
+        padding: 8px 12px;
+        margin: 0 3px;
+        font-size: 0.9rem;
+    }
 }
 </style>
 """
@@ -485,6 +553,28 @@ profile_css = """
 }
 </style>
 """
+
+button_style = """
+    <style>
+    div[data-baseweb="segmented-control"] > div {
+        background-color: #f0f2f6;  /* Couleur de fond */
+        border-radius: 10px;  /* Coins arrondis */
+        padding: 5px;
+    }
+    
+    div[data-baseweb="segmented-control"] button {
+        color: white !important;  /* Couleur du texte */
+        background-color: #4CAF50 !important;  /* Couleur de fond des boutons */
+        border-radius: 8px !important;  /* Arrondi des boutons */
+        padding: 10px 20px !important;  /* Espacement interne */
+        font-weight: bold !important;
+    }
+
+    div[data-baseweb="segmented-control"] button:hover {
+        background-color: #45a049 !important;  /* Couleur au survol */
+    }
+    </style>
+    """
 
 st.markdown(global_font_css, unsafe_allow_html=True)
 #=======================================================================
@@ -563,6 +653,9 @@ translations = {
 st.sidebar.image("Logo.png", use_container_width=True)
 lang = set_language()
 lang1="Français" if lang=="" else lang
+with st.sidebar.expander(traduire_texte("QR Code & Lien", lang), expanded=True):
+    st.image("QR_code.jpg", use_container_width=True)
+
 #them=set_custom_theme()
 #__________Table des matières ________________________
 st.sidebar.markdown(sidebar_css, unsafe_allow_html=True)
@@ -686,9 +779,9 @@ st.markdown(tabs_css, unsafe_allow_html=True)
 
 # Define tabs with improved design
 tabs = st.tabs([
-    f"📂 {traduire_texte('Données Brutes', lang)}", 
-    f"📊 {traduire_texte('Visualisation des Indicateurs', lang)}",
-    f"📄 {traduire_texte('Produire un rapport', lang)}",
+    f"📂 {traduire_texte(' Feuille des Données', lang)}", 
+    f"📊 {traduire_texte('Tableau de Bord', lang)}",
+    f"📄 {traduire_texte('Autres graphiques et rapport', lang)}",
     f"📝 {traduire_texte('Formulaire', lang)}",
     f"🖥️ {traduire_texte('Nouveau Tableau de Bord', lang)}", 
     f"👥 {traduire_texte('Profil du groupe', lang)}",
@@ -697,12 +790,11 @@ tabs = st.tabs([
 #----ONGLET 1: BASES DE DONNEES
 with tabs[0]:
     
-    st.write(traduire_texte("données avec traitement incluant",lang))
-    st.dataframe(data)
-    st.write(traduire_texte("Données géospatialisée",lang))
-    st.dataframe(geo_data)
-    st.write(traduire_texte("Données sur les donneurs",lang))
-    st.dataframe(data_don)
+    Make_Global_DataFrame(data, title=traduire_texte("Données",lang),cle="tab1")
+    #st.dataframe(geo_data)
+    Make_Global_DataFrame(geo_data, title=traduire_texte("Données géospatialisée",lang))
+    #st.dataframe(data_don)
+    Make_Global_DataFrame(data_don, title=traduire_texte("Données sur les donneurs",lang))
     
 #----ONGLET 2: TABLEAU DE BORD PROPREMENT DIT
 with tabs[1]:
@@ -727,10 +819,15 @@ with tabs[1]:
             with da1:
                 make_bar(data,var="Religion",titre=traduire_texte("Répartition par réligion",lang),ordre=1,width=500,height=350,sens='h',bordure=10)
             with da2:
-                make_heat_map_2(data,vars=['Region', 'Arrondissement','Quartier'],order_var="ID",label_var='Quartier',titre=traduire_texte("Répartition des candidats",lang))
+                #liquidfill_option = {
+                   #     "series": [{"type": "liquidFill", "data": [0.7, 0.8, 0.4, 0.3]}]
+                   # }
+                #st_echarts(liquidfill_option)
+                make_heat_map(data,vars=['Region', 'Arrondissement','Quartier'],oder_var="ID",label_var='Quartier',titre=traduire_texte("Répartition des candidats",lang))
             
             dd1, dd2,dd3 =st.columns([2,4.5,3.5])
             with dd1:
+                st.markdown(profile_css, unsafe_allow_html=True)
                 make_donutchart(data,var="Genre",titre=traduire_texte("Genre des candidats",lang))
             with dd2:
                 make_cross_hist_b(data,var2="Niveau_etude",var1="Eligibilité",titre=traduire_texte("Niveau d'étude",lang),sens='v',typ_bar=1)
@@ -742,6 +839,7 @@ with tabs[1]:
             
     #SECTION 2: ANALYSE GEOGRAPHIQUE DANS DOUALA 
     st.markdown('<div id="section2"></div>', unsafe_allow_html=True)  
+    st.markdown(button_style, unsafe_allow_html=True)
     with st.expander(traduire_texte("Analyse géographique dans Douala",lang), expanded=True,icon="🩸"):  
         cc1,cc2,cc3,cc4,cc5=st.columns([2, 1,1.5,2,3.5])
         with cc1:
@@ -751,10 +849,9 @@ with tabs[1]:
         with cc3:
             style=st.selectbox(traduire_texte("Type de carte",lang),options=["open-street-map","carto-positron","carto-darkmatter"])
         with cc4:
-            genre=st.multiselect(traduire_texte("Filtre: Genre",lang),options=data["Genre"].unique(),default=data["Genre"].unique())
+            genre=st.segmented_control(traduire_texte("Filtre: Genre",lang),options=data["Genre"].unique(),selection_mode="multi",default=data["Genre"].unique(),key="Genre1")
         with cc5:
-            Statut_Mat=st.multiselect(traduire_texte("Filtre: Statut Marital",lang),options=data["Situation_Mat"].unique(),default=data["Situation_Mat"].unique())
-               
+            Statut_Mat=st.segmented_control(traduire_texte("Filtre: Statut Marital",lang),options=data["Situation_Mat"].unique(),selection_mode="multi",default=data["Situation_Mat"].unique())   
         col1, col2 = st.columns([5, 3.4])
         geo_data_dla=geo_data[geo_data["Genre"].isin(genre)] if len(genre)!=0 else geo_data 
         geo_data_dla=geo_data[geo_data["Situation_Matrimoniale"].isin(Statut_Mat)] if len(Statut_Mat)!=0 else geo_data_dla 
@@ -780,25 +877,26 @@ with tabs[1]:
     with st.expander(translations[lang1]["section3"],expanded=True,icon="🩸"):    
         b11, b12, b13, b14,b15, b16 =st.columns([1,1.3,1.5,4.2,1.7,2.1])
         with b11:
-            couleur_2=st.selectbox("Couleur",sequence_couleur)
+            couleur_2=st.selectbox(traduire_texte("Couleur",lang),sequence_couleur)
         with b12:
-            opacity_2=st.slider("Transparence",min_value=0.0,max_value=1.0,value=0.8,step=0.01)
+            opacity_2=st.slider(traduire_texte("Transparence",lang),min_value=0.0,max_value=1.0,value=0.8,step=0.01)
         with b13:
-            style_2=st.selectbox("Thme carte",options=["open-street-map","carto-positron","carto-darkmatter"])
+            style_2=st.selectbox(traduire_texte("Thme carte",lang),options=["open-street-map","carto-positron","carto-darkmatter"])
         with b14:
-            arrondissement=st.multiselect("Arrondissement",options=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"],default=["Douala 1er"])
+            arrondissement=st.multiselect(traduire_texte("Arrondissement",lang),options=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"],default=["Douala 1er"])
         with b15:
-            last_don=st.multiselect("Filtre: Ancien donateur",options=data["Don_pass"].unique(),default=data["Don_pass"].unique())
+            last_don=st.segmented_control(traduire_texte("Filtre: Ancien donateur",lang),options=data["Don_pass"].unique(),selection_mode="multi",default=data["Don_pass"].unique())
         with b16:    
-            genre2=st.multiselect(" Filtre: Genre",options=data["Genre"].unique(),default=data["Genre"].unique())
+            genre2=st.segmented_control(traduire_texte("Genre",lang),options=data["Genre"].unique(),selection_mode="multi", default=data["Genre"].unique(),key="genre_selection")
             
         geo_data_arr=geo_data[geo_data["Arrondissement"].isin(arrondissement)] if len(arrondissement)!=0 else geo_data
+        data_arr=data[data["Arrondissement"].isin(arrondissement)] if len(arrondissement)!=0 else data
         geo_data_arr=geo_data_arr[geo_data_arr["ancien_don_sang"].isin(last_don)] if len(last_don)!=0 else geo_data_arr
         geo_data_arr=geo_data_arr[geo_data_arr["Genre"].isin(genre2)] if len(genre2)!=0 else geo_data_arr
         
         b1, b2 =st.columns([6.5,2.5])
         with b1:
-            make_chlorophet_map_folium_2(geo_data_arr,style_carte=style_2,palet_color=couleur_2,opacity=opacity_2,width=1000,height=500)
+            make_chlorophet_map_folium_2(geo_data_arr,style_carte=style_2,palet_color=couleur_2,opacity=opacity_2,width=1200,height=500)
         with b2:     
             geo_data_arr_for_table=geo_data_arr.groupby("Quartier").agg({
                 "ID":"size"
@@ -807,7 +905,13 @@ with tabs[1]:
             geo_data_arr_for_table=geo_data_arr_for_table.rename(columns={ "ID": "Nb_Candidats"})
             geo_data_arr_for_table["Quartier"]=geo_data_arr_for_table.index
             make_dataframe(geo_data_arr_for_table,col_alpha="Quartier",col_num="Nb_Candidats",hide_index=True)
-    
+        ba=st.columns(2)
+        with ba[0]:
+            make_cross_hist_b_ech(geo_data_arr,"Eligibilite","Categorie_profession",titre=traduire_texte("Répartition par Catégory professionnelle",lang),width=800,height=750,typ_bar=2,bordure=10)
+            st.write("Bonjour")
+            #make_bar(geo_data_dla,"Categorie_profession",titre=traduire_texte("Categorie Professionnelle",lang),ordre=1,sens='h',height=400,width=600,bordure=10) 
+        with ba[1]:
+            make_donutchart_2(geo_data_arr,var="Situation_Matrimoniale",titre=traduire_texte("Statut Matrimonial",lang))
     #SECTION 4 :  CONDITION DE SANTE ET ELIGIBILITE
     st.markdown('<div id="section4"></div>', unsafe_allow_html=True)
     with st.expander(translations[lang1]["section4"], expanded=True,icon="❤️"):
@@ -819,9 +923,15 @@ with tabs[1]:
             data_el=data_el.rename(columns={"ID":"Nb_Candidats"})
             data_el["Proportion"]=data_el["Nb_Candidats"]/float(data_el["Nb_Candidats"].sum())
             make_progress_char(data_el["Proportion"][1],couleur="rgba(" + str(255*(1-data_el["Proportion"][1])) + "," + str(255*data_el["Proportion"][1]) +",0,1)",titre="Taux d'éligibilité")
+            data_mot=data[data["Autre_Raison"].notna()]
+            mot=" ".join(data_mot["Autre_Raison"])
+            #make_wordcloud(mot,titre="Autre raison",width=600,height=400)
+            st.dataframe(data_el[["Nb_Candidats"]])
+            
         with c42:
-            statut_el=st.multiselect("Statut des candidats",options=data["Eligibilité"].unique(),default=data["Eligibilité"].unique())
+            statut_el=st.segmented_control(traduire_texte("Statut des candidats",lang),options=data["Eligibilité"].unique(),selection_mode="multi",default=data["Eligibilité"].unique())
             data_nl=data_el[data_el.index!="Eligible"]
+            #data_nl=data_el
             make_multi_progress_bar(labels=data_nl.index,values=data_nl["Proportion"],colors=["red","orange"],titre="Candidats Non éligible",width=500,height=300)
         with c43:
             data_raison=data[data["Raisons"].notna()]
@@ -836,25 +946,22 @@ with tabs[1]:
             make_dataframe(group_raison,col_alpha="Raisons",col_num="Effectif")
         c4b1, c4b2 ,c4b3=st.columns(3)
         with c4b1:
+            data_raison = data[data["Eligibilité"].isin(statut_el)] if len(statut_el) != 0 else data
             make_hist_box(data_raison,var1="Tx_hémoglobine",var2="Eligibilité",height=400)
-        with c4b2:
-            data_mot=data[data["Autre_Raison"].notna()]
-            mot=" ".join(data_mot["Autre_Raison"])
-            #make_wordcloud(mot,titre="Autre raison",width=600,height=400)
-            st.dataframe(data_el[["Nb_Candidats"]]) 
-            make_distribution_2(data_raison,var_alpha="Genre",var_num="Tx_hémoglobine",add_vline=12,add_vline2=13,titre="Distribution du taux d'hémoglobine")
+        with c4b2: 
+            make_distribution_2(data_raison,var_alpha="Genre",var_num="Tx_hémoglobine",add_vline=12,add_vline2=13,titre=traduire_texte("Distribution du taux d'hémoglobine",lang))
         with c4b3:
-            make_cross_hist_b(data,"Eligibilité","Classe_age",titre="Statut par classe d'age",typ_bar=1)
+            make_cross_hist_b(data,"Eligibilité","Classe_age",titre=traduire_texte("Statut par classe d'age",lang),height=400,typ_bar=1)
         
     #SECTION 5:   PROFILAGE DES DONNEURS IDEAUX
     st.markdown('<div id="section5"></div>', unsafe_allow_html=True)
     with st.expander(translations[lang1]["section5"], expanded=True,icon="❤️"):
             c5a1,c5a2,c5a3=st.columns(3)
             with c5a1:
-                make_relative_bar(data,var1="Eligibilité",var2="Don_pass",width=500,height=400,titre="Proportion des anciens donneurs",)
+                make_relative_bar(data,var1="Eligibilité",var2="Don_pass",width=500,height=400,titre=traduire_texte("Proportion des anciens donneurs",lang),)
                 data_SM=data.groupby("Situation_Mat").agg({"ID":"size"})
                 data_SM["Proportion"]=data_SM["ID"]/float(data_SM["ID"].sum())
-                make_multi_progress_bar(labels=data_SM.index, values=data_SM["Proportion"],colors=px.colors.qualitative.Vivid_r,width=500,height=400,titre="Taux d'éligibilité par statut Marital")
+                make_multi_progress_bar(labels=data_SM.index, values=data_SM["Proportion"],colors=px.colors.qualitative.Vivid_r,width=500,height=400,titre=traduire_texte("Taux d'éligibilité par statut Marital",lang))
             with c5a2:
                 tx_el_F=data[(data["Genre"]=="Femme") & (data["Eligibilité"]=="Eligible")].shape[0]/data[data["Genre"]=="Femme"].shape[0]
                 tx_el_M=data[(data["Genre"]=="Homme") & (data["Eligibilité"]=="Eligible")].shape[0]/data[data["Genre"]=="Homme"].shape[0]
@@ -868,8 +975,8 @@ with tabs[1]:
             with c5a3:
                 data_prof=data.groupby("Niveau_etude").agg({"ID":"size"})
                 data_prof["Proportion"]=data_prof["ID"]/float(data_prof["ID"].sum())
-                make_multi_progress_bar(labels=data_prof.index, values=data_prof["Proportion"],colors=px.colors.qualitative.Vivid,width=500,height=400,titre="Taux d'éligibilité par niveaux d'éducation")
-                make_cross_hist_b(data,var2="Religion",var1="Eligibilité",width=500,height=550,titre="Réligion",typ_bar=1)
+                make_multi_progress_bar(labels=data_prof.index, values=data_prof["Proportion"],colors=px.colors.qualitative.Vivid,width=500,height=400,titre=traduire_texte("Taux d'éligibilité par niveaux d'éducation",lang))
+                make_cross_hist_b(data,var2="Religion",var1="Eligibilité",width=500,height=550,titre=traduire_texte("Réligion",lang),typ_bar=1)
     
     #SECTION 6:   ANALYSE DE L'EFFICACITE DE LA CAMPAGNE
     st.markdown('<div id="section6"></div>', unsafe_allow_html=True)
@@ -878,39 +985,37 @@ with tabs[1]:
         data_don["ID"]="Don_" + (data_don.index+1).astype(str)
         data_don=data_don.rename(columns={"Groupe Sanguin ABO / Rhesus ":"Gpr_sang"})
         with c61:
-            make_progress_char(data_don.shape[0]/data.shape[0],"green",titre="Efficacité de la compagne")
-        with c62: 
+            make_progress_char(data_don.shape[0]/data.shape[0],"green",titre=traduire_texte("Efficacité de la compagne",lang))
             data_don=data_don.set_index("ID",drop=True)
             data_don["ID"]=data_don.index
             data_don["Date"]=data_don["Horodateur"].dt.date
             data_don["Heure"]=data_don['Horodateur'].dt.strftime('%d-%m-%Y %H')
             trend_don=pd.crosstab(data_don["Date"],data_don["Sexe"])
-            make_bar(data_don,var="Date",color=0,titre="Répartition des dons dans le temps",height=400)
+            make_bar(data_don,var="Date",color=0,titre=traduire_texte("Répartition des dons dans le temps",lang),height=400)
+            make_area_chart(data_don,var="Heure",titre="Heure d'affluence",height=300)
+        with c62: 
+            st.write(traduire_texte("Répartition des groupes sanguin",lang))
+            make_blood_group(data_don,"Gpr_sang")
+            make_cross_hist_b(data_don,var1="Type de donation",var2="Classe_age",typ_bar=0,titre=traduire_texte("répartition des type de don par classe d'age",lang),bordure=7 )
         with c63:
-            make_area_chart(data_don,var="Heure",titre="Heure d'affluence",height=400)
-            
-        c6a,c6b,c6c=st.columns(3)
-        with c6a:
-           make_relative_bar(data_don,var1="Gpr_sang",var2="Type de donation",titre="Répartition des donneurs par groupe sanguin ")
-        with c6b:
-            make_cross_hist_b(data_don,var1="Type de donation",var2="Classe_age",typ_bar=0,titre="répartition des type de don par classe d'age",bordure=7 )      
-        with c6c:
-            make_donutchart(data_don,var="Phenotype ", titre="Différent type de phénotype des donneurs")
+            make_relative_bar(data_don,var1="Gpr_sang",var2="Type de donation",titre=traduire_texte("Répartition des donneurs par groupe sanguin ", lang))
+            make_donutchart(data_don,var="Phenotype ", titre=traduire_texte("Différent type de phénotype des donneurs",lang))
+            #make_area_chart(data_don,var="Heure",titre="Heure d'affluence",height=400)
 
 #----ONGLET 3: TEST STATISTIQUES
 with tabs[2]:
-    st.write("Faite vos test statistiques")
+    st.write(traduire_texte("Faite vos test statistiques",lang))
     cc1,cc2=st.columns([3,7])
     with cc1:
-        Test=st.selectbox("Choisissez le test à effectuer",["Test d'indépendance","Test de comparaison de la moyenne", "Test de comparaison de la dispersion"])
-        var1=st.selectbox("Variable1 de test",options=var_qual )
-        var2=st.selectbox("Variable2 de test",options=var_qual if Test=="Test d'indépendance" else var_quant)
+        Test=st.selectbox(traduire_texte("Choisissez le test à effectuer",lang),["Test d'indépendance","Test de comparaison de la moyenne", "Test de comparaison de la dispersion"])
+        var1=st.selectbox(traduire_texte("Variable 1 de test",lang),options=var_qual )
+        var2=st.selectbox(traduire_texte("Variable 2 de test",lang),options=var_qual if Test=="Test d'indépendance" else var_quant)
     with cc2:
-        if st.button("Lancer le test"): 
+        if st.button(traduire_texte("Lancer le test",lang)): 
             if var1=="" or var2=="":
-                st.write("Veuillez sélectionner des variables de test")
+                st.write(traduire_texte("Veuillez sélectionner des variables de test",lang))
             else:
-                if Test=="Test d'indépendance":
+                if Test==traduire_texte("Test d'indépendance",lang):
                     conclusion, table_cross,chi2, p,dof=test_independance_khi2(data,var1,var2)
                     st.write(conclusion)
                     st.dataframe(table_cross)
@@ -918,14 +1023,14 @@ with tabs[2]:
                     table_cross.rename(columns={'index': var1}, inplace=True)
                     make_cross_hist_b(data,var2,var1,typ_bar=0)
                     make_relative_bar(data,var2,var1,height=600)
-                elif Test=="Test de comparaison de la moyenne":
+                elif Test==traduire_texte("Test de comparaison de la moyenne",lang):
                     conclusion, graph= test_comparaison_moyenne(data, var1, var2)
                     st.write(conclusion)
                     st.plotly_chart(graph)
                 else:
                     pass
     
-    st.write("Afficher votre rapport ")
+    #st.write("Afficher votre rapport ")
     telecharger_pdf("Challenge_Proposal_2.pdf")
 
 #----ONGLET 4: FORMULAIRE
@@ -949,18 +1054,18 @@ with tabs[3]:
     #Formulaire   
     with st.form(key="formulaire_eligibilite"):
         # Informations de base (obligatoires)
-        st.subheader("Informations générales")
+        st.subheader(traduire_texte("Informations générales",lang))
         col1, col2 = st.columns(2)
         
         with col1:
             sexe = st.radio("Sexe", options=["M", "F"], index=0, 
                             format_func=lambda x: "Masculin" if x == "M" else "Féminin")
-            age = st.number_input("Âge (années)", min_value=16, max_value=80, value=30, step=1)
+            age = st.number_input(traduire_texte("Âge (années)", lang), min_value=16, max_value=80, value=30, step=1)
         
         with col2:
-            poids = st.number_input("Poids (kg)", min_value=40.0, max_value=150.0, value=70.0, step=0.5)
+            poids = st.number_input(traduire_texte("Poids (kg)", lang), min_value=40.0, max_value=150.0, value=70.0, step=0.5)
             derniere_donation_options = ["Jamais donné", "Plus de 3 mois", "Plus de 2 mois", "Dans les 2 derniers mois"]
-            derniere_donation_choix = st.selectbox("Dernière donation", options=derniere_donation_options)
+            derniere_donation_choix = st.selectbox(traduire_texte("Dernière donation",lang), options=derniere_donation_options)
             
             # Conversion du choix en jours
             if derniere_donation_choix == "Jamais donné":
@@ -973,29 +1078,29 @@ with tabs[3]:
                 derniere_donation = 30
         
         # Informations socio-démographiques
-        st.subheader("Informations socio-démographiques")
+        st.subheader(traduire_texte("Informations socio-démographiques", lang))
         col1, col2 = st.columns(2)
         
         with col1:
             # Niveau d'étude (bouton radio)
             niveau_etude = st.radio(
-                "Niveau d'étude", 
+                traduire_texte("Niveau d'étude",lang), 
                 options=["Aucun","Primaire", "Secondaire", "Universitaire 1er cycle", "Universitaire 2e cycle", "Universitaire 3e cycle"],
                 index=2
             )
             
             # Statut matrimonial (liste de choix)
-            statut_matrimonial = st.selectbox("Statut matrimonial",
+            statut_matrimonial = st.selectbox(traduire_texte("Statut matrimonial", lang),
                 options=["Célibataire", "Marié(e)", "Divorcé(e)", "Veuf/Veuve", "Union libre"])
             
             # Religion
-            religion = st.selectbox("Religion",options=All_religion)
+            religion = st.selectbox(traduire_texte("Religion",lang),options=All_religion)
         
         with col2:
             # Profession
-            profession = st.selectbox("Profession",options=metier)
+            profession = st.selectbox(traduire_texte("Profession",lang),options=metier)
             # Quartier de résidence 
-            quartier = st.selectbox("Quartier de résidence",options=all_Quartier)
+            quartier = st.selectbox(traduire_texte("Quartier de résidence",lang),options=all_Quartier)
             
             # Nationalité 
             nationalite_options = [
@@ -1004,31 +1109,31 @@ with tabs[3]:
                 "Autre pays africain", "Autre pays hors Afrique"
             ]
             nationalite = st.selectbox(
-                "Nationalité",
+                traduire_texte("Nationalité",lang),
                 options=nationalite_options,
                 index=0
             )
         
         # Critères spécifiques aux femmes
         if sexe == "F":
-            st.subheader("Informations spécifiques (femmes)")
+            st.subheader(traduire_texte("Informations spécifiques (femmes)",lang))
             
             col1, col2 = st.columns(2)
             
             with col1:
-                grossesse_recente = st.checkbox("Grossesse récente")
+                grossesse_recente = st.checkbox(traduire_texte("Grossesse récente", lang))
                 if grossesse_recente:
-                    temps_depuis_grossesse = st.number_input("Temps depuis l'accouchement (mois)", 
+                    temps_depuis_grossesse = st.number_input(traduire_texte("Temps depuis l'accouchement (mois)",lang), 
                                                              min_value=0, max_value=24, value=3)
                 else:
                     temps_depuis_grossesse = None
                 
-                allaitement = st.checkbox("Allaitement en cours")
+                allaitement = st.checkbox(traduire_texte("Allaitement en cours",lang))
                 
             with col2:
-                en_periode_menstruelle = st.checkbox("Actuellement en période menstruelle")
-                cycle_menstruel_irregulier = st.checkbox("Cycle menstruel irrégulier")
-                saignements_anormaux = st.checkbox("Saignements anormaux")
+                en_periode_menstruelle = st.checkbox(traduire_texte("Actuellement en période menstruelle",lang))
+                cycle_menstruel_irregulier = st.checkbox(traduire_texte("Cycle menstruel irrégulier",lang))
+                saignements_anormaux = st.checkbox(traduire_texte("Saignements anormaux",lang))
         else:
             # Valeurs par défaut pour les hommes
             grossesse_recente = None
@@ -1039,11 +1144,11 @@ with tabs[3]:
             saignements_anormaux = None
         
         # Critères médicaux
-        st.subheader("Informations médicales")
+        st.subheader(traduire_texte("Informations médicales",lang))
         
         # Maladies chroniques
         maladies_selections = st.multiselect(
-            "Sélectionnez vos conditions médicales",
+            traduire_texte("Sélectionnez vos conditions médicales",lang),
             options=list(df_ctrl["Maladie"].dropna())
         )
         
@@ -1059,7 +1164,7 @@ with tabs[3]:
         
         # Médicaments
         medicaments_selections = st.multiselect(
-            "Sélectionnez les médicaments que vous prenez actuellement",
+            traduire_texte("Sélectionnez les médicaments que vous prenez actuellement",lang),
             options=list(df_ctrl["Traitement"].dropna())
         )
         
@@ -1077,18 +1182,18 @@ with tabs[3]:
         col1, col2 = st.columns(2)
         
         with col1:
-            interventions_recentes = st.checkbox("Intervention chirurgicale récente")
+            interventions_recentes = st.checkbox(traduire_texte("Intervention chirurgicale récente",lang))
             if interventions_recentes:
-                temps_depuis_intervention = st.number_input("Temps depuis l'intervention (jours)", 
+                temps_depuis_intervention = st.number_input(traduire_texte("Temps depuis l'intervention (jours)",lang), 
                                                            min_value=0, max_value=365, value=30)
             else:
                 temps_depuis_intervention = None
         
         with col2:
-            tatouages_recents = st.checkbox("Tatouage ou piercing récent (moins de 4 mois)")
+            tatouages_recents = st.checkbox(traduire_texte("Tatouage ou piercing récent (moins de 4 mois)",lang))
         
         # Bouton de soumission
-        submit_button = st.form_submit_button(label="Évaluer mon éligibilité")
+        submit_button = st.form_submit_button(label=traduire_texte("Évaluer mon éligibilité",lang))
     
     # Traitement des données après soumission
     if submit_button:
@@ -1112,7 +1217,7 @@ with tabs[3]:
         )
        
         # Affichage des résultats
-        st.subheader("Résultat de l'évaluation")
+        st.subheader(traduire_texte("Résultat de l'évaluation",lang))
         
         if resultat["eligible"]:
             st.success(traduire_texte("✅ Vous êtes éligible pour passer aux examens approfondis pour le don de sang. Veuillez prendre un rendez-vous",lang))
@@ -1125,7 +1230,7 @@ with tabs[3]:
             statut="Temporairement non-éligible"
         
         # Affichage des raisons
-        st.subheader("Détails:")
+        st.subheader(traduire_texte("Détails:",lang))
         for raison in resultat["raisons"]:
             st.write(f"- {traduire_texte(raison,lang)}")
         
@@ -1151,11 +1256,11 @@ with tabs[3]:
                         "statut_matrimonial": statut_matrimonial,
                         "niveau_etude": niveau_etude,
                         "profession": profession,
-                        "Catégorie_Professionnelle":profession_dict[profession],
-                        "quartier": quartier_dict[quartier][3],
-                        "Arrondissement":quartier_dict[quartier][0] ,
-                        "Lat":quartier_dict[quartier][1] ,
-                        "Long":quartier_dict[quartier][2] ,
+                        "Catégorie_Professionnelle":profession_dict[profession] if profession in profession_dict else profession,
+                        "quartier": quartier_dict[quartier][3] if quartier in quartier_dict else quartier,
+                        "Arrondissement":quartier_dict[quartier][0] if quartier in quartier_dict else None,
+                        "Lat":quartier_dict[quartier][1] if quartier in quartier_dict else None ,
+                        "Long":quartier_dict[quartier][2] if quartier in quartier_dict else None ,
                         "religion": religion,
                         "nationalite": nationalite,
                         "derniere_donation": derniere_donation,
@@ -1170,16 +1275,16 @@ with tabs[3]:
                     with pd.ExcelWriter("Infos.xlsx", engine='openpyxl', mode='a', 
                                                 if_sheet_exists='replace') as writer:
                             df.to_excel(writer, sheet_name="New_Base", index=False)
-                    st.success("Les informations ont été enregistrées avec succès!")
+                    st.success(traduire_texte("Les informations ont été enregistrées avec succès!",lang))
                 except Exception as e:
-                        st.error(f"Erreur lors de l'enregistrement: {e}")
+                        st.error(traduire_texte(f"Erreur lors de l'enregistrement: {e}",lang))
 
         save(df_new)    
  
 #----ONGLET 5: TABLEAU DE BORD DE LA NOUVELLE CAMPAGNE
 with tabs[4]:
     #==================================================================================================================
-    mise_a_ajour=st.button("Mettre à Jour le Tableau de bord")
+    mise_a_ajour=st.button(traduire_texte("Mettre à Jour le Tableau de bord",lang))
     if mise_a_ajour:
         pass
         #st.rerun()
@@ -1200,18 +1305,18 @@ with tabs[4]:
     with ab3:
         plot_metric_2(translations[lang1]["metric_text4"],df_new,"poids",prefix="",suffix=" kg",show_graph=True,color_graph="rgba(10, 242, 20, 0.2)",val_bin=45)
         
-    with st.expander("Information Globales sur les Nouvea candidat", expanded=True,icon="❤️"):
+    with st.expander(traduire_texte("Information Globales sur les Nouvea candidat",lang), expanded=True,icon="❤️"):
         f11, f12, f13, f14,f15 =st.columns([1,1.3,1.5,4.2,1.7])
         with f11:
-            couleur_3=st.selectbox("Couleur de fond",sequence_couleur)
+            couleur_3=st.selectbox(traduire_texte("Couleur de fond",lang),sequence_couleur)
         with f12:
-            opacity_3=st.slider("Transparence sur les arrondissement",min_value=0.0,max_value=1.0,value=0.8,step=0.01)
+            opacity_3=st.slider(traduire_texte("Transparence sur les arrondissement",lang),min_value=0.0,max_value=1.0,value=0.8,step=0.01)
         with f13:
-            style_3=st.selectbox("Theme du fond de carte",options=["open-street-map","carto-positron","carto-darkmatter"])
+            style_3=st.selectbox(traduire_texte("Theme du fond de carte",lang),options=["open-street-map","carto-positron","carto-darkmatter"])
         with f14:
-            arrondissement_2=st.multiselect("Selectionner des Arrondissement",options=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"],default=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"])
+            arrondissement_2=st.multiselect(traduire_texte("Selectionner des Arrondissement",lang),options=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"],default=["Douala 1er","Douala 2e","Douala 3e","Douala 4e", "Douala 5e"])
         with f15:
-            genre3=st.multiselect(" Filtre: Sexe",options=df_new["sexe"].dropna().unique(),default=df_new["sexe"].dropna().unique())
+            genre3=st.multiselect(traduire_texte(" Filtre: Sexe",lang),options=df_new["sexe"].dropna().unique(),default=df_new["sexe"].dropna().unique())
             
         df_new_arr_geo=New_geo_data[New_geo_data["Arrondissement"].isin(arrondissement_2)] if len(arrondissement_2)!=0 else New_geo_data
         df_new_arr_geo=df_new_arr_geo[df_new_arr_geo["sexe"].isin(genre3)] if len(genre3)!=0 else df_new_arr_geo
@@ -1231,9 +1336,9 @@ with tabs[4]:
             #make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre="Répartition des candidats par arrondissement",bordure=9,width=600)
         ca1,ca2,ca3,ca4=st.columns(4)
         with ca1:
-            make_donutchart(df_new_arr,var="sexe",titre="Répartiton des candidats par sexe")
+            make_donutchart(df_new_arr,var="sexe",titre=traduire_texte("Répartiton des candidats par sexe",lang))
         with ca2:
-            make_cross_hist_b(df_new_arr,var2="statut_matrimonial",var1="Statut",titre="Statut matrimonial des candidats",typ_bar=0,bordure=7)
+            make_cross_hist_b(df_new_arr,var2="statut_matrimonial",var1="Statut",titre=traduire_texte("Statut matrimonial des candidats",lang),typ_bar=0,bordure=7)
         with ca3:
             make_cross_hist_b(df_new_arr,var2="religion",var1="Statut",bordure=12)
         with ca4:
@@ -1241,15 +1346,15 @@ with tabs[4]:
     with st.expander("2",expanded=True):
         caa1,caa2,caa3=st.columns(3)
         with caa1:
-            make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre="Répartition des candidats par arrondissement",bordure=9,width=600)
+            make_cross_hist_b(df_new,var2="Arrondissement",var1="Statut",titre=traduire_texte("Répartition des candidats par arrondissement",lang),bordure=9,width=600, height=400)
         with caa2:
-            make_area_chart(df_new,var="date_heure",titre="Evolution des inscriptions",width=500,height=400)
+            make_area_chart(df_new,var="date_heure",titre=traduire_texte("Evolution des inscriptions",lang),width=500,height=400)
         with caa3:
-            make_bar(df_new,var="Classe_age",color=2,width=500,height=400, titre="Classe d'age des candidats",bordure=12)
+            make_bar(df_new,var="Classe_age",color=2,width=500,height=400, titre=traduire_texte("Classe d'age des candidats",lang),bordure=12)
         cd1,cd2,cd3=st.columns(3)
         with cd1:
             df_new["Catégorie_Professionnelle"]=df_new["Catégorie_Professionnelle"].replace("Personnel des services directs aux particuliers, commercants vendeurs","commercants")
-            make_bar(df_new,var="Catégorie_Professionnelle",titre="Categorie professionnelle", sens='h',height=400,bordure=10)
+            make_bar(df_new,var="Catégorie_Professionnelle",titre=traduire_texte("Categorie professionnelle",lang), sens='h',height=400,bordure=10)
         with cd2:
             tx_el_F_2=df_new[(df_new["sexe"]=="F") & (df_new["Statut"]=="Temporairement éligible")].shape[0]/df_new[df_new["sexe"]=="F"].shape[0]
             tx_el_M_2=df_new[(df_new["sexe"]=="M") & (df_new["Statut"]=="Temporairement éligible")].shape[0]/df_new[df_new["sexe"]=="M"].shape[0]
@@ -1257,49 +1362,14 @@ with tabs[4]:
         with cd3:
             data_mot=df_new[df_new["Raison"].notna()]
             mot=" ".join(data_mot["Raison"])
-            make_wordcloud(mot,titre="Raison de Non éléigibilité",width=600,height=400)
+            make_wordcloud(mot,titre=traduire_texte("Raison de Non éléigibilité",lang),width=600,height=400)
+    Make_Global_DataFrame(df_new,title=traduire_texte("Nouvelle Base de donnée",lang))
 #----ONGLET 6:
 with tabs[5]:
     st.markdown(profile_css, unsafe_allow_html=True)
-
-    # Fonction pour créer un profil de membre
-    def create_member_profile(name, title, image_path, about_text):
-        # Colonne pour diviser l'espace
-        col1, col2 = st.columns([1, 3])
-        # Affichage de l'image dans la première colonne
-        with col1:
-            image = Image.open(image_path)
-            st.image(image, width=200)
-        
-        # Informations textuelles dans la deuxième colonne
-        with col2:
-            st.markdown(f"""
-            ### {name}
-            #### {title}   
-            {about_text}
-            """)
-    m1, m2, m3, m4 = st.columns(4)
-    with m1:
-        create_member_profile(
-            name="KENGNE Landry",
-            title="Mathématicien, Statisticien Economiste, ISSEA ",
-            image_path="Landry_Pro.jpg",
-            about_text="Titulaire d'une licence en mathématique à l'Université de Yaoundé I. Actuellement en Master I en Statistiques et Economie appliquée à l'ISSEA",)
-    with m2:
-        create_member_profile(
-            name="NOULAYE Merveille",
-            title="Elève ingénieure statisticienne économiste - data scientiste",
-            image_path="Merveille_pro.jpg",
-            about_text="Jeune statisticienne en devenir dynamique et passionnée des métiers de la data.Je privilégie le travail en équipe dans la recherche des solutions efficaces et rapide face aux problèmes que je rencontre.",)
-    with m3:
-        create_member_profile(
-            name="TCHINDA Rinel",
-            title="Economiste - Data Scientist",
-            image_path="Rinel.jpg",
-            about_text="Je suis un data scientist titulaire d'une licence en mathématiques, un master en économie quantitative et ingénierie statistique, alliant expertise analytique et foi évangélique fervente.",)
-    with m4:
-        create_member_profile(
-            name="ANABA Rodrigue",
-            title="Economiste - Data Scientist",
-            image_path="ANABA.jpg",
-            about_text="Diplômé d'une Licence en Sciences Économiques, je suis actuellement en dernière année du cycle d'Ingénieur Statisticien Économiste à l'ISSEA. . J’ai une solide maîtrise des méthodes statistiques avancées et des outils de modélisation économétrique.",)
+    display_team_profiles2()
+    
+    #st.image("QR_code.jpg", use_container_width=False,width=700)
+    
+   
+ 
