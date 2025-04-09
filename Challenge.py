@@ -643,13 +643,6 @@ def main():
         margin-right: 8px;
     }
 
-    @media (max-width: 768px) {
-        .stTabs [data-baseweb="tab"] {
-            padding: 8px 12px;
-            margin: 0 3px;
-            font-size: 0.9rem;
-        }
-    }
     </style>
     """, unsafe_allow_html=True)
     
