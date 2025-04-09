@@ -3741,6 +3741,9 @@ def authentication_system():
     
     with tab1:
         st.header("Connexion")
+        st.write("Compte par défaut:")
+        st.write("User: IndabaX user")
+        st.write("Password: IndabaX 2025")
         username = st.text_input("Nom d'utilisateur", key="login_username")
         password = st.text_input("Mot de passe", type="password", key="login_password")
         
