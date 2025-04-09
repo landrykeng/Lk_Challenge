@@ -35,6 +35,8 @@ import json
 from streamlit_echarts import st_echarts
 #==================================================================================================
 
+st.set_page_config(layout="wide")
+
 st.markdown(
             """
             <style>
@@ -458,7 +460,48 @@ header_css = """
         </style>
         """
 
+tabs_css="""
+<style>
+.stTabs [data-baseweb="tab-list"] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: 
+#f0f2f6;
+    border-radius: 15px;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
 
+.stTabs [data-baseweb="tab"] {
+    padding: 10px 15px;
+    margin: 0 5px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: 
+#4a4a4a;
+    background-color: transparent;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background-color: rgba(75, 139, 255, 0.1);
+    color: 
+#4b8bff;
+}
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background-color: 
+#4b8bff;
+    color: white;
+    box-shadow: 0 4px 6px rgba(75, 139, 255, 0.3);
+}
+
+.stTabs [data-baseweb="tab"] svg {
+    margin-right: 8px;
+}
+</style>
+"""
 
 global_font_css = """
         <style>
@@ -559,6 +602,7 @@ def main():
     # Appliquer le CSS personnalisé pour les onglets
     
     # Vérifier l'authentification
+    st.markdown(tabs_css, unsafe_allow_html=True)
     is_authenticated = authentication_system()
     
     # Si l'utilisateur est authentifié, afficher le contenu de l'application
@@ -759,7 +803,7 @@ def main():
         #=========== Définition des onglets d'affichage des données===================
 
 
-        #st.markdown(tabs_css, unsafe_allow_html=True)
+        st.markdown(tabs_css, unsafe_allow_html=True)
 
         # Define tabs with improved design
         tabs = st.tabs([

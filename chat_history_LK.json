@@ -1,0 +1,17 @@
+[
+    {
+        "role": "user",
+        "content": "Statistiques",
+        "timestamp": "10:23:20"
+    },
+    {
+        "role": "user",
+        "content": "Statistiques",
+        "timestamp": "10:24:12"
+    },
+    {
+        "role": "assistant",
+        "content": "Je ne suis pas sûr de comprendre. Pourriez-vous reformuler votre question concernant les dons de sang ou notre campagne ?",
+        "timestamp": "10:24:14"
+    }
+]

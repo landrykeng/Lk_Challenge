@@ -186,6 +186,8 @@ echart_style="""
         }
         </style>
     """
+
+#st.set_page_config(layout="wide")
 #==================================================================================================
 
 #==================================================================================================
@@ -3992,7 +3994,7 @@ def blood_donation_chatbot():
             st.session_state["chat_messages"].append({
                 "role": "assistant",
                 "content": f"Bonjour {username} ! Je suis l'assistant virtuel de notre campagne de don de sang. Comment puis-je vous aider aujourd'hui ? Vous pouvez me poser des questions sur le don de sang, les critères d'éligibilité, nos statistiques, ou les prochaines campagnes.",
-                "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
+                "timestamp": datetime.now().strftime("%H:%M:%S")
             })
     
     # Afficher l'interface en deux colonnes
@@ -4036,7 +4038,7 @@ def blood_donation_chatbot():
             st.session_state["chat_messages"].append({
                 "role": "user",
                 "content": user_input,
-                "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
+                "timestamp": datetime.now().strftime("%H:%M:%S")
             })
             
             # Simuler l'indicateur de frappe (effet de "réflexion")
@@ -4047,7 +4049,7 @@ def blood_donation_chatbot():
             st.session_state["chat_messages"].append({
                 "role": "assistant",
                 "content": bot_response,
-                "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
+                "timestamp": datetime.now().strftime("%H:%M:%S")
             })
             
             # Sauvegarder l'historique
@@ -4062,7 +4064,7 @@ def blood_donation_chatbot():
             st.session_state["chat_messages"] = [{
                 "role": "assistant",
                 "content": f"Bonjour {username} ! Je suis l'assistant virtuel de notre campagne de don de sang. Comment puis-je vous aider aujourd'hui ?",
-                "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
+                "timestamp": datetime.now().strftime("%H:%M:%S")
             }]
             save_chat_history(username, st.session_state["chat_messages"])
             st.rerun()
