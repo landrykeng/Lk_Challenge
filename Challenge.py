@@ -602,6 +602,9 @@ def main():
     # Appliquer le CSS personnalisé pour les onglets
     
     # Vérifier l'authentification
+    st.write("Compte par défaut")
+    st.write("USER: IndabaX user")
+    st.write("PASSWORD: IndabaX 2025")
     st.markdown(tabs_css, unsafe_allow_html=True)
     is_authenticated = authentication_system()
     
