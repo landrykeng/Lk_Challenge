@@ -806,7 +806,7 @@ def main():
         #=========== Définition des onglets d'affichage des données===================
 
 
-        st.markdown(tabs_css, unsafe_allow_html=True)
+        #st.markdown(tabs_css, unsafe_allow_html=True)
 
         # Define tabs with improved design
         tabs = st.tabs([

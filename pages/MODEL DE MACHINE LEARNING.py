@@ -481,8 +481,8 @@ lang1=st.sidebar.selectbox("🌍 Choisissez la langue / Choose the language", ["
 
 st.markdown(tabs_css, unsafe_allow_html=True)
 tb = st.tabs([
-    f" {traduire_texte('Modèles de prédiction  KNN & Random Forest', lang)}", 
-    f" {traduire_texte('à propos des modèles de prédiction', lang)}",
+    f" {traduire_texte('Modèles de prédiction  KNN & Random Forest', lang1)}", 
+    f" {traduire_texte('à propos des modèles de prédiction', lang1)}",
 ])
 
 with tb[0]:
