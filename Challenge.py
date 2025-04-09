@@ -603,8 +603,10 @@ def main():
     
     # Vérifier l'authentification
     st.write("Compte par défaut")
-    st.write("USER: IndabaX user")
+    st.write("USER: IndabaX_conference_user")
     st.write("PASSWORD: IndabaX 2025")
+    
+    st.write("Autre approche: Au cas ou la première aproche ne marche pas, inscrivez vous dans l'onglet connexion ci contre et utiliser vos identifiants pour vous connecter")
     #st.markdown(tabs_css, unsafe_allow_html=True)
     is_authenticated = authentication_system()
     
