@@ -15,19 +15,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 import io
+import os
+import json
 import branca.colormap as cm
 import folium
 from folium.plugins import MarkerCluster
 from branca.colormap import linear
 from streamlit_folium import folium_static
 import datetime
+from datetime import datetime, timedelta
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 from deep_translator import GoogleTranslator
 from requests.exceptions import ConnectionError, Timeout
 from st_aggrid import AgGrid
 from streamlit_echarts import st_echarts
 import base64
-
+import hashlib
+import time
+import requests
 
 #==================================================================================================
 
@@ -3660,3 +3665,440 @@ def make_donutchart_3(df, var, titre="", width=600, height=450, color_palette=No
         
         # Fermer la div
     #st.markdown('</div>', unsafe_allow_html=True)
+    
+#Authentification==========
+
+def hash_password(password):
+    """Hash un mot de passe pour un stockage sécurisé"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def load_users():
+    """Charge la base de données des utilisateurs depuis un fichier JSON"""
+    if os.path.exists("users.json"):
+        with open("users.json", "r") as f:
+            return json.load(f)
+    return {"users": {}}
+
+def save_users(users):
+    """Sauvegarde la base de données des utilisateurs dans un fichier JSON"""
+    with open("users.json", "w") as f:
+        json.dump(users, f, indent=4)
+
+def check_credentials(username, password):
+    """Vérifie si les identifiants sont corrects"""
+    users = load_users()
+    if username in users["users"]:
+        if users["users"][username]["password"] == hash_password(password):
+            return True
+    return False
+
+def register_user(username, password, email):
+    """Enregistre un nouvel utilisateur"""
+    users = load_users()
+    if username in users["users"]:
+        return False, "Ce nom d'utilisateur existe déjà"
+    
+    users["users"][username] = {
+        "password": hash_password(password),
+        "email": email,
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    save_users(users)
+    return True, "Compte créé avec succès"
+
+def authentication_system():
+    """Système d'authentification complet pour Streamlit"""
+    # Initialisation des variables de session
+    if "authenticated" not in st.session_state:
+        st.session_state["authenticated"] = False
+    if "username" not in st.session_state:
+        st.session_state["username"] = None
+    if "login_time" not in st.session_state:
+        st.session_state["login_time"] = None
+        
+    # Si l'utilisateur est déjà authentifié
+    if st.session_state["authenticated"]:
+        # Vérifier si la session n'a pas expiré (8 heures)
+        if st.session_state["login_time"] and datetime.now() - st.session_state["login_time"] > timedelta(hours=8):
+            st.session_state["authenticated"] = False
+            st.session_state["username"] = None
+            st.session_state["login_time"] = None
+            st.warning("Votre session a expiré. Veuillez vous reconnecter.")
+        else:
+            # Afficher un message de bienvenue et un bouton de déconnexion
+            st.sidebar.success(f"Connecté en tant que {st.session_state['username']}")
+            if st.sidebar.button("Déconnexion"):
+                st.session_state["authenticated"] = False
+                st.session_state["username"] = None
+                st.session_state["login_time"] = None
+                st.rerun()
+            return True
+    
+    # Si l'utilisateur n'est pas authentifié, afficher les formulaires de connexion/inscription
+    #st.title("Bienvenue sur l'application")
+    
+    tab1, tab2 = st.tabs(["Connexion", "Inscription"])
+    
+    with tab1:
+        st.header("Connexion")
+        username = st.text_input("Nom d'utilisateur", key="login_username")
+        password = st.text_input("Mot de passe", type="password", key="login_password")
+        
+        if st.button("Se connecter"):
+            if check_credentials(username, password):
+                st.session_state["authenticated"] = True
+                st.session_state["username"] = username
+                st.session_state["login_time"] = datetime.now()
+                st.success("Connexion réussie!")
+                st.rerun()
+            else:
+                st.error("Nom d'utilisateur ou mot de passe incorrect")
+    
+    with tab2:
+        st.header("Créer un compte")
+        new_username = st.text_input("Choisir un nom d'utilisateur", key="register_username")
+        new_email = st.text_input("Email", key="register_email")
+        new_password = st.text_input("Choisir un mot de passe", type="password", key="register_password")
+        confirm_password = st.text_input("Confirmer le mot de passe", type="password", key="confirm_password")
+        
+        if st.button("S'inscrire"):
+            if not new_username or not new_email or not new_password:
+                st.error("Tous les champs sont obligatoires")
+            elif new_password != confirm_password:
+                st.error("Les mots de passe ne correspondent pas")
+            else:
+                success, message = register_user(new_username, new_password, new_email)
+                if success:
+                    st.success(message)
+                    st.info("Vous pouvez maintenant vous connecter")
+                else:
+                    st.error(message)
+    
+    return False
+
+
+## Chat Bot
+
+def load_chat_history(username):
+    """Charge l'historique des conversations pour un utilisateur spécifique"""
+    history_file = f"chat_history_{username}.json"
+    if os.path.exists(history_file):
+        with open(history_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+def save_chat_history(username, history):
+    """Sauvegarde l'historique des conversations d'un utilisateur"""
+    history_file = f"chat_history_{username}.json"
+    with open(history_file, "w", encoding="utf-8") as f:
+        json.dump(history, f, indent=4, ensure_ascii=False)
+
+def get_blood_donation_stats():
+    """
+    Fonction factice pour récupérer les statistiques de don de sang.
+    Dans une application réelle, vous connecteriez cette fonction à votre base de données.
+    """
+    return {
+        "total_donations": 12567,
+        "donations_this_month": 423,
+        "active_donors": 3842,
+        "blood_types": {
+            "A+": "35%",
+            "O+": "38%",
+            "B+": "8%",
+            "AB+": "3%",
+            "A-": "6%",
+            "O-": "7%",
+            "B-": "2%",
+            "AB-": "1%"
+        },
+        "next_campaign_date": "15 avril 2025",
+        "locations": ["Hôpital Central", "Centre Médical Est", "Clinique Universitaire"]
+    }
+
+def get_ai_response(user_input, username, conversation_history):
+    """
+    Obtient une réponse de l'IA basée sur le message de l'utilisateur.
+    Cette fonction peut être intégrée avec une API d'IA comme OpenAI ou Claude.
+    """
+    # Récupérer les statistiques actuelles pour les utiliser dans les réponses
+    stats = get_blood_donation_stats()
+    
+    # Version simple basée sur des règles et mots-clés
+    user_input_lower = user_input.lower()
+    
+    # Préparer une réponse par défaut au cas où aucune règle ne correspond
+    response = "Je ne suis pas sûr de comprendre. Pourriez-vous reformuler votre question concernant les dons de sang ou notre campagne ?"
+    
+    # Extraction des mots-clés pour l'analyse
+    blood_keywords = ["sang", "don", "donner", "donneur", "donneurs", "plasma", "transfusion", "plaquettes"]
+    stats_keywords = ["statistique", "statistiques", "stats", "nombre", "quantité", "combien", "total"]
+    eligibility_keywords = ["éligible", "éligibilité", "puis-je", "donner", "conditions", "requis", "critères", "admissible"]
+    campaign_keywords = ["campagne", "événement", "collecte", "quand", "prochain", "date", "programme"]
+    location_keywords = ["où", "lieu", "endroit", "adresse", "localisation", "emplacement", "centre"]
+    process_keywords = ["comment", "processus", "procédure", "étapes", "déroulement", "préparation"]
+    benefits_keywords = ["avantage", "bénéfice", "pourquoi", "importance", "utilité", "impact"]
+    blood_type_keywords = ["groupe", "type", "rhésus", "positif", "négatif", "a+", "a-", "b+", "b-", "ab+", "ab-", "o+", "o-"]
+    
+    # Salutations et remerciements
+    if any(word in user_input_lower for word in ["bonjour", "salut", "hello", "coucou", "hey"]):
+        return f"Bonjour {username} ! Je suis l'assistant virtuel de notre campagne de don de sang. Comment puis-je vous aider aujourd'hui ? Vous pouvez me demander des informations sur les dons, les prochaines campagnes, ou les conditions d'éligibilité."
+    
+    if any(word in user_input_lower for word in ["merci", "thanks", "thank you", "thx"]):
+        return "Je vous en prie ! C'est un plaisir de vous aider. N'hésitez pas si vous avez d'autres questions concernant nos campagnes de don de sang."
+    
+    # Questions sur les statistiques de don
+    if any(word in user_input_lower for word in stats_keywords) and any(word in user_input_lower for word in blood_keywords):
+        response = f"Voici les statistiques actuelles de notre campagne de don de sang :\n\n"
+        response += f"• Total des dons : {stats['total_donations']}\n"
+        response += f"• Dons ce mois-ci : {stats['donations_this_month']}\n"
+        response += f"• Donneurs actifs : {stats['active_donors']}\n\n"
+        response += "Y a-t-il des statistiques particulières qui vous intéressent ?"
+    
+    # Questions sur les groupes sanguins
+    elif any(word in user_input_lower for word in blood_type_keywords):
+        response = "Voici la répartition des groupes sanguins de nos donneurs :\n\n"
+        for blood_type, percentage in stats["blood_types"].items():
+            response += f"• {blood_type} : {percentage}\n"
+        response += "\nTous les groupes sanguins sont importants, mais nous avons particulièrement besoin de donneurs O- (donneurs universels) et de groupes rares."
+    
+    # Questions sur l'éligibilité
+    elif any(word in user_input_lower for word in eligibility_keywords):
+        response = "Pour être éligible au don de sang, vous devez généralement :\n\n"
+        response += "• Avoir entre 18 et 70 ans\n"
+        response += "• Peser au moins 50 kg\n"
+        response += "• Être en bonne santé générale\n"
+        response += "• Ne pas avoir donné de sang dans les 8 dernières semaines (pour les hommes) ou 12 semaines (pour les femmes)\n\n"
+        response += "Certaines conditions médicales ou voyages récents peuvent affecter votre éligibilité. Pour une évaluation personnalisée, nous vous recommandons de contacter notre équipe médicale ou de consulter notre questionnaire d'éligibilité en ligne."
+    
+    # Questions sur les prochaines campagnes
+    elif any(word in user_input_lower for word in campaign_keywords):
+        response = f"Notre prochaine campagne de don de sang aura lieu le {stats['next_campaign_date']}. "
+        response += f"Elle se déroulera dans les centres suivants : {', '.join(stats['locations'])}. "
+        response += "Vous pouvez prendre rendez-vous via notre application ou en appelant le centre le plus proche de chez vous."
+    
+    # Questions sur les lieux de don
+    elif any(word in user_input_lower for word in location_keywords):
+        response = "Nos centres de don de sang sont situés à :\n\n"
+        for location in stats["locations"]:
+            response += f"• {location}\n"
+        response += "\nVous pouvez également consulter la carte interactive dans l'onglet 'Centres' de notre application pour trouver le centre le plus proche de chez vous."
+    
+    # Questions sur le processus de don
+    elif any(word in user_input_lower for word in process_keywords):
+        response = "Le processus de don de sang se déroule en plusieurs étapes :\n\n"
+        response += "1. Inscription et vérification d'identité\n"
+        response += "2. Questionnaire médical confidentiel\n"
+        response += "3. Entretien avec un médecin ou infirmier(e)\n"
+        response += "4. Test d'hémoglobine (piqûre au doigt)\n"
+        response += "5. Don de sang (environ 10-15 minutes)\n"
+        response += "6. Temps de repos et collation (15-20 minutes)\n\n"
+        response += "L'ensemble du processus prend environ 45 minutes à 1 heure. Assurez-vous de bien vous hydrater et de manger avant votre don."
+    
+    # Questions sur les avantages et l'importance du don
+    elif any(word in user_input_lower for word in benefits_keywords):
+        response = "Le don de sang est crucial pour plusieurs raisons :\n\n"
+        response += "• Un don peut sauver jusqu'à 3 vies\n"
+        response += "• Le sang est nécessaire pour les urgences, chirurgies, et traitements de maladies chroniques\n"
+        response += "• Les produits sanguins ont une durée de vie limitée et doivent être renouvelés régulièrement\n"
+        response += "• Donner du sang peut aussi être bénéfique pour votre santé (bilan sanguin gratuit, réduction des risques cardiovasculaires)\n\n"
+        response += "Chaque don compte et fait une réelle différence dans la vie des patients."
+    
+    # Questions générales sur le don de sang
+    elif any(word in user_input_lower for word in blood_keywords):
+        response = "Le don de sang est un geste simple mais essentiel pour sauver des vies. Un don standard prélève environ 450ml de sang et prend seulement 10-15 minutes. "
+        response += "Nous avons toujours besoin de nouveaux donneurs pour maintenir nos réserves. "
+        response += f"Actuellement, nous comptons {stats['active_donors']} donneurs actifs, mais ce nombre doit augmenter pour répondre à tous les besoins médicaux."
+    
+    # Pour simuler l'appel à une API d'IA avancée (comme OpenAI ou Claude)
+    # Décommentez et adaptez le code ci-dessous si vous intégrez une véritable API
+    
+    # Méthode avec OpenAI (GPT)
+    """
+    try:
+        # Préparer le contexte avec les informations sur le don de sang
+        context = f"Tu es un assistant spécialisé dans les campagnes de don de sang. Voici les statistiques actuelles : {stats}"
+        
+        # Ajouter l'historique récent des conversations (limité aux 5 derniers échanges)
+        messages = [{"role": "system", "content": context}]
+        
+        # Ajouter un maximum de 5 échanges récents pour le contexte
+        recent_history = conversation_history[-10:] if len(conversation_history) > 10 else conversation_history
+        for msg in recent_history:
+            role = "assistant" if msg["role"] == "assistant" else "user"
+            messages.append({"role": role, "content": msg["content"]})
+        
+        # Ajouter la question actuelle
+        messages.append({"role": "user", "content": user_input})
+        
+        # Appeler l'API de OpenAI
+        response_obj = openai.ChatCompletion.create(
+            model="gpt-4",  # ou un autre modèle disponible
+            messages=messages,
+            max_tokens=500,
+            temperature=0.7,
+        )
+        
+        # Extraire la réponse
+        response = response_obj.choices[0].message["content"]
+        
+    except Exception as e:
+        # En cas d'erreur avec l'API, revenir à une réponse simple
+        print(f"Erreur API : {str(e)}")
+        response = "Désolé, je ne peux pas répondre à cette question pour le moment. Veuillez réessayer plus tard."
+    """
+    
+    return response
+
+def show_typing_indicator():
+    """Affiche un indicateur de frappe pendant que le chatbot 'réfléchit'"""
+    typing_container = st.empty()
+    typing_dots = ""
+    for _ in range(3):
+        for dots in [".", "..", "..."]:
+            typing_dots = dots
+            typing_container.markdown(f"*L'assistant réfléchit{typing_dots}*")
+            time.sleep(0.3)
+    typing_container.empty()
+
+def blood_donation_chatbot():
+    """Interface du chatbot IA pour l'application de don de sang"""
+    st.write("Assistant Don de Sang")
+    
+    # Vérifier si l'utilisateur est authentifié
+    if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
+        st.warning("Vous devez vous connecter pour utiliser l'assistant.")
+        return
+    
+    username = st.session_state["username"]
+    
+    # Ajouter une petite section d'information
+    with st.expander("À propos de cet assistant"):
+        st.write("""
+        Cet assistant virtuel est conçu pour répondre à vos questions concernant les dons de sang et nos campagnes.
+        Il peut vous fournir des informations sur :
+        - L'éligibilité au don de sang
+        - Les prochaines campagnes
+        - Les statistiques actuelles
+        - Le processus de don
+        - L'importance du don de sang
+        - Les centres de collecte
+        """)
+    
+    # Récupérer l'historique des conversations
+    if "chat_messages" not in st.session_state:
+        st.session_state["chat_messages"] = load_chat_history(username)
+        # Message de bienvenue si c'est la première conversation
+        if len(st.session_state["chat_messages"]) == 0:
+            st.session_state["chat_messages"].append({
+                "role": "assistant",
+                "content": f"Bonjour {username} ! Je suis l'assistant virtuel de notre campagne de don de sang. Comment puis-je vous aider aujourd'hui ? Vous pouvez me poser des questions sur le don de sang, les critères d'éligibilité, nos statistiques, ou les prochaines campagnes.",
+                "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
+            })
+    
+    # Afficher l'interface en deux colonnes
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        # Conteneur pour afficher les messages
+        chat_container = st.container()
+        chat_container.markdown("### Conversation")
+        
+        chat_placeholder = chat_container.empty()
+        with chat_placeholder.container():
+            for message in st.session_state["chat_messages"]:
+                if message["role"] == "user":
+                    st.markdown(f"""
+                    <div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 10px; text-align: right;'>
+                        <span style='font-size: 0.8em; color: #888;'>{message["timestamp"]}</span><br>
+                        <b>Vous:</b> {message["content"]}
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                    <div style='background-color: #e6f3ff; padding: 10px; border-radius: 10px; margin-bottom: 10px;'>
+                        <span style='font-size: 0.8em; color: #888;'>{message["timestamp"]}</span><br>
+                        <b>Assistant:</b> {message["content"]}
+                    </div>
+                    """, unsafe_allow_html=True)
+        
+        # Zone de saisie pour l'utilisateur
+        user_input = st.text_input("Votre question sur le don de sang:", key="blood_donation_question", placeholder="Ex: Quand aura lieu la prochaine campagne de don ?")
+        
+        col_send, col_clear = st.columns([1, 1])
+        with col_send:
+            send_button = st.button("Envoyer", use_container_width=True)
+        with col_clear:
+            clear_button = st.button("Nouvelle conversation", use_container_width=True)
+        
+        # Traiter l'entrée de l'utilisateur
+        if send_button and user_input:
+            # Ajouter le message de l'utilisateur à l'historique
+            st.session_state["chat_messages"].append({
+                "role": "user",
+                "content": user_input,
+                "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
+            })
+            
+            # Simuler l'indicateur de frappe (effet de "réflexion")
+            show_typing_indicator()
+            
+            # Obtenir et ajouter la réponse du bot
+            bot_response = get_ai_response(user_input, username, st.session_state["chat_messages"])
+            st.session_state["chat_messages"].append({
+                "role": "assistant",
+                "content": bot_response,
+                "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
+            })
+            
+            # Sauvegarder l'historique
+            save_chat_history(username, st.session_state["chat_messages"])
+            
+            # Réinitialiser l'entrée utilisateur et actualiser la page
+            st.session_state["blood_donation_question"] = ""
+            st.rerun()
+        
+        # Effacer l'historique des conversations
+        if clear_button:
+            st.session_state["chat_messages"] = [{
+                "role": "assistant",
+                "content": f"Bonjour {username} ! Je suis l'assistant virtuel de notre campagne de don de sang. Comment puis-je vous aider aujourd'hui ?",
+                "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
+            }]
+            save_chat_history(username, st.session_state["chat_messages"])
+            st.rerun()
+    
+    # Colonne d'information rapide sur le don de sang
+    with col2:
+        st.markdown("### Infos Rapides")
+        
+        # Statistiques
+        stats = get_blood_donation_stats()
+        
+        # Afficher les statistiques actuelles
+        st.metric("Dons totaux", stats["total_donations"])
+        st.metric("Dons ce mois", stats["donations_this_month"])
+        
+        # Prochaine campagne
+        st.markdown(f"""
+        **Prochaine campagne:**  
+        📅 {stats["next_campaign_date"]}
+        """)
+        
+        # Suggestions de questions
+        st.markdown("### Questions suggérées")
+        question_suggestions = [
+            "Comment puis-je donner mon sang ?",
+            "Suis-je éligible au don de sang ?",
+            "Quels sont les centres de collecte ?",
+            "Quelle est la répartition des groupes sanguins ?",
+            "Pourquoi donner son sang est important ?"
+        ]
+        
+        for suggestion in question_suggestions:
+            if st.button(suggestion, key=f"sugg_{suggestion}"):
+                # Utiliser la suggestion comme entrée utilisateur
+                st.session_state["blood_donation_question"] = suggestion
+                # Déclencher une "soumission" du formulaire
+                st.session_state["form_submitted"] = True
+                st.rerun()
