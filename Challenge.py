@@ -653,6 +653,9 @@ def main():
     </style>
     """, unsafe_allow_html=True)
     
+    st.write("Compte par défaut:")
+    st.write("User: IndabaX user")
+    st.write("Password: IndabaX 2025")
     # Vérifier l'authentification
     is_authenticated = authentication_system()
     
