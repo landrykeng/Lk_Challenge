@@ -1284,7 +1284,7 @@ def main():
                         stdcd=",".join(resultat["raisons"])
                         nouvelle_ligne = {
                                 "ID": nouveau_id,
-                                "Date_remplissage": datetime.datetime.now(),
+                                "Date_remplissage": datetime.now(),
                                 "sexe": sexe,
                                 "age": age,
                                 "poids": poids,
