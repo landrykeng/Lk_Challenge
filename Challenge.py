@@ -653,9 +653,7 @@ def main():
     </style>
     """, unsafe_allow_html=True)
     
-    st.write("Compte par défaut:")
-    st.write("User: IndabaX user")
-    st.write("Password: IndabaX 2025")
+    
     # Vérifier l'authentification
     is_authenticated = authentication_system()
     
@@ -857,7 +855,7 @@ def main():
         #=========== Définition des onglets d'affichage des données===================
 
 
-        st.markdown(tabs_css, unsafe_allow_html=True)
+        #st.markdown(tabs_css, unsafe_allow_html=True)
 
         # Define tabs with improved design
         tabs = st.tabs([
