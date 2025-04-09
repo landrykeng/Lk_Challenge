@@ -605,7 +605,7 @@ def main():
     st.write("Compte par défaut")
     st.write("USER: IndabaX user")
     st.write("PASSWORD: IndabaX 2025")
-    st.markdown(tabs_css, unsafe_allow_html=True)
+    #st.markdown(tabs_css, unsafe_allow_html=True)
     is_authenticated = authentication_system()
     
     # Si l'utilisateur est authentifié, afficher le contenu de l'application
