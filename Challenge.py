@@ -458,44 +458,7 @@ header_css = """
         </style>
         """
 
-tabs_css = """
-<style>
-.stTabs [data-baseweb="tab-list"] {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f0f2f6;
-    border-radius: 15px;
-    padding: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
 
-.stTabs [data-baseweb="tab"] {
-    padding: 10px 15px;
-    margin: 0 5px;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    color: #4a4a4a;
-    background-color: transparent;
-}
-
-.stTabs [data-baseweb="tab"]:hover {
-    background-color: rgba(75, 139, 255, 0.1);
-    color: #4b8bff;
-}
-
-.stTabs [data-baseweb="tab"][aria-selected="true"] {
-    background-color: #4b8bff;
-    color: white;
-    box-shadow: 0 4px 6px rgba(75, 139, 255, 0.3);
-}
-
-.stTabs [data-baseweb="tab"] svg {
-    margin-right: 8px;
-}
-</style>
-"""
 
 global_font_css = """
         <style>
@@ -594,58 +557,6 @@ def set_language():
 # Exemple d'utilisation dans votre application principale
 def main():
     # Appliquer le CSS personnalisé pour les onglets
-    st.markdown("""
-    <style>
-    .stTabs [data-baseweb="tab-list"] {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #f0f2f6;
-        border-radius: 15px;
-        padding: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        max-width: 95vw;
-        margin: 0 auto;
-    }
-
-    .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
-        display: none;
-    }
-
-    .stTabs [data-baseweb="tab"] {
-        padding: 10px 15px;
-        margin: 0 5px;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-        font-weight: 500;
-        color: #4a4a4a;
-        background-color: transparent;
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-
-    .stTabs [data-baseweb="tab"]:hover {
-        background-color: rgba(75, 139, 255, 0.1);
-        color: #4b8bff;
-    }
-
-    .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background-color: #4b8bff;
-        color: white;
-        box-shadow: 0 4px 6px rgba(75, 139, 255, 0.3);
-    }
-
-    .stTabs [data-baseweb="tab"] svg {
-        margin-right: 8px;
-    }
-
-    </style>
-    """, unsafe_allow_html=True)
-    
     
     # Vérifier l'authentification
     is_authenticated = authentication_system()
@@ -1448,97 +1359,15 @@ def main():
         with tabs[6]:
             def main():
                 # Votre CSS personnalisé
-                st.markdown("""
-                <style>
-                /* Styles généraux */
-                .main {
-                    background-color: #ffffff;
-                }
-                
-                /* Style pour les onglets */
-                .stTabs [data-baseweb="tab-list"] {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    background-color: #f0f2f6;
-                    border-radius: 15px;
-                    padding: 10px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                    overflow-x: auto;
-                    flex-wrap: nowrap;
-                    -webkit-overflow-scrolling: touch;
-                    scrollbar-width: none;
-                    max-width: 95vw;
-                    margin: 0 auto;
-                }
-
-                .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
-                    display: none;
-                }
-
-                .stTabs [data-baseweb="tab"] {
-                    padding: 10px 15px;
-                    margin: 0 1px;
-                    border-radius: 10px;
-                    transition: all 0.3s ease;
-                    font-weight: 500;
-                    color: #4a4a4a;
-                    background-color: transparent;
-                    white-space: nowrap;
-                    flex-shrink: 0;
-                }
-
-                .stTabs [data-baseweb="tab"]:hover {
-                    background-color: rgba(220, 53, 69, 0.1);
-                    color: #dc3545;
-                }
-
-                .stTabs [data-baseweb="tab"][aria-selected="true"] {
-                    background-color: #dc3545;
-                    color: white;
-                    box-shadow: 0 4px 6px rgba(220, 53, 69, 0.3);
-                }
-                
-                /* Style pour les métriques (thème don de sang) */
-                [data-testid="stMetricValue"] {
-                    color: #dc3545;
-                    font-weight: bold;
-                }
-                
-                /* Style pour les boutons */
-                .stButton button {
-                    border-radius: 20px;
-                    border: none;
-                    background-color: #dc3545;
-                    color: white;
-                    transition: all 0.3s ease;
-                }
-                
-                .stButton button:hover {
-                    background-color: #c82333;
-                    transform: translateY(-2px);
-                }
-                
-                /* Style pour la zone de chat */
-                [data-testid="stTextInput"] input {
-                    border-radius: 20px;
-                    border: 1px solid #e0e0e0;
-                    padding: 12px 20px;
-                }
-                
-                /* Style pour les expansions */
-                [data-testid="stExpander"] {
-                    border-radius: 10px;
-                    border: 1px solid #e0e0e0;
-                }
-                
-                </style>
-                """, unsafe_allow_html=True)
                 
                 # Supposons que vous avez déjà un système d'authentification
                 # Si l'utilisateur est connecté, vous pouvez afficher les onglets
                 if "authenticated" in st.session_state and st.session_state["authenticated"]:
-                    blood_donation_chatbot()         
+                    blood_donation_chatbot() 
+                
+            if __name__ == "__main__":
+                main()   
+                   
 if __name__ == "__main__":
     main()        
         
