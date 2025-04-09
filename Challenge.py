@@ -1478,7 +1478,7 @@ def main():
 
                 .stTabs [data-baseweb="tab"] {
                     padding: 10px 15px;
-                    margin: 0 5px;
+                    margin: 0 1px;
                     border-radius: 10px;
                     transition: all 0.3s ease;
                     font-weight: 500;
@@ -1532,13 +1532,6 @@ def main():
                     border: 1px solid #e0e0e0;
                 }
                 
-                @media (max-width: 768px) {
-                    .stTabs [data-baseweb="tab"] {
-                        padding: 8px 12px;
-                        margin: 0 3px;
-                        font-size: 0.9rem;
-                    }
-                }
                 </style>
                 """, unsafe_allow_html=True)
                 
