@@ -2546,12 +2546,12 @@ def calculate_zoom(lon_diff, lat_diff, map_width=800, map_height=600):
             return min(zoom_level, max_zoom)
 
 #31. Fonction de téléchargement de rapport
-def telecharger_pdf(file_path):
+def telecharger_pdf(file_path, lang="Français"):
     with open(file_path, "rb") as f:
         pdf_bytes = f.read()
     
     st.download_button(
-        label="📥 Télécharger le rapport PDF",
+        label=traduire_texte("📥 Télécharger le rapport PDF",lang),
         data=pdf_bytes,
         file_name="Rapport_TDB.pdf",
         mime="application/pdf",

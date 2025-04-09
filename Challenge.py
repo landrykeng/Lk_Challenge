@@ -811,9 +811,10 @@ def main():
             f"📊 {traduire_texte('Tableau de Bord', lang)}",
             f"📄 {traduire_texte('Autres graphiques et rapport', lang)}",
             f"📝 {traduire_texte('Formulaire', lang)}",
-            f"🖥️ {traduire_texte('Nouveau Tableau de Bord', lang)}", 
-            f"👥 {traduire_texte('Profil du groupe', lang)}",
-            f"🤖 {traduire_texte('Chat Bot',lang)}"
+            f"🖥️ {traduire_texte('Nouveau Tableau de Bord', lang)}",
+            f"🤖 {traduire_texte('Chat Bot',lang)}", 
+            f"👥 {traduire_texte('Profil du groupe', lang)}"
+            
         ])
 
         #----ONGLET 1: BASES DE DONNEES
@@ -831,11 +832,11 @@ def main():
             
             #Visualisation des métriques
             with a1:
-                plot_metric(traduire_texte("Total candidat",lang),data.shape[0],prefix="",suffix="",show_graph=True,color_graph="rgba(0, 104, 201, 0.1)",)
+                metric_total_candidat=plot_metric(traduire_texte("Total candidat",lang),data.shape[0],prefix="",suffix="",show_graph=True,color_graph="rgba(0, 104, 201, 0.1)",)
             with a2:
-                plot_metric_2(traduire_texte("Age moyen des candidats",lang),data,"Age",prefix="",suffix=" ans",show_graph=True,color_graph="rgba(175, 32, 201, 0.2)",val_bin=45)
+                metric_age_moyen=plot_metric_2(traduire_texte("Age moyen des candidats",lang),data,"Age",prefix="",suffix=" ans",show_graph=True,color_graph="rgba(175, 32, 201, 0.2)",val_bin=45)
             with a3:
-                plot_metric_2(traduire_texte("taux moyen d'hémoglobine",lang), data, "Tx_hémoglobine", suffix=" g/dl",show_graph=True,color_graph="rgba(1, 230, 15, 0.7)",val_bin=300)
+                metric_tx_hm_moyen=plot_metric_2(traduire_texte("taux moyen d'hémoglobine",lang), data, "Tx_hémoglobine", suffix=" g/dl",show_graph=True,color_graph="rgba(1, 230, 15, 0.7)",val_bin=300)
 
             
             st.write(" ")
@@ -846,25 +847,25 @@ def main():
                 with d1:
                     da1,da2=st.columns(2)
                     with da1:
-                        make_bar(data,var="Religion",titre=traduire_texte("Répartition par réligion",lang),ordre=1,width=500,height=350,sens='h',bordure=10)
+                        bar_religion=make_bar(data,var="Religion",titre=traduire_texte("Répartition par réligion",lang),ordre=1,width=500,height=350,sens='h',bordure=10)
                     with da2:
                         #liquidfill_option = {
                         #     "series": [{"type": "liquidFill", "data": [0.7, 0.8, 0.4, 0.3]}]
                         # }
                         #st_echarts(liquidfill_option)
-                        make_heat_map(data,vars=['Region', 'Arrondissement','Quartier'],oder_var="ID",label_var='Quartier',titre=traduire_texte("Répartition des candidats",lang))
+                        heat_region=make_heat_map(data,vars=['Region', 'Arrondissement','Quartier'],oder_var="ID",label_var='Quartier',titre=traduire_texte("Répartition des candidats",lang))
                     
                     dd1, dd2,dd3 =st.columns([2,4.5,3.5])
                     with dd1:
                         st.markdown(profile_css, unsafe_allow_html=True)
-                        make_donutchart(data,var="Genre",titre=traduire_texte("Genre des candidats",lang))
+                        rep_genre=make_donutchart(data,var="Genre",titre=traduire_texte("Genre des candidats",lang))
                     with dd2:
-                        make_cross_hist_b(data,var2="Niveau_etude",var1="Eligibilité",titre=traduire_texte("Niveau d'étude",lang),sens='v',typ_bar=1)
+                        school_level=make_cross_hist_b(data,var2="Niveau_etude",var1="Eligibilité",titre=traduire_texte("Niveau d'étude",lang),sens='v',typ_bar=1)
                     with dd3:
-                        make_cross_hist_b(data,var2="Situation_Mat",var1="Eligibilité",titre=traduire_texte("Statut Matrimonial",lang),sens='v',typ_bar=0,width=650,bordure=10)
+                        civility=make_cross_hist_b(data,var2="Situation_Mat",var1="Eligibilité",titre=traduire_texte("Statut Matrimonial",lang),sens='v',typ_bar=0,width=650,bordure=10)
                 with d2:
-                    make_cross_hist_b(data[data["Region"]!="Litoral"],"Eligibilité","Region",titre=traduire_texte("Autre Région",lang),width=600,height=400,typ_bar=1)
-                    make_donutchart(data,var="Eligibilité",titre=traduire_texte("Statut des candidats",lang),part=True)
+                    rep_par_region=make_cross_hist_b(data[data["Region"]!="Litoral"],"Eligibilité","Region",titre=traduire_texte("Autre Région",lang),width=600,height=400,typ_bar=1)
+                    eligibility_rep=make_donutchart(data,var="Eligibilité",titre=traduire_texte("Statut des candidats",lang),part=True)
                     
             #SECTION 2: ANALYSE GEOGRAPHIQUE DANS DOUALA 
             st.markdown('<div id="section2"></div>', unsafe_allow_html=True)  
@@ -885,7 +886,7 @@ def main():
                 geo_data_dla=geo_data[geo_data["Genre"].isin(genre)] if len(genre)!=0 else geo_data 
                 geo_data_dla=geo_data[geo_data["Situation_Matrimoniale"].isin(Statut_Mat)] if len(Statut_Mat)!=0 else geo_data_dla 
                 with col1:       
-                    make_chlorophet_map_folium_2(geo_data_dla,style_carte=style,palet_color=couleur,opacity=opacity,width=1000,height=650)
+                    cartographie_all=make_chlorophet_map_folium_2(geo_data_dla,style_carte=style,palet_color=couleur,opacity=opacity,width=1000,height=650)
                 with col2:
                     geo_data_dla["Categorie_profession"]=geo_data_dla["Categorie_profession"].replace("Personnel des services directs aux particuliers, commercants vendeurs","commercants vendeurs")
                     make_bar(geo_data_dla,"Categorie_profession",titre=traduire_texte("Categorie Professionnelle",lang),ordre=1,sens='h',height=400,width=600,bordure=10) 
@@ -1060,7 +1061,7 @@ def main():
                             pass
             
             #st.write("Afficher votre rapport ")
-            telecharger_pdf("Challenge_Proposal_2.pdf")
+            telecharger_pdf("Challenge_Proposal_2.pdf", lang=lang)
 
         #----ONGLET 4: FORMULAIRE
         with tabs[3]:
@@ -1393,25 +1394,23 @@ def main():
                     mot=" ".join(data_mot["Raison"])
                     make_wordcloud(mot,titre=traduire_texte("Raison de Non éléigibilité",lang),width=600,height=400)
             Make_Global_DataFrame(df_new,title=traduire_texte("Nouvelle Base de donnée",lang))
-        #----ONGLET 6:
-        with tabs[5]:
-            st.markdown(profile_css, unsafe_allow_html=True)
-            display_team_profiles2()
-            
+        
             #st.image("QR_code.jpg", use_container_width=False,width=700)
-   
-        with tabs[6]:
+        
+        #----ONGLET 5:  Chat Bot
+        with tabs[5]:
             def main():
-                # Votre CSS personnalisé
-                
-                # Supposons que vous avez déjà un système d'authentification
-                # Si l'utilisateur est connecté, vous pouvez afficher les onglets
                 if "authenticated" in st.session_state and st.session_state["authenticated"]:
                     blood_donation_chatbot() 
                 
             if __name__ == "__main__":
                 main()   
                    
+        #----ONGLET 6:  Profile
+        with tabs[6]:
+            st.markdown(profile_css, unsafe_allow_html=True)
+            display_team_profiles2()
+            
 if __name__ == "__main__":
     main()        
         
