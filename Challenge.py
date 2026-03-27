@@ -1407,9 +1407,9 @@ def main():
         st.header(traduire_texte("🤖 Chat Bot - Questions sur le Don de Sang", lang))
         
         # Vérification de l'authentification
-        if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
-            st.warning(traduire_texte("Veuillez vous connecter pour accéder au Chat Bot.", lang))
-            return
+        #if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
+        #    st.warning(traduire_texte("Veuillez vous connecter pour accéder au Chat Bot.", lang))
+        #    return
         
         # Initialisation de l'historique des messages
         if "messages" not in st.session_state:
