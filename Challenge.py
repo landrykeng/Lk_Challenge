@@ -818,7 +818,7 @@ def main():
         f"📝 {traduire_texte('Formulaire', lang)}",
         f"🖥️ {traduire_texte('Nouveau Tableau de Bord', lang)}",
         f"🤖 {traduire_texte('Chat Bot',lang)}", 
-        f"👥 {traduire_texte('Profil du groupe', lang)}"
+        f"👥 {traduire_texte('Profil concepteur', lang)}"
         
     ])
 
