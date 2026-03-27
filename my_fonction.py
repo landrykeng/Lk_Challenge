@@ -3061,14 +3061,7 @@ def display_team_profiles2():
             
             
         with col2:
-            create_member_profile(
-                name="NOULAYE Merveille",
-                title="Elève ingénieure statisticienne économiste",
-                image_path="Merveille_pro.jpg",
-                email="noulayemerveille@gmail.com",
-                phone="+237 6 77 39 32 86",
-                about_text="Jeune statisticienne en devenir dynamique et passionnée des métiers de la data. Je privilégie le travail en équipe dans la recherche des solutions efficaces et rapide face aux problèmes que je rencontre.")   
-            
+            pass
         with col3:
             st.image("QR_code.jpg", use_container_width=False,width=700)    
             
