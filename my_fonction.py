@@ -3048,7 +3048,7 @@ def display_team_profiles2():
         """, unsafe_allow_html=True)
         
         # Arrangement des profils en 2 colonnes
-        col1, col2, col3= st.columns([1,1,2])
+        col1,  col3= st.columns(2)
         
         with col1:
             create_member_profile(
@@ -3059,9 +3059,6 @@ def display_team_profiles2():
                 email="landrykengne99@gmail.com",
                 phone="+237 6 98 28 05 37")
             
-            
-        with col2:
-            pass
         with col3:
             st.image("QR_code.jpg", use_container_width=False,width=700)    
             

@@ -1404,12 +1404,117 @@ def main():
     
     #----ONGLET 5:  Chat Bot
     with tabs[5]:
-        def main():
-            if "authenticated" in st.session_state and st.session_state["authenticated"]:
-                blood_donation_chatbot() 
+        st.header(traduire_texte("🤖 Chat Bot - Questions sur le Don de Sang", lang))
+        
+        # Vérification de l'authentification
+        if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
+            st.warning(traduire_texte("Veuillez vous connecter pour accéder au Chat Bot.", lang))
+            return
+        
+        # Initialisation de l'historique des messages
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+        
+        # Affichage des messages de l'historique
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+        
+        # Fonction pour générer une réponse basée sur les données
+        def generate_response(prompt, data, geo_data, data_don, lang):
+            prompt_lower = prompt.lower()
             
-        if __name__ == "__main__":
-            main()   
+            # Réponses prédéfinies basées sur les données
+            if "combien" in prompt_lower and ("candidat" in prompt_lower or "participant" in prompt_lower):
+                total = data.shape[0]
+                return traduire_texte(f"Il y a {total} candidats inscrits dans la base de données.", lang)
+            
+            elif "âge moyen" in prompt_lower or "age moyen" in prompt_lower:
+                age_moyen = data['Age'].mean()
+                return traduire_texte(f"L'âge moyen des candidats est de {age_moyen:.1f} ans.", lang)
+            
+            elif "taux d'hémoglobine" in prompt_lower or "hemoglobine" in prompt_lower:
+                taux_moyen = data['Tx_hémoglobine'].mean()
+                return traduire_texte(f"Le taux moyen d'hémoglobine est de {taux_moyen:.1f} g/dl.", lang)
+            
+            elif "poids moyen" in prompt_lower:
+                poids_moyen = data['Poids'].mean()
+                return traduire_texte(f"Le poids moyen des candidats est de {poids_moyen:.1f} kg.", lang)
+            
+            elif "éligible" in prompt_lower or "eligible" in prompt_lower:
+                eligible = data[data['Eligibilité'] == 'Eligible'].shape[0]
+                total = data.shape[0]
+                taux = (eligible / total) * 100
+                return traduire_texte(f"{eligible} candidats sont éligibles sur {total}, soit un taux de {taux:.1f}%.", lang)
+            
+            elif "genre" in prompt_lower or "sexe" in prompt_lower:
+                hommes = data[data['Genre'] == 'Homme'].shape[0]
+                femmes = data[data['Genre'] == 'Femme'].shape[0]
+                return traduire_texte(f"Il y a {hommes} hommes et {femmes} femmes parmi les candidats.", lang)
+            
+            elif "religion" in prompt_lower:
+                religions = data['Religion'].value_counts()
+                top_religion = religions.index[0]
+                count = religions.iloc[0]
+                return traduire_texte(f"La religion la plus représentée est {top_religion} avec {count} candidats.", lang)
+            
+            elif "profession" in prompt_lower:
+                professions = data['Good_profession'].value_counts()
+                top_prof = professions.index[0]
+                count = professions.iloc[0]
+                return traduire_texte(f"La profession la plus courante est {top_prof} avec {count} candidats.", lang)
+            
+            elif "arrondissement" in prompt_lower:
+                arrondissements = data['Arrondissement'].value_counts()
+                top_arr = arrondissements.index[0]
+                count = arrondissements.iloc[0]
+                return traduire_texte(f"L'arrondissement avec le plus de candidats est {top_arr} avec {count} candidats.", lang)
+            
+            elif "don" in prompt_lower and "sang" in prompt_lower and ("ancien" in prompt_lower or "passé" in prompt_lower):
+                anciens_donneurs = data[data['Don_pass'] == 'Oui'].shape[0]
+                total = data.shape[0]
+                taux = (anciens_donneurs / total) * 100
+                return traduire_texte(f"{anciens_donneurs} candidats ont déjà donné leur sang, soit {taux:.1f}% du total.", lang)
+            
+            elif "don" in prompt_lower and "effectué" in prompt_lower:
+                dons = data_don.shape[0]
+                return traduire_texte(f"{dons} dons de sang ont été effectués lors de la campagne.", lang)
+            
+            elif "groupe sanguin" in prompt_lower:
+                groupes = data_don['Gpr_sang'].value_counts()
+                top_groupe = groupes.index[0]
+                count = groupes.iloc[0]
+                return traduire_texte(f"Le groupe sanguin le plus fréquent parmi les donneurs est {top_groupe} avec {count} donneurs.", lang)
+            
+            elif "aide" in prompt_lower or "help" in prompt_lower:
+                return traduire_texte("Je peux vous aider avec des questions sur les statistiques des candidats, l'éligibilité, les dons de sang, etc. Posez-moi une question spécifique !", lang)
+            
+            else:
+                return traduire_texte("Désolé, je ne comprends pas votre question. Essayez de poser une question sur les données des candidats ou les dons de sang.", lang)
+        
+        # Saisie de l'utilisateur
+        if prompt := st.chat_input(traduire_texte("Posez votre question sur le don de sang...", lang)):
+            # Ajouter le message utilisateur à l'historique
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            
+            # Afficher le message utilisateur
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            
+            # Générer la réponse
+            response = generate_response(prompt, data, geo_data, data_don, lang)
+            
+            # Ajouter la réponse à l'historique
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            
+            # Afficher la réponse
+            with st.chat_message("assistant"):
+                st.markdown(response)
+        
+        # Bouton pour effacer l'historique
+        if st.button(traduire_texte("Effacer l'historique", lang)):
+            st.session_state.messages = []
+            st.rerun()   
                 
     #----ONGLET 6:  Profile
     with tabs[6]:
