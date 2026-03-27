@@ -3058,13 +3058,7 @@ def display_team_profiles2():
                 about_text="Titulaire d'une licence en mathématique à l'Université de Yaoundé I. Actuellement en Master I en Statistiques et Economie appliquée à l'ISSEA.",
                 email="landrykengne99@gmail.com",
                 phone="+237 6 98 28 05 37")
-            create_member_profile(
-                name="ANABA Rodrigue",
-                title="Economiste - Data Scientist",
-                image_path="ANABA.jpg",
-                email="student.rodrigue.anabaohandza@issea-cemac.org",
-                phone="+237 6 96 26 90 77",
-                about_text="Diplômé d'une Licence en Sciences Économiques, je suis actuellement en dernière année du cycle d'Ingénieur Statisticien Économiste à l'ISSEA. J'ai une solide maîtrise des méthodes statistiques avancées et des outils de modélisation économétrique.")
+            
             
         with col2:
             create_member_profile(
@@ -3074,14 +3068,7 @@ def display_team_profiles2():
                 email="noulayemerveille@gmail.com",
                 phone="+237 6 77 39 32 86",
                 about_text="Jeune statisticienne en devenir dynamique et passionnée des métiers de la data. Je privilégie le travail en équipe dans la recherche des solutions efficaces et rapide face aux problèmes que je rencontre.")   
-            create_member_profile(
-                name="TCHINDA Rinel",
-                title="Economiste - Data Scientist",
-                image_path="Rinel.jpg",
-                email="cezangue@gmail.com",
-                phone="+237 6 73 83 11 57",
-                about_text="Je suis un data scientist titulaire d'une licence en mathématiques, un master en économie quantitative et ingénierie statistique, alliant expertise analytique et foi évangélique fervente.")
-        
+            
         with col3:
             st.image("QR_code.jpg", use_container_width=False,width=700)    
             
